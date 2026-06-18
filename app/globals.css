@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8f7f4;
+  --foreground: #1c1c1a;
+  --gray: #706f6a;
+  --line: rgba(28, 28, 26, 0.1);
+  --lilac: #efd9ff;
+  --lilac-mid: #c084fc;
+  --lilac-deep: #7c3aed;
+  --glass: rgba(255, 255, 255, 0.76);
+  --good: #34d399;
+  --warn: #fbbf24;
+  --bad: #ef4444;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-gray: var(--gray);
+  --color-line: var(--line);
+  --color-lilac: var(--lilac);
+  --color-lilac-mid: var(--lilac-mid);
+  --color-lilac-deep: var(--lilac-deep);
+  --color-glass: var(--glass);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --font-sans: "Inter", sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--line);
+}
