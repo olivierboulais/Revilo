@@ -29,7 +29,15 @@ export function TopBar({ workspaceName, scannedAt, email }: { workspaceName: str
   }
 
   return (
-    <header className="h-16 border-b border-line bg-white/60 flex items-center justify-between px-6 sticky top-0 z-10 backdrop-blur-sm">
+    <header
+      className="h-16 flex items-center justify-between px-6 sticky top-4 z-10 rounded-full"
+      style={{
+        background: "var(--glass)",
+        backdropFilter: "blur(20px)",
+        border: "1px solid var(--line)",
+        boxShadow: "0 8px 30px rgba(28,28,26,0.06)",
+      }}
+    >
       <div className="flex items-center gap-3 min-w-0">
         <span className="text-[14px] font-medium truncate">{workspaceName}</span>
         <span className="w-1 h-1 rounded-full bg-line" />
