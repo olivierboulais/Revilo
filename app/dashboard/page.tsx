@@ -59,6 +59,7 @@ export default async function OverviewPage() {
           summary="Component and variant parity between Figma and code."
           href="/dashboard/alignment"
           locked={!isPaid}
+          tint="lilac"
         />
         <CategoryModule
           title="Tokens"
@@ -67,6 +68,7 @@ export default async function OverviewPage() {
           summary="Token naming and value consistency across design and code."
           href="/dashboard/alignment"
           locked={!isPaid}
+          tint="lilac"
         />
         <CategoryModule
           title="Structure"
@@ -75,6 +77,7 @@ export default async function OverviewPage() {
           summary="System architecture, hierarchy, and adoption discipline."
           href="/dashboard/architecture"
           locked={!isPaid}
+          tint="green"
         />
       </div>
     </div>
