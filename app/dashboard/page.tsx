@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { SummaryCard, SummaryStatCard } from "@/components/SummaryCard";
 import { BiggestRisksPanel, TeamDriftPanel, RecommendedActionsPanel, CategoryModule } from "@/components/OverviewPanels";
 import { groupByCategory, topRisks, topActions, teamDriftCounts } from "@/lib/overview-helpers";
+import { TrendChart } from "@/components/TrendChart";
+import { generateScoreHistory } from "@/lib/mock-history";
 
 const riskLevelLabel: Record<string, string> = { low: "Low risk", medium: "Medium risk", high: "High risk" };
 const riskLevelColor: Record<string, string> = { low: "#34D399", medium: "#FBBF24", high: "#EF4444" };
@@ -24,6 +26,7 @@ export default async function OverviewPage() {
   const risks = topRisks(report.findings);
   const actions = topActions(report.recommendations);
   const drift = teamDriftCounts(report.teamInsights);
+  const history = generateScoreHistory(report.alignment.overall, report.adoption.overall, report.architecture.overall);
 
   return (
     <div className="max-w-[1080px] mx-auto px-6 py-8">
@@ -48,6 +51,24 @@ export default async function OverviewPage() {
         <BiggestRisksPanel risks={risks} isPaid={isPaid} />
         <TeamDriftPanel design={drift.design} engineering={drift.engineering} isPaid={isPaid} />
         <RecommendedActionsPanel actions={actions} isPaid={isPaid} />
+      </div>
+
+      {/* Trend chart */}
+      <div className="rounded-2xl border border-line bg-white p-5 mb-6">
+        <div className="text-[12.5px] font-medium text-[#1C1C1A] mb-1">Score trend</div>
+        <p className="text-[11.5px] text-gray mb-4">How alignment{isPaid ? ", adoption, and architecture have" : " has"} moved over recent scans.</p>
+        <TrendChart
+          labels={history.labels}
+          series={
+            isPaid
+              ? [
+                  { label: "Alignment", color: "#7C3AED", values: history.alignment },
+                  { label: "Adoption", color: "#60A5FA", values: history.adoption },
+                  { label: "Architecture", color: "#34D399", values: history.architecture },
+                ]
+              : [{ label: "Alignment", color: "#7C3AED", values: history.alignment }]
+          }
+        />
       </div>
 
       {/* Third row: 3 category modules */}
