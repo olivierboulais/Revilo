@@ -95,8 +95,17 @@ export function Sidebar({ workspaceName, isPaid }: { workspaceName: string; isPa
   const pathname = usePathname();
 
   return (
-    <aside className="w-[220px] flex-shrink-0 h-screen sticky top-0 border-r border-line bg-white/60 flex flex-col">
-      <div className="px-5 pt-6 pb-5">
+    <aside
+      className="w-[220px] flex-shrink-0 sticky top-4 flex flex-col rounded-[28px] overflow-hidden"
+      style={{
+        height: "calc(100vh - 2rem)",
+        background: "var(--glass)",
+        backdropFilter: "blur(20px)",
+        border: "1px solid var(--line)",
+        boxShadow: "0 8px 30px rgba(28,28,26,0.06)",
+      }}
+    >
+      <div className="px-6 pt-7 pb-5">
         <Logo width={66} height={20} />
       </div>
 
