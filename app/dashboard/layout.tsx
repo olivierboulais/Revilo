@@ -21,11 +21,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const isPaid = session.tier !== "free";
 
   return (
-    <div className="flex min-h-screen bg-[#F8F7F4]">
+    <div className="flex min-h-screen bg-[#F8F7F4] p-4 gap-4">
       <Sidebar workspaceName={session.workspaceName} isPaid={isPaid} />
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col gap-4">
         <TopBar workspaceName={session.workspaceName} scannedAt={report.scannedAt} email={session.email} />
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 overflow-y-auto">{children}</div>
       </div>
     </div>
   );
