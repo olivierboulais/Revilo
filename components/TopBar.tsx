@@ -15,7 +15,7 @@ function timeAgo(iso: string): string {
 export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; scannedAt: string }) {
   return (
     <header
-      className="h-16 flex items-center justify-between px-6 sticky top-4 z-10 rounded-full"
+      className="h-16 flex items-center justify-between pl-6 pr-4 sticky top-4 z-10 rounded-full"
       style={{
         background: "var(--glass)",
         backdropFilter: "blur(20px)",
