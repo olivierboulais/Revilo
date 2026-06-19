@@ -37,10 +37,10 @@ export default async function OverviewPage() {
 
       {/* Top row: 4 primary summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <SummaryCard label="Alignment Score" value={report.alignment.overall} variant="dark" />
-        <SummaryCard label="Adoption Score" value={report.adoption.overall} locked={!isPaid} variant="lilac" />
-        <SummaryCard label="Architecture Score" value={report.architecture.overall} locked={!isPaid} variant="soft" />
-        <SummaryStatCard label="Issues Found" value={report.findings.length} helperText={`${report.findings.filter(f => f.severity === "high").length} high severity`} variant="outline" />
+        <SummaryCard label="Alignment Score" value={report.alignment.overall} />
+        <SummaryCard label="Adoption Score" value={report.adoption.overall} locked={!isPaid} />
+        <SummaryCard label="Architecture Score" value={report.architecture.overall} locked={!isPaid} />
+        <SummaryStatCard label="Issues Found" value={report.findings.length} helperText={`${report.findings.filter(f => f.severity === "high").length} high severity`} />
       </div>
 
       {/* Second row: 3 priority panels */}
@@ -59,7 +59,7 @@ export default async function OverviewPage() {
           summary="Component and variant parity between Figma and code."
           href="/dashboard/alignment"
           locked={!isPaid}
-          tint="lilac"
+         
         />
         <CategoryModule
           title="Tokens"
@@ -68,7 +68,7 @@ export default async function OverviewPage() {
           summary="Token naming and value consistency across design and code."
           href="/dashboard/alignment"
           locked={!isPaid}
-          tint="lilac"
+         
         />
         <CategoryModule
           title="Structure"
@@ -77,7 +77,7 @@ export default async function OverviewPage() {
           summary="System architecture, hierarchy, and adoption discipline."
           href="/dashboard/architecture"
           locked={!isPaid}
-          tint="green"
+         
         />
       </div>
     </div>
