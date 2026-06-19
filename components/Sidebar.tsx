@@ -129,7 +129,7 @@ export function Sidebar({ workspaceName, isPaid, email }: { workspaceName: strin
         <button
           onClick={handleRescan}
           disabled={isRescanning}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all disabled:opacity-60"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-full text-[13px] font-medium transition-all disabled:opacity-60"
           style={{ background: "#1C1C1A", color: "#fff" }}
         >
           <IconRescan spinning={isRescanning} />
