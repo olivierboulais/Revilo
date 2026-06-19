@@ -1,8 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Logo } from "@/components/Logo";
+import { useRouter, usePathname } from "next/navigation";
 
 interface NavItem {
   href: string;
@@ -79,6 +79,14 @@ function IconSettings() {
     </svg>
   );
 }
+function IconRescan({ spinning }: { spinning?: boolean }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className={spinning ? "animate-spin" : undefined}>
+      <path d="M2 7C2 4.2 4.2 2 7 2C8.8 2 10.4 2.9 11.3 4.3M12 7C12 9.8 9.8 12 7 12C5.2 12 3.6 11.1 2.7 9.7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path d="M11.3 1.8V4.3H8.8M2.7 12.2V9.7H5.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: <IconOverview /> },
@@ -91,8 +99,20 @@ const navItems: NavItem[] = [
   { href: "/dashboard/settings", label: "Settings", icon: <IconSettings /> },
 ];
 
-export function Sidebar({ workspaceName, isPaid }: { workspaceName: string; isPaid: boolean }) {
+export function Sidebar({ workspaceName, isPaid, email }: { workspaceName: string; isPaid: boolean; email: string }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isRescanning, setIsRescanning] = useState(false);
+
+  async function handleRescan() {
+    setIsRescanning(true);
+    try {
+      await fetch("/api/scan", { method: "POST" });
+      router.refresh();
+    } finally {
+      setIsRescanning(false);
+    }
+  }
 
   return (
     <aside
@@ -105,11 +125,19 @@ export function Sidebar({ workspaceName, isPaid }: { workspaceName: string; isPa
         boxShadow: "0 8px 30px rgba(28,28,26,0.06)",
       }}
     >
-      <div className="px-6 pt-7 pb-5">
-        <Logo width={66} height={20} />
+      <div className="px-4 pt-5 pb-3">
+        <button
+          onClick={handleRescan}
+          disabled={isRescanning}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all disabled:opacity-60"
+          style={{ background: "#1C1C1A", color: "#fff" }}
+        >
+          <IconRescan spinning={isRescanning} />
+          {isRescanning ? "Scanning…" : "Rescan"}
+        </button>
       </div>
 
-      <nav className="flex-1 px-3 flex flex-col gap-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 flex flex-col gap-0.5 overflow-y-auto pt-1">
         {navItems.map((item) => {
           const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
           return (
@@ -133,8 +161,11 @@ export function Sidebar({ workspaceName, isPaid }: { workspaceName: string; isPa
       </nav>
 
       <div className="px-3 pb-4 pt-3 border-t border-line flex flex-col gap-0.5">
-        <button className="flex items-center justify-between px-3 py-2 rounded-lg text-[12.5px] text-[#1C1C1A]/70 hover:bg-black/[0.04] w-full text-left">
-          <span className="truncate">{workspaceName}</span>
+        <button className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-[12.5px] text-[#1C1C1A]/70 hover:bg-black/[0.04] w-full text-left">
+          <span className="w-7 h-7 rounded-full bg-lilac flex items-center justify-center text-[11px] font-medium text-[#3B1D6E] flex-shrink-0">
+            {email.charAt(0).toUpperCase()}
+          </span>
+          <span className="truncate flex-1">{workspaceName}</span>
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="flex-shrink-0 opacity-50">
             <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
