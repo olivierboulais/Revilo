@@ -107,11 +107,16 @@ export function Sidebar({ workspaceName, isPaid }: { workspaceName: string; isPa
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors ${
-                isActive ? "bg-[#1C1C1A] text-white font-medium" : "text-[#1C1C1A]/70 hover:bg-black/[0.04]"
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-all ${
+                isActive ? "font-medium shadow-sm" : "text-[#1C1C1A]/70 hover:bg-black/[0.04]"
               }`}
+              style={
+                isActive
+                  ? { background: "linear-gradient(135deg, #EFD9FF 0%, #DCC2FB 100%)", color: "#3B1D6E" }
+                  : undefined
+              }
             >
-              <span className={isActive ? "text-white" : "text-[#1C1C1A]/50"}>{item.icon}</span>
+              <span className={isActive ? "text-[#7C3AED]" : "text-[#1C1C1A]/50"}>{item.icon}</span>
               {item.label}
             </Link>
           );
