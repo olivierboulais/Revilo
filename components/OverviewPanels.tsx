@@ -2,12 +2,32 @@ import Link from "next/link";
 import { Finding, Recommendation } from "@/lib/types";
 import { SeverityDot } from "@/components/Visuals";
 
-function PanelShell({ title, href, hrefLabel, children }: { title: string; href: string; hrefLabel: string; children: React.ReactNode }) {
+const tintStyles: Record<string, { bg: string; linkColor: string }> = {
+  coral: { bg: "#FBEAE8", linkColor: "#B3401F" },
+  lilac: { bg: "#F3EEFF", linkColor: "#7C3AED" },
+  green: { bg: "#E9F6EE", linkColor: "#1F8350" },
+  white: { bg: "#FFFFFF", linkColor: "#7C3AED" },
+};
+
+function PanelShell({
+  title,
+  href,
+  hrefLabel,
+  tint = "white",
+  children,
+}: {
+  title: string;
+  href: string;
+  hrefLabel: string;
+  tint?: "coral" | "lilac" | "green" | "white";
+  children: React.ReactNode;
+}) {
+  const t = tintStyles[tint];
   return (
-    <div className="rounded-2xl border border-line bg-white p-5 flex flex-col h-full">
+    <div className="rounded-2xl p-5 flex flex-col h-full" style={{ background: t.bg, border: tint === "white" ? "1px solid rgba(28,28,26,0.1)" : "none" }}>
       <div className="text-[12.5px] font-medium text-[#1C1C1A] mb-3.5">{title}</div>
       <div className="flex-1 flex flex-col gap-2.5">{children}</div>
-      <Link href={href} className="text-[11.5px] text-lilac-deep font-medium mt-3.5 flex items-center gap-1">
+      <Link href={href} className="text-[11.5px] font-medium mt-3.5 flex items-center gap-1" style={{ color: t.linkColor }}>
         {hrefLabel}
         <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
           <path d="M1.5 7.5L7.5 1.5M7.5 1.5H3M7.5 1.5V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -27,7 +47,7 @@ const areaHref: Record<Finding["sourceArea"], string> = {
 export function BiggestRisksPanel({ risks, isPaid }: { risks: Finding[]; isPaid: boolean }) {
   if (!isPaid) {
     return (
-      <PanelShell title="Biggest Risks" href="/upgrade" hrefLabel="Unlock to see risks">
+      <PanelShell title="Biggest Risks" href="/upgrade" hrefLabel="Unlock to see risks" tint="coral">
         <div className="flex-1 flex items-center justify-center text-[12px] text-gray text-center py-4">
           The top risks across your system are in the full report.
         </div>
@@ -35,7 +55,7 @@ export function BiggestRisksPanel({ risks, isPaid }: { risks: Finding[]; isPaid:
     );
   }
   return (
-    <PanelShell title="Biggest Risks" href="/dashboard/alignment" hrefLabel="View all findings">
+    <PanelShell title="Biggest Risks" href="/dashboard/alignment" hrefLabel="View all findings" tint="coral">
       {risks.map((f) => (
         <Link key={f.id} href={areaHref[f.sourceArea]} className="flex items-start gap-2 group">
           <SeverityDot severity={f.severity} />
@@ -52,7 +72,7 @@ export function BiggestRisksPanel({ risks, isPaid }: { risks: Finding[]; isPaid:
 export function TeamDriftPanel({ design, engineering, isPaid }: { design: number; engineering: number; isPaid: boolean }) {
   if (!isPaid) {
     return (
-      <PanelShell title="Team Drift" href="/upgrade" hrefLabel="Unlock team insights">
+      <PanelShell title="Team Drift" href="/upgrade" hrefLabel="Unlock team insights" tint="lilac">
         <div className="flex-1 flex items-center justify-center text-[12px] text-gray text-center py-4">
           See whether design or engineering is creating more drift.
         </div>
@@ -61,7 +81,7 @@ export function TeamDriftPanel({ design, engineering, isPaid }: { design: number
   }
   const total = Math.max(design + engineering, 1);
   return (
-    <PanelShell title="Team Drift" href="/dashboard/team-insights" hrefLabel="View team insights">
+    <PanelShell title="Team Drift" href="/dashboard/team-insights" hrefLabel="View team insights" tint="lilac">
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between text-[12px]">
           <span className="flex items-center gap-1.5 text-gray"><span className="w-2 h-2 rounded-full bg-lilac-mid" />Design</span>
@@ -90,7 +110,7 @@ const impactColor: Record<Recommendation["impact"], string> = { high: "#34D399",
 export function RecommendedActionsPanel({ actions, isPaid }: { actions: Recommendation[]; isPaid: boolean }) {
   if (!isPaid) {
     return (
-      <PanelShell title="Recommended Actions" href="/upgrade" hrefLabel="Unlock recommendations">
+      <PanelShell title="Recommended Actions" href="/upgrade" hrefLabel="Unlock recommendations" tint="green">
         <div className="flex-1 flex items-center justify-center text-[12px] text-gray text-center py-4">
           Prioritized fixes, ranked by impact and effort, are in the full report.
         </div>
@@ -98,7 +118,7 @@ export function RecommendedActionsPanel({ actions, isPaid }: { actions: Recommen
     );
   }
   return (
-    <PanelShell title="Recommended Actions" href="/dashboard/recommendations" hrefLabel="View all recommendations">
+    <PanelShell title="Recommended Actions" href="/dashboard/recommendations" hrefLabel="View all recommendations" tint="green">
       {actions.map((r) => (
         <div key={r.id} className="flex items-start gap-2">
           <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: impactColor[r.impact] }} />
@@ -114,6 +134,13 @@ export function RecommendedActionsPanel({ actions, isPaid }: { actions: Recommen
   );
 }
 
+const categoryTints: Record<string, string> = {
+  coral: "#FBEAE8",
+  lilac: "#F3EEFF",
+  green: "#E9F6EE",
+  white: "#FFFFFF",
+};
+
 export function CategoryModule({
   title,
   score,
@@ -121,6 +148,7 @@ export function CategoryModule({
   summary,
   href,
   locked,
+  tint = "white",
 }: {
   title: string;
   score: number;
@@ -128,9 +156,11 @@ export function CategoryModule({
   summary: string;
   href: string;
   locked?: boolean;
+  tint?: "coral" | "lilac" | "green" | "white";
 }) {
+  const bg = categoryTints[tint];
   return (
-    <div className="rounded-2xl border border-line bg-white p-5 flex flex-col">
+    <div className="rounded-2xl p-5 flex flex-col" style={{ background: bg, border: tint === "white" ? "1px solid rgba(28,28,26,0.1)" : "none" }}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-[12.5px] font-medium">{title}</span>
         {!locked && (
