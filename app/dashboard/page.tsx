@@ -37,10 +37,10 @@ export default async function OverviewPage() {
 
       {/* Top row: 4 primary summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <SummaryCard label="Alignment Score" value={report.alignment.overall} />
-        <SummaryCard label="Adoption Score" value={report.adoption.overall} locked={!isPaid} />
-        <SummaryCard label="Architecture Score" value={report.architecture.overall} locked={!isPaid} />
-        <SummaryStatCard label="Issues Found" value={report.findings.length} helperText={`${report.findings.filter(f => f.severity === "high").length} high severity`} />
+        <SummaryCard label="Alignment Score" value={report.alignment.overall} variant="dark" />
+        <SummaryCard label="Adoption Score" value={report.adoption.overall} locked={!isPaid} variant="lilac" />
+        <SummaryCard label="Architecture Score" value={report.architecture.overall} locked={!isPaid} variant="soft" />
+        <SummaryStatCard label="Issues Found" value={report.findings.length} helperText={`${report.findings.filter(f => f.severity === "high").length} high severity`} variant="outline" />
       </div>
 
       {/* Second row: 3 priority panels */}
