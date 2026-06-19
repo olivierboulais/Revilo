@@ -14,7 +14,7 @@ export function SummaryCard({
   helperText?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5 flex items-center gap-4">
+    <div className="rounded-2xl border border-line bg-white p-6 flex items-center gap-4">
       {locked ? (
         <div className="w-[72px] h-[72px] rounded-full flex items-center justify-center bg-[#F3F1EC] flex-shrink-0">
           <svg width="18" height="18" viewBox="0 0 14 14" fill="none" className="text-gray">
@@ -45,8 +45,15 @@ export function SummaryCard({
 
 export function SummaryStatCard({ label, value, helperText, accent }: { label: string; value: string | number; helperText?: string; accent?: string }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5">
-      <div className="text-[11.5px] uppercase tracking-wide text-gray mb-2">{label}</div>
+    <div className="rounded-2xl border border-line bg-white p-6">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[11.5px] uppercase tracking-wide text-gray">{label}</span>
+        <span className="w-8 h-8 rounded-lg bg-[#F8F7F4] flex items-center justify-center text-[#1C1C1A]/60 flex-shrink-0">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M2 13.5L6 7.5L9.5 10L14 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      </div>
       <div className="text-[28px] font-semibold tracking-tight leading-none" style={accent ? { color: accent } : undefined}>
         {value}
       </div>
