@@ -22,6 +22,17 @@ export interface RawToken {
   category: string;
 }
 
+// Adoption signals from Figma *file* content (not the library) — detached
+// instances and local (un-tokenized) styles/variables. These come from a
+// different part of the Figma API than library components/tokens, so they
+// get their own raw shape rather than being forced into RawComponent.
+export interface RawDesignUsageSignal {
+  type: "detached_instance" | "local_style" | "local_variable";
+  componentName?: string; // for detached instances: which library component it diverged from
+  fileName: string;
+  description: string;
+}
+
 export interface NormalizedComponent {
   id: string;
   source: Source;
@@ -59,6 +70,8 @@ export type FindingType =
   | "deprecated_usage"
   | "hardcoded_value"
   | "detached_instance"
+  | "local_style"
+  | "local_variable"
   | "custom_implementation";
 
 export type Severity = "high" | "medium" | "low";
