@@ -79,5 +79,27 @@ export function generateTeamInsights(findings: Finding[], components: Normalized
     });
   }
 
+  const detached = findings.filter((f) => f.type === "detached_instance");
+  if (detached.length > 0) {
+    insights.push({
+      id: nextInsightId(),
+      team: "design",
+      title: `Design created ${detached.length} detached instance${detached.length === 1 ? "" : "s"}`,
+      detail: detached.map((f) => f.title).join("; "),
+      count: detached.length,
+    });
+  }
+
+  const localStylesAndVars = findings.filter((f) => f.type === "local_style" || f.type === "local_variable");
+  if (localStylesAndVars.length > 0) {
+    insights.push({
+      id: nextInsightId(),
+      team: "design",
+      title: `${localStylesAndVars.length} local style${localStylesAndVars.length === 1 ? "" : "s"} were used instead of approved tokens`,
+      detail: localStylesAndVars.map((f) => f.title).join("; "),
+      count: localStylesAndVars.length,
+    });
+  }
+
   return insights;
 }
