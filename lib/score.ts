@@ -1,5 +1,5 @@
 import { NormalizedComponent, NormalizedToken, AlignmentScore, AdoptionScore, ArchitectureScore } from "@/lib/types";
-import { ComponentMatchResult, TokenMatchResult } from "@/lib/match";
+import { ComponentMatchResult, TokenMatchResult, StructureAnalysis } from "@/lib/match";
 
 function pct(numerator: number, denominator: number): number {
   if (denominator === 0) return 100;
@@ -39,15 +39,15 @@ export function scoreAlignment(
   return { overall, componentAlignment, variantAlignment, tokenAlignment, namingAlignment };
 }
 
-export function scoreAdoption(components: NormalizedComponent[], hardcodedCount: number): AdoptionScore {
+export function scoreAdoption(components: NormalizedComponent[], hardcodedCount: number, designUsageIssueCount: number): AdoptionScore {
   const figmaComponents = components.filter((c) => c.source === "figma");
   const githubComponents = components.filter((c) => c.source === "github");
 
-  // Design adoption: penalized by components that exist in design but were
-  // never picked up in code at all is actually an alignment issue, not
-  // adoption — adoption here is about *usage discipline*: deprecated
-  // components and ad hoc duplicates outside the system.
-  const designAdoption = 91; // mock baseline; a real pass would derive this from detached-instance / local-style counts
+  // Design adoption: penalized by detached instances and untokenized local
+  // styles/variables — these are real signals that designers are working
+  // around the library rather than through it. Scaled against the size of
+  // the library so a handful of issues doesn't tank the score for a large system.
+  const designAdoption = Math.max(100 - Math.round((designUsageIssueCount / Math.max(figmaComponents.length, 1)) * 100), 30);
 
   const deprecatedCount = githubComponents.filter((c) => c.status === "deprecated").length;
   const chaoticNamingCount = githubComponents.filter((c) => c.status !== "deprecated" && /\d$|final|old$/i.test(c.name)).length;
@@ -59,7 +59,12 @@ export function scoreAdoption(components: NormalizedComponent[], hardcodedCount:
   return { overall, designAdoption, engineeringAdoption };
 }
 
-export function scoreArchitecture(tokens: NormalizedToken[], tokMatch: TokenMatchResult, compMatch: ComponentMatchResult): ArchitectureScore {
+export function scoreArchitecture(
+  tokens: NormalizedToken[],
+  tokMatch: TokenMatchResult,
+  compMatch: ComponentMatchResult,
+  structureAnalysis: StructureAnalysis
+): ArchitectureScore {
   const figmaTokens = tokens.filter((t) => t.source === "figma");
   const unknownTierCount = figmaTokens.filter((t) => t.tier === "unknown").length;
   const tokenArchitecture = pct(Math.max(figmaTokens.length - unknownTierCount, 0), Math.max(figmaTokens.length, 1));
@@ -75,10 +80,10 @@ export function scoreArchitecture(tokens: NormalizedToken[], tokMatch: TokenMatc
   ).length;
   const componentHierarchy = Math.max(100 - chaoticNamingCount * 12, 30);
 
-  // Structure consistency: how well Figma's path grouping maps to GitHub's
-  // folder grouping for matched components.
-  const matchedPairs = compMatch.components.filter((c) => c.source === "figma" && c.status === "matched");
-  const structureConsistency = matchedPairs.length > 0 ? 78 : 50; // mock baseline; real pass diffs path segments
+  // Structure consistency: real comparison of Figma's library grouping
+  // against GitHub's folder grouping for matched components (see
+  // lib/match.ts analyzeStructureConsistency).
+  const structureConsistency = structureAnalysis.consistencyScore;
 
   const overall = Math.round(
     tokenArchitecture * 0.3 + semanticLayer * 0.25 + componentHierarchy * 0.25 + structureConsistency * 0.2
