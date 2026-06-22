@@ -29,7 +29,7 @@ export default async function OverviewPage() {
   const history = generateScoreHistory(report.alignment.overall, report.adoption.overall, report.architecture.overall);
 
   return (
-    <div className="max-w-[1080px] mx-auto px-6 py-8">
+    <div className="px-6 py-8">
       <div className="flex items-center justify-between mb-1">
         <h1 className="text-[22px] font-semibold tracking-tight">Overview</h1>
         <span className="text-[12px] font-medium px-2.5 py-1 rounded-full" style={{ background: `${riskLevelColor[report.riskLevel]}1A`, color: riskLevelColor[report.riskLevel] }}>
