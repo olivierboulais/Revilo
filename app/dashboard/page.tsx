@@ -11,9 +11,15 @@ import { getScoreHistory } from "@/lib/score-history";
 const riskLevelLabel: Record<string, string> = { low: "Low risk", medium: "Medium risk", high: "High risk" };
 const riskLevelColor: Record<string, string> = { low: "#34D399", medium: "#FBBF24", high: "#EF4444" };
 
-export default async function OverviewPage() {
+interface Props {
+  searchParams: Promise<{ scan_error?: string; upgraded?: string }>;
+}
+
+export default async function OverviewPage({ searchParams }: Props) {
   const session = await getSession();
   if (!session) redirect("/signup");
+
+  const { scan_error, upgraded } = await searchParams;
 
   let report = await getReport(session.email);
   if (!report) {
@@ -51,6 +57,17 @@ export default async function OverviewPage() {
         </div>
       </div>
       <p className="text-[13px] text-gray mb-6">The state of {report.workspaceName}, at a glance.</p>
+
+      {scan_error && (
+        <div className="mb-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[13px] text-[#B91C1C] px-4 py-3">
+          The scan encountered an error. Showing your previous report. Try again with the Re-scan button.
+        </div>
+      )}
+      {upgraded && (
+        <div className="mb-4 rounded-xl bg-[#F0FDF4] border border-[#BBF7D0] text-[13px] text-[#15803D] px-4 py-3">
+          You&apos;re now on the {upgraded === "monitoring" ? "Monthly Monitoring" : "Pro Report"} plan. Full report unlocked.
+        </div>
+      )}
 
       {/* Top row: 4 primary summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

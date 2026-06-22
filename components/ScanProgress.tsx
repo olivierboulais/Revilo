@@ -26,17 +26,18 @@ export function ScanProgress({ workspaceName }: { workspaceName: string }) {
 
     let redirected = false;
     fetch("/api/scan", { method: "POST" })
-      .then(() => {
+      .then((res) => {
+        const dest = res.ok ? "/dashboard" : "/dashboard?scan_error=1";
         const remaining = SCAN_PROGRESS_SEQUENCE.length * STEP_DURATION_MS;
         setTimeout(() => {
           if (!redirected) {
             redirected = true;
-            router.push("/dashboard");
+            router.push(dest);
           }
         }, remaining);
       })
       .catch(() => {
-        router.push("/connect");
+        router.push("/dashboard?scan_error=1");
       });
 
     return () => {

@@ -1,18 +1,26 @@
 import { getSession } from "@/lib/auth/session";
 import { getReport, saveReport } from "@/lib/store";
 import { runScan } from "@/lib/run-scan";
+import { findUserByEmail } from "@/lib/db/users";
+import { getSource } from "@/lib/db/sources";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { VerificationBanner } from "@/components/VerificationBanner";
+import { MockDataBanner } from "@/components/MockDataBanner";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!session) redirect("/signup");
 
-  // Ensure a report exists so the top bar has a real "last scan" timestamp
-  // even on first load. Individual pages re-fetch the report themselves —
-  // this only guarantees one exists.
+  const user = await findUserByEmail(session.email);
+  const [figmaSource, githubSource] = user
+    ? await Promise.all([getSource(user.id, "figma"), getSource(user.id, "github")])
+    : [null, null];
+
+  const figmaConnected = figmaSource?.status === "connected" && Boolean(figmaSource.access_token) && Boolean(figmaSource.figma_file_key);
+  const githubConnected = githubSource?.status === "connected" && Boolean(githubSource.access_token) && Boolean(githubSource.github_repo);
+
   let report = await getReport(session.email);
   if (!report) {
     report = await runScan(session.workspaceName, session.email);
@@ -27,6 +35,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="flex-1 min-w-0 flex flex-col gap-4">
         <TopBar workspaceName={session.workspaceName} scannedAt={report.scannedAt} />
         {!session.emailVerified && <VerificationBanner email={session.email} />}
+        <MockDataBanner figmaConnected={figmaConnected} githubConnected={githubConnected} />
         <div className="flex-1 overflow-y-auto">{children}</div>
       </div>
     </div>

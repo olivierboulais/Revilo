@@ -56,3 +56,15 @@ export async function updatePasswordHash(userId: string, passwordHash: string): 
   const db = await getDb();
   await db.run("UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?", [passwordHash, userId]);
 }
+
+export async function getUsersByTier(tier: "free" | "pro" | "monitoring"): Promise<UserRecord[]> {
+  const db = await getDb();
+  const result = await db.query<UserRecord>("SELECT * FROM users WHERE tier = ?", [tier]);
+  return result.rows;
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  const db = await getDb();
+  // FK CASCADE handles sessions, sources, scans
+  await db.run("DELETE FROM users WHERE id = ?", [userId]);
+}
