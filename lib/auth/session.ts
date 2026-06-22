@@ -1,4 +1,6 @@
 import { cookies } from "next/headers";
+import { findUserById, updateUserTier } from "@/lib/db/users";
+import { createDbSession, findSessionByToken, deleteSessionByToken } from "@/lib/db/sessions";
 
 export type SubscriptionTier = "free" | "pro" | "monitoring";
 
@@ -10,49 +12,56 @@ export interface MockUser {
 
 const SESSION_COOKIE = "revilo_session";
 
-// Swap point: replace with a real session store (e.g. NextAuth, a JWT, or a
-// database-backed session). The cookie holds a JSON-encoded MockUser for now
-// because there's no database yet — this is intentionally the only place
-// that needs to change when real auth lands.
+// Real implementation: the cookie now holds an opaque, random session token
+// (not user data) that's looked up against the sessions table — the
+// previous version stored the user's data directly in the cookie, which was
+// readable and forgeable by anyone with browser dev tools. This is the
+// standard server-side session pattern.
 export async function getSession(): Promise<MockUser | null> {
   const store = await cookies();
-  const raw = store.get(SESSION_COOKIE)?.value;
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as MockUser;
-  } catch {
-    return null;
-  }
+  const token = store.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
+
+  const session = await findSessionByToken(token);
+  if (!session) return null;
+
+  const user = await findUserById(session.user_id);
+  if (!user) return null;
+
+  return {
+    email: user.email,
+    workspaceName: user.workspace_name,
+    tier: user.tier,
+  };
 }
 
-export async function createSession(email: string, workspaceName: string): Promise<void> {
+// Creates a real session row and sets only the opaque token in the cookie.
+// Used by login (after password verification) — signup creates the user
+// record separately via lib/db/users.ts, then calls this.
+export async function createSessionForUser(userId: string): Promise<void> {
+  const token = await createDbSession(userId);
   const store = await cookies();
-  const user: MockUser = { email, workspaceName, tier: "free" };
-  store.set(SESSION_COOKIE, JSON.stringify(user), {
+  store.set(SESSION_COOKIE, token, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   });
 }
 
-// Swap point: replace with a real billing webhook handler (e.g. Stripe) that
-// updates the user's tier in the database after a successful subscription.
 export async function setTier(tier: SubscriptionTier): Promise<void> {
   const store = await cookies();
-  const raw = store.get(SESSION_COOKIE)?.value;
-  if (!raw) return;
-  const user = JSON.parse(raw) as MockUser;
-  user.tier = tier;
-  store.set(SESSION_COOKIE, JSON.stringify(user), {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
+  const token = store.get(SESSION_COOKIE)?.value;
+  if (!token) return;
+  const session = await findSessionByToken(token);
+  if (!session) return;
+  await updateUserTier(session.user_id, tier);
 }
 
 export async function clearSession(): Promise<void> {
   const store = await cookies();
+  const token = store.get(SESSION_COOKIE)?.value;
+  if (token) await deleteSessionByToken(token);
   store.delete(SESSION_COOKIE);
 }
