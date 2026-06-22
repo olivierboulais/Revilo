@@ -1,5 +1,5 @@
-import { Finding, NormalizedComponent } from "@/lib/types";
-import { ComponentMatchResult, TokenMatchResult } from "@/lib/match";
+import { Finding, NormalizedComponent, RawDesignUsageSignal } from "@/lib/types";
+import { ComponentMatchResult, TokenMatchResult, StructureMismatch } from "@/lib/match";
 
 let findingCounter = 0;
 function nextFindingId(): string {
@@ -160,4 +160,58 @@ export function generateFindings(compMatch: ComponentMatchResult, tokMatch: Toke
   }
 
   return findings;
+}
+
+// Turns Figma file-content usage signals (detached instances, local styles,
+// local variables) into Finding objects. Kept separate from
+// generateFindings because these don't go through component/token
+// matching — they're standalone signals about how design files are
+// actually being used, not comparisons against code.
+export function generateDesignUsageFindings(signals: RawDesignUsageSignal[]): Finding[] {
+  return signals.map((s) => {
+    if (s.type === "detached_instance") {
+      return {
+        id: nextFindingId(),
+        type: "detached_instance" as const,
+        severity: "medium" as const,
+        title: `${s.componentName ?? "A component"} instance was detached in "${s.fileName}"`,
+        description: s.description,
+        sourceArea: "adoption" as const,
+        evidence: [`File: ${s.fileName}`],
+        confidence: 0.85,
+        recommendationId: null,
+      };
+    }
+    const isLocalStyle = s.type === "local_style";
+    const localType: "local_style" | "local_variable" = isLocalStyle ? "local_style" : "local_variable";
+    return {
+      id: nextFindingId(),
+      type: localType,
+      severity: "low" as const,
+      title: `Untokenized ${isLocalStyle ? "local style" : "local variable"} used in "${s.fileName}"`,
+      description: s.description,
+      sourceArea: "adoption" as const,
+      evidence: [`File: ${s.fileName}`],
+      confidence: 0.75,
+      recommendationId: null,
+    };
+  });
+}
+
+// Turns Figma↔GitHub structure mismatches into findings for the
+// "System Structure Alignment" check. A mismatch here means a component is
+// categorized in the Figma library (e.g. under "Forms") but its code
+// implementation has no corresponding folder-level grouping.
+export function generateStructureFindings(mismatches: StructureMismatch[]): Finding[] {
+  return mismatches.map((m) => ({
+    id: nextFindingId(),
+    type: "naming_inconsistency" as const, // closest existing bucket for structural/organizational drift
+    severity: "low" as const,
+    title: `${m.figma.name} is grouped under "${m.figmaGroup}" in Figma but has no matching folder structure in code`,
+    description: `Figma organizes ${m.figma.name} under ${m.figma.path}, but its code implementation sits in a flat "${m.githubGroup}" folder with no equivalent grouping.`,
+    sourceArea: "architecture" as const,
+    evidence: [`Figma: ${m.figma.path}`, `Code: ${m.github.path}`],
+    confidence: 0.7,
+    recommendationId: null,
+  }));
 }
