@@ -19,7 +19,7 @@ export default async function ArchitecturePage() {
 
   let report = await getReport(session.email);
   if (!report) {
-    report = await runScan(session.workspaceName);
+    report = await runScan(session.workspaceName, session.email);
     await saveReport(session.email, report);
   }
 

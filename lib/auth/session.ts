@@ -8,6 +8,7 @@ export interface MockUser {
   email: string;
   workspaceName: string;
   tier: SubscriptionTier;
+  emailVerified: boolean;
 }
 
 const SESSION_COOKIE = "revilo_session";
@@ -32,6 +33,7 @@ export async function getSession(): Promise<MockUser | null> {
     email: user.email,
     workspaceName: user.workspace_name,
     tier: user.tier,
+    emailVerified: Boolean(user.email_verified_at),
   };
 }
 

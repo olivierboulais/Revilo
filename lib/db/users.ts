@@ -46,3 +46,13 @@ export async function markEmailVerified(userId: string): Promise<void> {
   const db = await getDb();
   await db.run("UPDATE users SET email_verified_at = datetime('now') WHERE id = ?", [userId]);
 }
+
+export async function updateWorkspaceName(userId: string, name: string): Promise<void> {
+  const db = await getDb();
+  await db.run("UPDATE users SET workspace_name = ?, updated_at = datetime('now') WHERE id = ?", [name, userId]);
+}
+
+export async function updatePasswordHash(userId: string, passwordHash: string): Promise<void> {
+  const db = await getDb();
+  await db.run("UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?", [passwordHash, userId]);
+}

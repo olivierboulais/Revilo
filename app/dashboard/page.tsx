@@ -17,7 +17,7 @@ export default async function OverviewPage() {
 
   let report = await getReport(session.email);
   if (!report) {
-    report = await runScan(session.workspaceName);
+    report = await runScan(session.workspaceName, session.email);
     await saveReport(session.email, report);
   }
 
@@ -32,9 +32,23 @@ export default async function OverviewPage() {
     <div className="px-6 py-8">
       <div className="flex items-center justify-between mb-1">
         <h1 className="text-[22px] font-semibold tracking-tight">Overview</h1>
-        <span className="text-[12px] font-medium px-2.5 py-1 rounded-full" style={{ background: `${riskLevelColor[report.riskLevel]}1A`, color: riskLevelColor[report.riskLevel] }}>
-          {riskLevelLabel[report.riskLevel]}
-        </span>
+        <div className="flex items-center gap-2">
+          {isPaid && (
+            <a
+              href="/api/report/pdf"
+              download
+              className="flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors"
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1v7M3 6l3 3 3-3M1 10h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Export PDF
+            </a>
+          )}
+          <span className="text-[12px] font-medium px-2.5 py-1 rounded-full" style={{ background: `${riskLevelColor[report.riskLevel]}1A`, color: riskLevelColor[report.riskLevel] }}>
+            {riskLevelLabel[report.riskLevel]}
+          </span>
+        </div>
       </div>
       <p className="text-[13px] text-gray mb-6">The state of {report.workspaceName}, at a glance.</p>
 

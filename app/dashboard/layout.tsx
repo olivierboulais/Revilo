@@ -4,6 +4,7 @@ import { runScan } from "@/lib/run-scan";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
+import { VerificationBanner } from "@/components/VerificationBanner";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -14,7 +15,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // this only guarantees one exists.
   let report = await getReport(session.email);
   if (!report) {
-    report = await runScan(session.workspaceName);
+    report = await runScan(session.workspaceName, session.email);
     await saveReport(session.email, report);
   }
 
@@ -25,6 +26,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <Sidebar workspaceName={session.workspaceName} isPaid={isPaid} email={session.email} />
       <div className="flex-1 min-w-0 flex flex-col gap-4">
         <TopBar workspaceName={session.workspaceName} scannedAt={report.scannedAt} />
+        {!session.emailVerified && <VerificationBanner email={session.email} />}
         <div className="flex-1 overflow-y-auto">{children}</div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { findUserByEmail, createUser } from "@/lib/db/users";
 import { createSessionForUser } from "@/lib/auth/session";
 import { createVerificationToken } from "@/lib/db/verification-tokens";
 import { sendVerificationEmail } from "@/lib/email";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
@@ -17,6 +18,13 @@ function isValidEmail(email: string): boolean {
 }
 
 export async function signupAction(formData: FormData): Promise<SignupResult> {
+  const headersList = await headers();
+  const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const rl = checkRateLimit(`signup:${ip}`, 5, 60 * 60 * 1000); // 5 per hour
+  if (!rl.allowed) {
+    return { error: "Too many signup attempts. Please try again later." };
+  }
+
   const email = String(formData.get("email") ?? "").trim();
   const workspaceName = String(formData.get("workspaceName") ?? "").trim();
   const password = String(formData.get("password") ?? "");
