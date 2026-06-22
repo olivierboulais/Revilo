@@ -1,4 +1,4 @@
-import { RawComponent, RawToken } from "@/lib/types";
+import { RawComponent, RawToken, RawDesignUsageSignal } from "@/lib/types";
 
 // Stands in for: GET via Figma API → files / libraries / components /
 // component sets / variants / variables / styles.
@@ -66,5 +66,21 @@ export async function fetchFigmaTokens(): Promise<RawToken[]> {
     { source: "figma", name: "color.brand.primary", value: "#7C3AED", category: "color" },
     // Same name, different value vs. code — token value mismatch
     { source: "figma", name: "color.border.default", value: "#E5E7EB", category: "color" },
+  ];
+}
+
+// Stands in for: scanning Figma file content (not the library) for instances
+// that have been detached from their source component, and styles/variables
+// applied directly rather than through the shared library. Swap point:
+// replace with a real Figma API call that walks file nodes for
+// `componentId === null` on what were instances, and local paint/text styles.
+export async function fetchFigmaUsageSignals(): Promise<RawDesignUsageSignal[]> {
+  return [
+    { type: "detached_instance", componentName: "Button", fileName: "Checkout Redesign", description: "A Button instance was detached and manually restyled with a custom shadow." },
+    { type: "detached_instance", componentName: "Card", fileName: "Marketing Landing v3", description: "A Card instance was detached to add a gradient border not supported by the library version." },
+    { type: "detached_instance", componentName: "Modal", fileName: "Onboarding Flow", description: "A Modal instance was detached to change its corner radius for a one-off screen." },
+    { type: "local_style", fileName: "Checkout Redesign", description: "A local color style (#6D28D9) was applied directly instead of referencing color.brand.primary." },
+    { type: "local_style", fileName: "Marketing Landing v3", description: "A local text style was used instead of the shared typography scale." },
+    { type: "local_variable", fileName: "Onboarding Flow", description: "A local spacing variable was created instead of reusing an existing primitive token." },
   ];
 }
