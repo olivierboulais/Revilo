@@ -9,7 +9,7 @@ export async function POST() {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const report = await runScan(session.workspaceName);
+  const report = await runScan(session.workspaceName, session.email);
   await saveReport(session.email, report);
 
   return NextResponse.json({ ok: true });

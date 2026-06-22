@@ -2,7 +2,10 @@
 
 import { findUserByEmail, createUser } from "@/lib/db/users";
 import { createSessionForUser } from "@/lib/auth/session";
+import { createVerificationToken } from "@/lib/db/verification-tokens";
+import { sendVerificationEmail } from "@/lib/email";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
 
 export interface SignupResult {
@@ -36,6 +39,18 @@ export async function signupAction(formData: FormData): Promise<SignupResult> {
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await createUser(email, passwordHash, workspaceName);
   await createSessionForUser(user.id);
+
+  // Send verification email (non-blocking — failure doesn't prevent signup)
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host") ?? "localhost:3000";
+    const proto = process.env.NODE_ENV === "production" ? "https" : "http";
+    const baseUrl = `${proto}://${host}`;
+    const token = await createVerificationToken(user.id, "email_verify");
+    await sendVerificationEmail(email, token, baseUrl);
+  } catch (err) {
+    console.error("Failed to send verification email:", err);
+  }
 
   redirect("/connect");
 }

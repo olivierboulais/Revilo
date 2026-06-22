@@ -1,6 +1,10 @@
 import { ScanReport, RiskLevel } from "@/lib/types";
-import { fetchFigmaComponents, fetchFigmaTokens, fetchFigmaUsageSignals } from "@/lib/mock/figma";
-import { fetchGithubComponents, fetchGithubTokens } from "@/lib/mock/github";
+import { fetchFigmaComponents, fetchFigmaTokens, fetchFigmaUsageSignals } from "@/lib/figma/api";
+import { fetchGithubComponents, fetchGithubTokens } from "@/lib/github/api";
+import { fetchFigmaComponents as mockFigmaComponents, fetchFigmaTokens as mockFigmaTokens, fetchFigmaUsageSignals as mockFigmaUsageSignals } from "@/lib/mock/figma";
+import { fetchGithubComponents as mockGithubComponents, fetchGithubTokens as mockGithubTokens } from "@/lib/mock/github";
+import { getSource } from "@/lib/db/sources";
+import { findUserByEmail } from "@/lib/db/users";
 import { normalizeComponents, normalizeTokens } from "@/lib/normalize";
 import { matchComponents, matchTokens, analyzeStructureConsistency } from "@/lib/match";
 import { scoreAlignment, scoreAdoption, scoreArchitecture } from "@/lib/score";
@@ -15,41 +19,94 @@ function riskFromScores(alignment: number, adoption: number, architecture: numbe
   return "high";
 }
 
-export async function runScan(workspaceName: string): Promise<ScanReport> {
-  // 1. Ingest — swap points for real Figma/GitHub API calls live in lib/mock/*.
-  const [figmaRawComponents, figmaRawTokens, githubRawComponents, githubRawTokens, figmaUsageSignals] = await Promise.all([
-    fetchFigmaComponents(),
-    fetchFigmaTokens(),
-    fetchGithubComponents(),
-    fetchGithubTokens(),
-    fetchFigmaUsageSignals(),
-  ]);
+export async function runScan(workspaceName: string, userEmail?: string): Promise<ScanReport> {
+  // Resolve user so we can look up their connected sources
+  let userId: string | null = null;
+  if (userEmail) {
+    const user = await findUserByEmail(userEmail);
+    userId = user?.id ?? null;
+  }
 
-  // 2. Normalize.
+  // Figma data — real if a connected source with a file key exists, else mock
+  let figmaSource = userId ? await getSource(userId, "figma") : null;
+  const hasFigma =
+    figmaSource?.status === "connected" &&
+    figmaSource.access_token &&
+    figmaSource.figma_file_key;
+
+  // GitHub data — real if a connected source with a repo exists, else mock
+  let githubSource = userId ? await getSource(userId, "github") : null;
+  const hasGithub =
+    githubSource?.status === "connected" &&
+    githubSource.access_token &&
+    githubSource.github_repo;
+
+  const [figmaRawComponents, figmaRawTokens, githubRawComponents, githubRawTokens, figmaUsageSignals] =
+    await Promise.all([
+      hasFigma
+        ? fetchFigmaComponents(
+            userId!,
+            figmaSource!.figma_file_key!,
+            figmaSource!.access_token!,
+            figmaSource!.refresh_token,
+            figmaSource!.token_expires_at
+          )
+        : mockFigmaComponents(),
+
+      hasFigma
+        ? fetchFigmaTokens(
+            userId!,
+            figmaSource!.figma_file_key!,
+            figmaSource!.access_token!,
+            figmaSource!.refresh_token,
+            figmaSource!.token_expires_at
+          )
+        : mockFigmaTokens(),
+
+      hasGithub
+        ? fetchGithubComponents(githubSource!.github_repo!, githubSource!.access_token!)
+        : mockGithubComponents(),
+
+      hasGithub
+        ? fetchGithubTokens(githubSource!.github_repo!, githubSource!.access_token!)
+        : mockGithubTokens(),
+
+      hasFigma
+        ? fetchFigmaUsageSignals(
+            userId!,
+            figmaSource!.figma_file_key!,
+            figmaSource!.access_token!,
+            figmaSource!.refresh_token,
+            figmaSource!.token_expires_at
+          )
+        : mockFigmaUsageSignals(),
+    ]);
+
+  // 2. Normalize
   const components = normalizeComponents([...figmaRawComponents, ...githubRawComponents]);
   const tokens = normalizeTokens([...figmaRawTokens, ...githubRawTokens]);
 
-  // 3. Match — deterministic comparison logic.
+  // 3. Match
   const compMatch = matchComponents(components);
   const tokMatch = matchTokens(tokens);
   const structureAnalysis = analyzeStructureConsistency(components);
 
-  // 4. Score.
+  // 4. Score
   const alignment = scoreAlignment(components, compMatch, tokens, tokMatch);
   const adoption = scoreAdoption(components, tokMatch.hardcodedValues.length, figmaUsageSignals.length);
   const architecture = scoreArchitecture(tokens, tokMatch, compMatch, structureAnalysis);
 
-  // 5. Findings.
+  // 5. Findings
   const findings = [
     ...generateFindings(compMatch, tokMatch, components),
     ...generateDesignUsageFindings(figmaUsageSignals),
     ...generateStructureFindings(structureAnalysis.mismatches),
   ];
 
-  // 6. Recommendations — AI layer, mocked. See lib/recommendations.ts for the swap point.
+  // 6. Recommendations (AI-backed when ANTHROPIC_API_KEY set, templates otherwise)
   const recommendations = await generateRecommendations(findings);
 
-  // 7. Team insights.
+  // 7. Team insights
   const teamInsights = generateTeamInsights(findings, components);
 
   const riskLevel = riskFromScores(alignment.overall, adoption.overall, architecture.overall);

@@ -39,6 +39,9 @@ CREATE TABLE IF NOT EXISTS sources (
   access_token TEXT,
   refresh_token TEXT,
   external_name TEXT,
+  figma_file_key TEXT,   -- Figma: key from the file URL (/file/:key/...)
+  github_repo TEXT,      -- GitHub: "owner/repo"
+  token_expires_at TEXT, -- ISO datetime; NULL means non-expiring (GitHub PAT)
   connected_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(user_id, provider)
 );

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/Button";
 
-type SourceStatus = "idle" | "connecting" | "connected";
+type SourceStatus = "idle" | "connected";
 
 function FigmaIcon() {
   return (
@@ -26,91 +26,241 @@ function GithubIcon() {
   );
 }
 
+function CheckIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 10 10" fill="none">
+      <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#34D399" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 interface SourceCardProps {
   name: string;
   description: string;
   icon: React.ReactNode;
   status: SourceStatus;
   onConnect: () => void;
+  children?: React.ReactNode;
 }
 
-function SourceCard({ name, description, icon, status, onConnect }: SourceCardProps) {
+function SourceCard({ name, description, icon, status, onConnect, children }: SourceCardProps) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5 flex items-center gap-4">
-      <div className="w-11 h-11 rounded-xl bg-[#F8F7F4] flex items-center justify-center flex-shrink-0">{icon}</div>
-      <div className="flex-1 min-w-0">
-        <div className="text-[15px] font-medium">{name}</div>
-        <div className="text-[13px] text-gray">{description}</div>
+    <div className="rounded-2xl border border-line bg-white p-5">
+      <div className="flex items-center gap-4">
+        <div className="w-11 h-11 rounded-xl bg-[#F8F7F4] flex items-center justify-center flex-shrink-0">{icon}</div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[15px] font-medium">{name}</div>
+          <div className="text-[13px] text-gray">{description}</div>
+        </div>
+        {status === "idle" && (
+          <Button variant="outline" withArrow={false} onClick={onConnect} className="text-[13px] flex-shrink-0">
+            Connect
+          </Button>
+        )}
+        {status === "connected" && (
+          <span className="text-[13px] text-good font-medium flex items-center gap-1.5 flex-shrink-0">
+            <CheckIcon />
+            Connected
+          </span>
+        )}
       </div>
-      {status === "idle" && (
-        <Button variant="outline" withArrow={false} onClick={onConnect} className="text-[13px]">
-          Connect
-        </Button>
-      )}
-      {status === "connecting" && (
-        <span className="text-[13px] text-gray flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full border-2 border-line border-t-lilac-deep animate-spin" />
-          Connecting…
-        </span>
-      )}
-      {status === "connected" && (
-        <span className="text-[13px] text-good font-medium flex items-center gap-1.5">
-          <svg width="14" height="14" viewBox="0 0 10 10" fill="none">
-            <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#34D399" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Connected
-        </span>
-      )}
+      {children}
     </div>
   );
 }
 
-// Mock OAuth: a real implementation redirects to Figma's/GitHub's OAuth
-// consent screen and handles the callback. This simulates that round trip
-// with a timeout so the flow feels real without live credentials.
-function simulateConnect(setStatus: (s: SourceStatus) => void) {
-  setStatus("connecting");
-  setTimeout(() => setStatus("connected"), 1100);
+interface Props {
+  figmaConnected: boolean;
+  figmaFileKey: string | null;
+  githubConnected: boolean;
+  githubRepo: string | null;
+  error?: string | null;
 }
 
-export function ConnectFlow() {
+export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, githubRepo, error }: Props) {
   const router = useRouter();
-  const [figma, setFigma] = useState<SourceStatus>("idle");
-  const [github, setGithub] = useState<SourceStatus>("idle");
+  const [fileKeyInput, setFileKeyInput] = useState(figmaFileKey ?? "");
+  const [repoInput, setRepoInput] = useState(githubRepo ?? "");
+  const [savingFileKey, setSavingFileKey] = useState(false);
+  const [savingRepo, setSavingRepo] = useState(false);
+  const [fileKeySaved, setFileKeySaved] = useState(Boolean(figmaFileKey));
+  const [repoSaved, setRepoSaved] = useState(Boolean(githubRepo));
+  const [fieldError, setFieldError] = useState<string | null>(null);
 
-  const bothConnected = figma === "connected" && github === "connected";
+  const figmaReady = figmaConnected && fileKeySaved;
+  const githubReady = githubConnected && repoSaved;
+  const bothReady = figmaReady && githubReady;
+
+  async function saveFileKey() {
+    if (!fileKeyInput.trim()) return;
+    setSavingFileKey(true);
+    setFieldError(null);
+    try {
+      const res = await fetch("/api/sources/figma/file-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileKey: fileKeyInput.trim() }),
+      });
+      if (!res.ok) throw new Error("Failed to save file key");
+      setFileKeySaved(true);
+    } catch {
+      setFieldError("Could not save the Figma file key. Please try again.");
+    } finally {
+      setSavingFileKey(false);
+    }
+  }
+
+  async function saveRepo() {
+    const repo = repoInput.trim();
+    if (!repo) return;
+    if (!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(repo)) {
+      setFieldError('Repo must be in "owner/repo" format.');
+      return;
+    }
+    setSavingRepo(true);
+    setFieldError(null);
+    try {
+      const res = await fetch("/api/sources/github/repo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repo }),
+      });
+      if (!res.ok) throw new Error("Failed to save repo");
+      setRepoSaved(true);
+    } catch {
+      setFieldError("Could not save the GitHub repo. Please try again.");
+    } finally {
+      setSavingRepo(false);
+    }
+  }
 
   return (
-    <div className="w-full max-w-[440px]">
+    <div className="w-full max-w-[480px]">
       <h1 className="text-[28px] font-semibold tracking-tight leading-tight mb-2">Connect your sources</h1>
       <p className="text-[14px] text-gray mb-8 leading-relaxed">
-        Revilo compares your Figma library against your codebase to find where they've drifted apart.
+        Revilo compares your Figma library against your codebase to find where they&apos;ve drifted apart.
       </p>
+
+      {error && (
+        <div className="mb-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[13px] text-[#B91C1C] px-4 py-3">
+          {errorMessage(error)}
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
+        {/* Figma card */}
         <SourceCard
           name="Figma"
           description="Components, variants, tokens, and styles"
           icon={<FigmaIcon />}
-          status={figma}
-          onConnect={() => simulateConnect(setFigma)}
-        />
+          status={figmaConnected ? "connected" : "idle"}
+          onConnect={() => { window.location.href = "/api/auth/figma/start"; }}
+        >
+          {figmaConnected && (
+            <div className="mt-4 pt-4 border-t border-line">
+              <label className="text-[12.5px] text-gray block mb-1.5">
+                Figma file URL or key
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={fileKeyInput}
+                  onChange={(e) => { setFileKeyInput(e.target.value); setFileKeySaved(false); }}
+                  placeholder="https://www.figma.com/file/…"
+                  className="flex-1 text-[13px] rounded-xl border border-line px-3 py-2 outline-none focus:border-[#1C1C1A] bg-white"
+                />
+                <Button
+                  variant={fileKeySaved ? "outline" : "dark"}
+                  withArrow={false}
+                  onClick={saveFileKey}
+                  disabled={savingFileKey || !fileKeyInput.trim()}
+                  className="text-[13px] flex-shrink-0"
+                >
+                  {savingFileKey ? "Saving…" : fileKeySaved ? "Saved" : "Save"}
+                </Button>
+              </div>
+              <p className="text-[11.5px] text-gray mt-1">
+                Open the file in Figma and copy the URL from the address bar.
+              </p>
+            </div>
+          )}
+        </SourceCard>
+
+        {/* GitHub card */}
         <SourceCard
           name="GitHub"
           description="Component files, token files, and Storybook"
           icon={<GithubIcon />}
-          status={github}
-          onConnect={() => simulateConnect(setGithub)}
-        />
+          status={githubConnected ? "connected" : "idle"}
+          onConnect={() => { window.location.href = "/api/auth/github/start"; }}
+        >
+          {githubConnected && (
+            <div className="mt-4 pt-4 border-t border-line">
+              <label className="text-[12.5px] text-gray block mb-1.5">
+                Repository (owner/repo)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={repoInput}
+                  onChange={(e) => { setRepoInput(e.target.value); setRepoSaved(false); }}
+                  placeholder="acme/design-system"
+                  className="flex-1 text-[13px] rounded-xl border border-line px-3 py-2 outline-none focus:border-[#1C1C1A] bg-white"
+                />
+                <Button
+                  variant={repoSaved ? "outline" : "dark"}
+                  withArrow={false}
+                  onClick={saveRepo}
+                  disabled={savingRepo || !repoInput.trim()}
+                  className="text-[13px] flex-shrink-0"
+                >
+                  {savingRepo ? "Saving…" : repoSaved ? "Saved" : "Save"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </SourceCard>
       </div>
+
+      {fieldError && (
+        <p className="text-[12px] text-[#B91C1C] mt-3">{fieldError}</p>
+      )}
+
       <Button
         variant="dark"
         className="justify-center w-full mt-8"
-        disabled={!bothConnected}
+        disabled={!bothReady}
         onClick={() => router.push("/scan")}
       >
         Run scan
       </Button>
-      {!bothConnected && <p className="text-[12px] text-gray text-center mt-3">Connect both sources to continue.</p>}
+      {!bothReady && (
+        <p className="text-[12px] text-gray text-center mt-3">
+          {!figmaConnected && !githubConnected
+            ? "Connect both sources to continue."
+            : !figmaConnected
+            ? "Connect Figma to continue."
+            : !githubConnected
+            ? "Connect GitHub to continue."
+            : !fileKeySaved
+            ? "Save your Figma file to continue."
+            : "Save your GitHub repository to continue."}
+        </p>
+      )}
     </div>
   );
+}
+
+function errorMessage(code: string): string {
+  const map: Record<string, string> = {
+    figma_denied: "You declined the Figma authorization. Click Connect to try again.",
+    figma_not_configured: "Figma OAuth is not configured yet. Set FIGMA_CLIENT_ID and FIGMA_CLIENT_SECRET.",
+    figma_state_mismatch: "OAuth state mismatch — please try connecting Figma again.",
+    figma_token_exchange_failed: "Could not complete Figma authorization. Please try again.",
+    github_denied: "You declined the GitHub authorization. Click Connect to try again.",
+    github_not_configured: "GitHub OAuth is not configured yet. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET.",
+    github_state_mismatch: "OAuth state mismatch — please try connecting GitHub again.",
+    github_token_exchange_failed: "Could not complete GitHub authorization. Please try again.",
+  };
+  return map[code] ?? `Something went wrong (${code}). Please try again.`;
 }
