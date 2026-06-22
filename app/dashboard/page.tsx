@@ -6,7 +6,7 @@ import { SummaryCard, SummaryStatCard } from "@/components/SummaryCard";
 import { BiggestRisksPanel, TeamDriftPanel, RecommendedActionsPanel, CategoryModule } from "@/components/OverviewPanels";
 import { groupByCategory, topRisks, topActions, teamDriftCounts } from "@/lib/overview-helpers";
 import { TrendChart } from "@/components/TrendChart";
-import { generateScoreHistory } from "@/lib/mock-history";
+import { getScoreHistory } from "@/lib/score-history";
 
 const riskLevelLabel: Record<string, string> = { low: "Low risk", medium: "Medium risk", high: "High risk" };
 const riskLevelColor: Record<string, string> = { low: "#34D399", medium: "#FBBF24", high: "#EF4444" };
@@ -26,7 +26,7 @@ export default async function OverviewPage() {
   const risks = topRisks(report.findings);
   const actions = topActions(report.recommendations);
   const drift = teamDriftCounts(report.teamInsights);
-  const history = generateScoreHistory(report.alignment.overall, report.adoption.overall, report.architecture.overall);
+  const history = await getScoreHistory(session.email, report);
 
   return (
     <div className="px-6 py-8">
@@ -55,7 +55,12 @@ export default async function OverviewPage() {
 
       {/* Trend chart */}
       <div className="rounded-2xl border border-line bg-white p-5 mb-6">
-        <div className="text-[12.5px] font-medium text-[#1C1C1A] mb-1">Score trend</div>
+        <div className="flex items-center justify-between mb-1">
+          <div className="text-[12.5px] font-medium text-[#1C1C1A]">Score trend</div>
+          {!history.isReal && (
+            <span className="text-[10.5px] text-gray/70">Illustrative — scan a few more times to see your real trend</span>
+          )}
+        </div>
         <p className="text-[11.5px] text-gray mb-4">How alignment{isPaid ? ", adoption, and architecture have" : " has"} moved over recent scans.</p>
         <TrendChart
           labels={history.labels}
