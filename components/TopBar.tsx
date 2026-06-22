@@ -31,7 +31,7 @@ export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; sc
           Last scan {timeAgo(scannedAt)}
         </span>
       </div>
-      <Logo width={72} height={22} />
+      <Logo width={72} height={22} className="mr-[40px]" />
     </header>
   );
 }
