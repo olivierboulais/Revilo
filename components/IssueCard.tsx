@@ -32,6 +32,8 @@ const issueTypeLabel: Record<Finding["type"], string> = {
   deprecated_usage: "Deprecated, still in use",
   hardcoded_value: "Hardcoded value",
   detached_instance: "Detached instance",
+  local_style: "Untokenized local style",
+  local_variable: "Untokenized local variable",
   custom_implementation: "Ad hoc duplicate",
 };
 
