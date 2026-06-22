@@ -1,10 +1,10 @@
 import { ScanReport, RiskLevel } from "@/lib/types";
-import { fetchFigmaComponents, fetchFigmaTokens } from "@/lib/mock/figma";
+import { fetchFigmaComponents, fetchFigmaTokens, fetchFigmaUsageSignals } from "@/lib/mock/figma";
 import { fetchGithubComponents, fetchGithubTokens } from "@/lib/mock/github";
 import { normalizeComponents, normalizeTokens } from "@/lib/normalize";
-import { matchComponents, matchTokens } from "@/lib/match";
+import { matchComponents, matchTokens, analyzeStructureConsistency } from "@/lib/match";
 import { scoreAlignment, scoreAdoption, scoreArchitecture } from "@/lib/score";
-import { generateFindings } from "@/lib/findings";
+import { generateFindings, generateDesignUsageFindings, generateStructureFindings } from "@/lib/findings";
 import { generateRecommendations } from "@/lib/recommendations";
 import { generateTeamInsights } from "@/lib/team-insights";
 
@@ -17,11 +17,12 @@ function riskFromScores(alignment: number, adoption: number, architecture: numbe
 
 export async function runScan(workspaceName: string): Promise<ScanReport> {
   // 1. Ingest — swap points for real Figma/GitHub API calls live in lib/mock/*.
-  const [figmaRawComponents, figmaRawTokens, githubRawComponents, githubRawTokens] = await Promise.all([
+  const [figmaRawComponents, figmaRawTokens, githubRawComponents, githubRawTokens, figmaUsageSignals] = await Promise.all([
     fetchFigmaComponents(),
     fetchFigmaTokens(),
     fetchGithubComponents(),
     fetchGithubTokens(),
+    fetchFigmaUsageSignals(),
   ]);
 
   // 2. Normalize.
@@ -31,14 +32,19 @@ export async function runScan(workspaceName: string): Promise<ScanReport> {
   // 3. Match — deterministic comparison logic.
   const compMatch = matchComponents(components);
   const tokMatch = matchTokens(tokens);
+  const structureAnalysis = analyzeStructureConsistency(components);
 
   // 4. Score.
   const alignment = scoreAlignment(components, compMatch, tokens, tokMatch);
-  const adoption = scoreAdoption(components, tokMatch.hardcodedValues.length);
-  const architecture = scoreArchitecture(tokens, tokMatch, compMatch);
+  const adoption = scoreAdoption(components, tokMatch.hardcodedValues.length, figmaUsageSignals.length);
+  const architecture = scoreArchitecture(tokens, tokMatch, compMatch, structureAnalysis);
 
   // 5. Findings.
-  const findings = generateFindings(compMatch, tokMatch, components);
+  const findings = [
+    ...generateFindings(compMatch, tokMatch, components),
+    ...generateDesignUsageFindings(figmaUsageSignals),
+    ...generateStructureFindings(structureAnalysis.mismatches),
+  ];
 
   // 6. Recommendations — AI layer, mocked. See lib/recommendations.ts for the swap point.
   const recommendations = await generateRecommendations(findings);
