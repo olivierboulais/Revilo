@@ -132,3 +132,54 @@ export function matchTokens(all: NormalizedToken[]): TokenMatchResult {
 
   return { tokens: all, valueMismatches, namingMismatches, hardcodedValues, missingSemanticLayer };
 }
+
+export interface StructureMismatch {
+  figma: NormalizedComponent;
+  github: NormalizedComponent;
+  figmaGroup: string;
+  githubGroup: string;
+}
+
+export interface StructureAnalysis {
+  matchedPairCount: number;
+  mismatches: StructureMismatch[];
+  consistencyScore: number; // 0-100
+}
+
+// Compares Figma's library grouping (e.g. "Foundations/Forms") against
+// GitHub's folder grouping (e.g. "src/components/Input") for matched
+// components, per the spec's "System Structure Alignment" check. A real
+// implementation might use a configured mapping between the two hierarchies;
+// this heuristic flags it as a mismatch whenever GitHub has no folder-level
+// grouping that corresponds to Figma's category (e.g. everything sitting
+// flat under one folder regardless of its Figma group).
+export function analyzeStructureConsistency(components: NormalizedComponent[]): StructureAnalysis {
+  const matchedFigma = components.filter((c) => c.source === "figma" && c.status === "matched" && c.matchedComponentId);
+  const mismatches: StructureMismatch[] = [];
+
+  for (const f of matchedFigma) {
+    const github = components.find((c) => c.id === f.matchedComponentId);
+    if (!github) continue;
+
+    // Figma group = the segment before the component's own category (e.g. "Forms" from "Foundations/Forms").
+    const figmaSegments = f.path.split("/");
+    const figmaGroup = figmaSegments[figmaSegments.length - 1] ?? f.path;
+
+    // GitHub group = the folder the component file lives in directly above its own name.
+    const githubSegments = github.path.split("/");
+    const githubGroup = githubSegments[githubSegments.length - 2] ?? github.path;
+
+    // If GitHub's immediate parent folder is just a generic "components"
+    // bucket (no sub-grouping by category at all), that's a structural
+    // mismatch against Figma's categorized library.
+    const githubHasNoSubGrouping = githubGroup.toLowerCase() === "components";
+    if (githubHasNoSubGrouping) {
+      mismatches.push({ figma: f, github, figmaGroup, githubGroup });
+    }
+  }
+
+  const matchedPairCount = matchedFigma.length;
+  const consistencyScore = matchedPairCount > 0 ? Math.round(((matchedPairCount - mismatches.length) / matchedPairCount) * 100) : 100;
+
+  return { matchedPairCount, mismatches, consistencyScore };
+}
