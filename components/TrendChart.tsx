@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 
 interface Series {
   label: string;
@@ -8,22 +8,52 @@ interface Series {
   values: number[];
 }
 
+// Computes a "nice" axis domain and tick set from the actual data range,
+// rather than always anchoring at a fixed 0-100. When several series sit
+// close together (e.g. 70-86), a fixed 0-100 axis flattens all of them into
+// a thin band and the differences become illegible. Zooming into the real
+// range — padded and rounded to clean numbers — keeps the chart honest
+// (it's still linear, still starts from a real tick) while actually showing
+// the shape of the data. A small note in the UI discloses the zoomed axis.
+function computeNiceDomain(allValues: number[], tickCount = 4): { min: number; max: number; ticks: number[] } {
+  if (allValues.length === 0) return { min: 0, max: 100, ticks: [0, 25, 50, 75, 100] };
+
+  const dataMin = Math.min(...allValues);
+  const dataMax = Math.max(...allValues);
+  const range = dataMax - dataMin;
+
+  // Pad by 20% of the range (or a flat minimum pad if the range is ~0) so
+  // lines never touch the very top/bottom edge of the plot.
+  const pad = Math.max(range * 0.2, 3);
+  let min = dataMin - pad;
+  let max = dataMax + pad;
+
+  // Round the step to a clean value (1, 2, 5, 10, 25, 50...) so tick labels
+  // aren't awkward fractions.
+  const rawStep = (max - min) / tickCount;
+  const niceSteps = [1, 2, 5, 10, 25, 50, 100];
+  const step = niceSteps.find((s) => s >= rawStep) ?? niceSteps[niceSteps.length - 1];
+
+  min = Math.floor(min / step) * step;
+  max = Math.ceil(max / step) * step;
+  min = Math.max(min, 0); // scores never go negative
+  max = Math.min(max, 100); // scores never exceed 100
+
+  const ticks: number[] = [];
+  for (let v = min; v <= max + 0.001; v += step) ticks.push(Math.round(v));
+
+  return { min, max, ticks };
+}
+
 export function TrendChart({
   labels,
   series,
   height = 220,
-  yMax = 100,
-  yStep = 25,
 }: {
   labels: string[];
   series: Series[];
   height?: number;
-  yMax?: number;
-  yStep?: number;
 }) {
-  // Real, consistent pixel coordinate space (no mixed-unit viewBox) so
-  // stroke widths and font sizes read at sane, legible sizes regardless of
-  // container width. Width is measured from the actual rendered container.
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
 
@@ -38,6 +68,12 @@ export function TrendChart({
     return () => observer.disconnect();
   }, []);
 
+  const { min: yMin, max: yMax, ticks: yTicks } = useMemo(
+    () => computeNiceDomain(series.flatMap((s) => s.values)),
+    [series]
+  );
+  const isZoomed = yMin > 0 || yMax < 100;
+
   const padLeft = 36;
   const padRight = 28;
   const padTop = 16;
@@ -46,10 +82,7 @@ export function TrendChart({
   const plotH = height - padTop - padBottom;
 
   const xFor = (i: number) => padLeft + (labels.length > 1 ? (i / (labels.length - 1)) * plotW : plotW / 2);
-  const yFor = (v: number) => padTop + plotH - (v / yMax) * plotH;
-
-  const yTicks: number[] = [];
-  for (let v = 0; v <= yMax; v += yStep) yTicks.push(v);
+  const yFor = (v: number) => padTop + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
 
   function smoothPath(values: number[]): string {
     if (values.length === 0) return "";
@@ -72,13 +105,16 @@ export function TrendChart({
 
   return (
     <div ref={containerRef}>
-      <div className="flex items-center gap-4 mb-3">
-        {series.map((s) => (
-          <span key={s.label} className="flex items-center gap-1.5 text-[11.5px] text-gray">
-            <span className="w-2 h-2 rounded-full" style={{ background: s.color }} />
-            {s.label}
-          </span>
-        ))}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-4">
+          {series.map((s) => (
+            <span key={s.label} className="flex items-center gap-1.5 text-[11.5px] text-gray">
+              <span className="w-2 h-2 rounded-full" style={{ background: s.color }} />
+              {s.label}
+            </span>
+          ))}
+        </div>
+        {isZoomed && <span className="text-[10.5px] text-gray/70">Axis zoomed to {yMin}–{yMax} to show detail</span>}
       </div>
       <svg width={width} height={height} className="w-full block" style={{ height }}>
         {yTicks.map((t) => (
