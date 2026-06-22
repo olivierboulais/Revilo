@@ -39,7 +39,7 @@ export function TrendChart({
   }, []);
 
   const padLeft = 36;
-  const padRight = 12;
+  const padRight = 28;
   const padTop = 16;
   const padBottom = 28;
   const plotW = Math.max(width - padLeft - padRight, 1);
@@ -100,7 +100,14 @@ export function TrendChart({
           )
         )}
         {labels.map((l, i) => (
-          <text key={l} x={xFor(i)} y={height - 8} fontSize="11" fill="#A8A6A0" textAnchor="middle">
+          <text
+            key={l}
+            x={xFor(i)}
+            y={height - 8}
+            fontSize="11"
+            fill="#A8A6A0"
+            textAnchor={i === 0 ? "start" : i === labels.length - 1 ? "end" : "middle"}
+          >
             {l}
           </text>
         ))}
