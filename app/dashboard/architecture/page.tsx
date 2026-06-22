@@ -26,6 +26,7 @@ export default async function ArchitecturePage() {
   const isPaid = session.tier !== "free";
   const architectureFindings = report.findings.filter((f) => f.sourceArea === "architecture");
   const tokenArchFindings = architectureFindings.filter((f) => f.type === "token_missing_semantic_layer");
+  const structureFindings = architectureFindings.filter((f) => f.type === "naming_inconsistency");
   const componentArchFindings = report.findings.filter((f) => f.type === "custom_implementation");
 
   if (!isPaid) {
@@ -91,7 +92,7 @@ export default async function ArchitecturePage() {
         <section>
           <h2 className="text-[14px] font-medium mb-1">System Structure Alignment</h2>
           <p className="text-[12.5px] text-gray mb-3">How well Figma's library structure maps to the GitHub package structure.</p>
-          <div className="rounded-2xl border border-line bg-white p-5">
+          <div className="rounded-2xl border border-line bg-white p-5 mb-3">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[13px]">Structure Consistency Score</span>
               <span className="text-[15px] font-semibold">{report.architecture.structureConsistency}</span>
@@ -101,6 +102,13 @@ export default async function ArchitecturePage() {
                 ? "Figma's foundations and component groupings map reasonably well to the code package structure."
                 : "Figma's foundations and component groupings don't map cleanly to the code package structure yet — this is usually the slowest architecture issue to fix, since it touches how both teams organize their work."}
             </p>
+          </div>
+          <div className="rounded-2xl border border-line bg-white px-5">
+            {structureFindings.length === 0 ? (
+              <p className="text-[13px] text-gray py-6 text-center">No structural mismatches detected between Figma and code.</p>
+            ) : (
+              structureFindings.map((f) => <IssueCard key={f.id} finding={f} />)
+            )}
           </div>
         </section>
       </div>
