@@ -50,7 +50,7 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
             figmaSource!.access_token!,
             figmaSource!.refresh_token,
             figmaSource!.token_expires_at
-          )
+          ).catch((err) => { console.error("Figma components fetch failed, using mock:", err); return mockFigmaComponents(); })
         : mockFigmaComponents(),
 
       hasFigma
@@ -60,15 +60,17 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
             figmaSource!.access_token!,
             figmaSource!.refresh_token,
             figmaSource!.token_expires_at
-          )
+          ).catch((err) => { console.error("Figma tokens fetch failed, using mock:", err); return mockFigmaTokens(); })
         : mockFigmaTokens(),
 
       hasGithub
         ? fetchGithubComponents(githubSource!.github_repo!, githubSource!.access_token!)
+            .catch((err) => { console.error("GitHub components fetch failed, using mock:", err); return mockGithubComponents(); })
         : mockGithubComponents(),
 
       hasGithub
         ? fetchGithubTokens(githubSource!.github_repo!, githubSource!.access_token!)
+            .catch((err) => { console.error("GitHub tokens fetch failed, using mock:", err); return mockGithubTokens(); })
         : mockGithubTokens(),
 
       hasFigma
@@ -78,7 +80,7 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
             figmaSource!.access_token!,
             figmaSource!.refresh_token,
             figmaSource!.token_expires_at
-          )
+          ).catch((err) => { console.error("Figma usage signals fetch failed, using mock:", err); return mockFigmaUsageSignals(); })
         : mockFigmaUsageSignals(),
     ]);
 

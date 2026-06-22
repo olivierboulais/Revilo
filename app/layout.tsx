@@ -3,7 +3,22 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Revilo — Design System Alignment Platform",
-  description: "Keep your design system aligned across design and code.",
+  description: "Scan your Figma library against your codebase to find where your design system has drifted. Fix alignment before it becomes technical debt.",
+  openGraph: {
+    title: "Revilo — Design System Alignment Platform",
+    description: "Scan your Figma library against your codebase to find where your design system has drifted.",
+    url: "https://revilo-three.vercel.app",
+    siteName: "Revilo",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Revilo — Design System Alignment Platform",
+    description: "Scan your Figma library against your codebase to find where your design system has drifted.",
+  },
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

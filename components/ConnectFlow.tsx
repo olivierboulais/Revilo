@@ -247,6 +247,14 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
             : "Save your GitHub repository to continue."}
         </p>
       )}
+      <div className="text-center mt-4">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="text-[12px] text-gray hover:text-[#1C1C1A] transition-colors underline underline-offset-2"
+        >
+          Skip for now — explore with demo data
+        </button>
+      </div>
     </div>
   );
 }
