@@ -19,7 +19,7 @@ export default async function AdoptionPage() {
   const isPaid = session.tier !== "free";
   const adoptionFindings = report.findings.filter((f) => f.sourceArea === "adoption");
 
-  const designFindings = adoptionFindings.filter((f) => f.type === "detached_instance");
+  const designFindings = adoptionFindings.filter((f) => f.type === "detached_instance" || f.type === "local_style" || f.type === "local_variable");
   const engineeringFindings = adoptionFindings.filter(
     (f) => f.type === "hardcoded_value" || f.type === "deprecated_usage" || f.type === "custom_implementation"
   );
