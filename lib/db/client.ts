@@ -74,6 +74,7 @@ export async function getDb(): Promise<DbClient> {
   if (cachedClient) return cachedClient;
 
   const url = process.env.DATABASE_URL ?? "file:./dev.db";
+  console.log("[db] connecting to:", url.replace(/:([^:@]+)@/, ":***@"));
 
   if (isPostgresUrl(url)) {
     cachedClient = await createPostgresClient(url);
