@@ -50,7 +50,10 @@ async function createSqliteClient(filePath: string): Promise<DbClient> {
 
 async function createPostgresClient(connectionString: string): Promise<DbClient> {
   const { Pool } = await import("pg");
-  const pool = new Pool({ connectionString });
+  const pool = new Pool({
+    connectionString,
+    ssl: connectionString.includes("supabase.com") ? { rejectUnauthorized: false } : undefined,
+  });
 
   // pg uses $1/$2/... placeholders; convert SQLite-style ? before executing
   function toPostgres(sql: string): string {
