@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signupAction } from "./actions";
 import { Button } from "@/components/Button";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 export function SignupForm() {
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +20,8 @@ export function SignupForm() {
       }
       // On success the action redirects server-side, so no further
       // client-side handling is needed.
-    } catch {
+    } catch (err) {
+      if (isRedirectError(err)) throw err;
       setError("Something went wrong. Please try again.");
       setIsSubmitting(false);
     }

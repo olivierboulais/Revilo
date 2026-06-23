@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { loginAction } from "./actions";
 import { Button } from "@/components/Button";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +19,8 @@ export function LoginForm() {
         setError(result.error);
         setIsSubmitting(false);
       }
-    } catch {
+    } catch (err) {
+      if (isRedirectError(err)) throw err;
       setError("Something went wrong. Please try again.");
       setIsSubmitting(false);
     }
