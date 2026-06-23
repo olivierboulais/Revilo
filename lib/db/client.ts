@@ -49,18 +49,22 @@ async function createSqliteClient(filePath: string): Promise<DbClient> {
 }
 
 async function createPostgresClient(connectionString: string): Promise<DbClient> {
-  // Swap point: real implementation for production. Uses `pg`, the
-  // standard Postgres driver, against e.g. a Supabase connection string.
   const { Pool } = await import("pg");
   const pool = new Pool({ connectionString });
 
+  // pg uses $1/$2/... placeholders; convert SQLite-style ? before executing
+  function toPostgres(sql: string): string {
+    let i = 0;
+    return sql.replace(/\?/g, () => `$${++i}`);
+  }
+
   return {
     async query<T>(sql: string, params: unknown[] = []) {
-      const result = await pool.query(sql, params);
+      const result = await pool.query(toPostgres(sql), params);
       return { rows: result.rows as T[] };
     },
     async run(sql: string, params: unknown[] = []) {
-      const result = await pool.query(sql, params);
+      const result = await pool.query(toPostgres(sql), params);
       return { changes: result.rowCount ?? 0 };
     },
   };
