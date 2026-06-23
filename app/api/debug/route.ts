@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const url = process.env.DATABASE_URL ?? "not set";
-  const masked = url.replace(/:([^:@]{1,}?)@/, ":***@");
+  const supabaseUrl = process.env.SUPABASE_URL ?? "not set";
+  const hasKey = !!(process.env.SUPABASE_SECRET_KEY);
 
   try {
-    const { getDb } = await import("@/lib/db/client");
-    const db = await getDb();
-    const result = await db.query<{ now: string }>("SELECT NOW() as now");
-    return NextResponse.json({ url: masked, connected: true, time: result.rows[0]?.now });
+    const { getSupabaseClient } = await import("@/lib/db/supabase");
+    const client = getSupabaseClient();
+    const { data, error } = await client.from("users").select("id").limit(1);
+    if (error) return NextResponse.json({ supabaseUrl, hasKey, connected: false, error: error.message });
+    return NextResponse.json({ supabaseUrl, hasKey, connected: true, rowCount: data?.length });
   } catch (err) {
-    return NextResponse.json({ url: masked, connected: false, error: String(err) });
+    return NextResponse.json({ supabaseUrl, hasKey, connected: false, error: String(err) });
   }
 }

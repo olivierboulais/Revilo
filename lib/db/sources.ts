@@ -1,5 +1,6 @@
-import { getDb } from "@/lib/db/client";
 import { randomUUID } from "crypto";
+import { getSupabaseClient, isSupabase } from "@/lib/db/supabase";
+import { getDb } from "@/lib/db/client";
 
 export interface SourceRecord {
   id: string;
@@ -15,6 +16,9 @@ export interface SourceRecord {
   connected_at: string;
 }
 
+async function sb() { return getSupabaseClient(); }
+async function db() { return getDb(); }
+
 export async function upsertSource(
   userId: string,
   provider: "figma" | "github",
@@ -23,8 +27,16 @@ export async function upsertSource(
   externalName: string | null = null,
   tokenExpiresAt: string | null = null
 ): Promise<void> {
-  const db = await getDb();
-  await db.run(
+  if (isSupabase()) {
+    await (await sb()).from("sources").upsert({
+      id: randomUUID(), user_id: userId, provider, status: "connected",
+      access_token: accessToken, refresh_token: refreshToken,
+      external_name: externalName, token_expires_at: tokenExpiresAt,
+      connected_at: new Date().toISOString(),
+    }, { onConflict: "user_id,provider" });
+    return;
+  }
+  await (await db()).run(
     `INSERT INTO sources (id, user_id, provider, status, access_token, refresh_token, external_name, token_expires_at)
      VALUES (?, ?, ?, 'connected', ?, ?, ?, ?)
      ON CONFLICT(user_id, provider) DO UPDATE SET
@@ -36,10 +48,13 @@ export async function upsertSource(
 }
 
 export async function getSource(userId: string, provider: "figma" | "github"): Promise<SourceRecord | null> {
-  const db = await getDb();
-  const result = await db.query<SourceRecord>(
-    "SELECT * FROM sources WHERE user_id = ? AND provider = ?",
-    [userId, provider]
+  if (isSupabase()) {
+    const { data } = await (await sb())
+      .from("sources").select("*").eq("user_id", userId).eq("provider", provider).maybeSingle();
+    return data ?? null;
+  }
+  const result = await (await db()).query<SourceRecord>(
+    "SELECT * FROM sources WHERE user_id = ? AND provider = ?", [userId, provider]
   );
   return result.rows[0] ?? null;
 }
@@ -50,32 +65,48 @@ export async function updateSourceToken(
   accessToken: string,
   tokenExpiresAt: string | null = null
 ): Promise<void> {
-  const db = await getDb();
-  await db.run(
+  if (isSupabase()) {
+    await (await sb()).from("sources")
+      .update({ access_token: accessToken, token_expires_at: tokenExpiresAt })
+      .eq("user_id", userId).eq("provider", provider);
+    return;
+  }
+  await (await db()).run(
     "UPDATE sources SET access_token = ?, token_expires_at = ? WHERE user_id = ? AND provider = ?",
     [accessToken, tokenExpiresAt, userId, provider]
   );
 }
 
 export async function updateFigmaFileKey(userId: string, fileKey: string): Promise<void> {
-  const db = await getDb();
-  await db.run(
-    "UPDATE sources SET figma_file_key = ? WHERE user_id = ? AND provider = 'figma'",
-    [fileKey, userId]
+  if (isSupabase()) {
+    await (await sb()).from("sources")
+      .update({ figma_file_key: fileKey }).eq("user_id", userId).eq("provider", "figma");
+    return;
+  }
+  await (await db()).run(
+    "UPDATE sources SET figma_file_key = ? WHERE user_id = ? AND provider = 'figma'", [fileKey, userId]
   );
 }
 
 export async function updateGithubRepo(userId: string, repo: string): Promise<void> {
-  const db = await getDb();
-  await db.run(
-    "UPDATE sources SET github_repo = ? WHERE user_id = ? AND provider = 'github'",
-    [repo, userId]
+  if (isSupabase()) {
+    await (await sb()).from("sources")
+      .update({ github_repo: repo }).eq("user_id", userId).eq("provider", "github");
+    return;
+  }
+  await (await db()).run(
+    "UPDATE sources SET github_repo = ? WHERE user_id = ? AND provider = 'github'", [repo, userId]
   );
 }
 
 export async function disconnectSource(userId: string, provider: "figma" | "github"): Promise<void> {
-  const db = await getDb();
-  await db.run(
+  if (isSupabase()) {
+    await (await sb()).from("sources").update({
+      status: "disconnected", access_token: null, refresh_token: null, token_expires_at: null,
+    }).eq("user_id", userId).eq("provider", provider);
+    return;
+  }
+  await (await db()).run(
     "UPDATE sources SET status = 'disconnected', access_token = NULL, refresh_token = NULL, token_expires_at = NULL WHERE user_id = ? AND provider = ?",
     [userId, provider]
   );
