@@ -25,8 +25,8 @@ export async function createDbSession(userId: string): Promise<string> {
 export async function findSessionByToken(token: string): Promise<SessionRecord | null> {
   const db = await getDb();
   const result = await db.query<SessionRecord>(
-    "SELECT * FROM sessions WHERE session_token = ? AND expires_at > datetime('now')",
-    [token]
+    "SELECT * FROM sessions WHERE session_token = ? AND expires_at > ?",
+    [token, new Date().toISOString()]
   );
   return result.rows[0] ?? null;
 }
@@ -40,6 +40,6 @@ export async function deleteSessionByToken(token: string): Promise<void> {
 // scheduled job) rather than relying on it being called manually.
 export async function deleteExpiredSessions(): Promise<number> {
   const db = await getDb();
-  const result = await db.run("DELETE FROM sessions WHERE expires_at <= datetime('now')");
+  const result = await db.run("DELETE FROM sessions WHERE expires_at <= ?", [new Date().toISOString()]);
   return result.changes;
 }

@@ -31,8 +31,8 @@ export async function findVerificationToken(
 ): Promise<VerificationToken | null> {
   const db = await getDb();
   const result = await db.query<VerificationToken>(
-    "SELECT * FROM verification_tokens WHERE token = ? AND purpose = ? AND expires_at > datetime('now')",
-    [token, purpose]
+    "SELECT * FROM verification_tokens WHERE token = ? AND purpose = ? AND expires_at > ?",
+    [token, purpose, new Date().toISOString()]
   );
   return result.rows[0] ?? null;
 }

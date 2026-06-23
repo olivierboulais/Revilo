@@ -39,22 +39,22 @@ export async function createUser(email: string, passwordHash: string, workspaceN
 
 export async function updateUserTier(userId: string, tier: "free" | "pro" | "monitoring"): Promise<void> {
   const db = await getDb();
-  await db.run("UPDATE users SET tier = ?, updated_at = datetime('now') WHERE id = ?", [tier, userId]);
+  await db.run("UPDATE users SET tier = ?, updated_at = ? WHERE id = ?", [tier, new Date().toISOString(), userId]);
 }
 
 export async function markEmailVerified(userId: string): Promise<void> {
   const db = await getDb();
-  await db.run("UPDATE users SET email_verified_at = datetime('now') WHERE id = ?", [userId]);
+  await db.run("UPDATE users SET email_verified_at = ? WHERE id = ?", [new Date().toISOString(), userId]);
 }
 
 export async function updateWorkspaceName(userId: string, name: string): Promise<void> {
   const db = await getDb();
-  await db.run("UPDATE users SET workspace_name = ?, updated_at = datetime('now') WHERE id = ?", [name, userId]);
+  await db.run("UPDATE users SET workspace_name = ?, updated_at = ? WHERE id = ?", [name, new Date().toISOString(), userId]);
 }
 
 export async function updatePasswordHash(userId: string, passwordHash: string): Promise<void> {
   const db = await getDb();
-  await db.run("UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?", [passwordHash, userId]);
+  await db.run("UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?", [passwordHash, new Date().toISOString(), userId]);
 }
 
 export async function getUsersByTier(tier: "free" | "pro" | "monitoring"): Promise<UserRecord[]> {
