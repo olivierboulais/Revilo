@@ -1,11 +1,14 @@
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL ?? "Revilo <noreply@revilo.app>";
 
+export function isEmailConfigured(): boolean {
+  return Boolean(RESEND_API_KEY);
+}
+
 export async function sendVerificationEmail(to: string, token: string, baseUrl: string): Promise<void> {
   const verifyUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
 
   if (!RESEND_API_KEY) {
-    // Dev mode: log the link instead of sending
     console.log(`[DEV] Verify email: ${verifyUrl}`);
     return;
   }

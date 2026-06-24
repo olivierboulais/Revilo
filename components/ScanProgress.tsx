@@ -9,6 +9,7 @@ const STEP_DURATION_MS = 850;
 export function ScanProgress({ workspaceName }: { workspaceName: string }) {
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
+  const [scanError, setScanError] = useState<string | null>(null);
   const hasStartedApiCall = useRef(false);
 
   useEffect(() => {
@@ -18,16 +19,22 @@ export function ScanProgress({ workspaceName }: { workspaceName: string }) {
   }, [stepIndex]);
 
   useEffect(() => {
-    // Kick off the real (mock) scan in parallel with the animation rather
-    // than after it, so the perceived wait isn't animation time plus
-    // network time stacked on top of each other.
     if (hasStartedApiCall.current) return;
     hasStartedApiCall.current = true;
 
     let redirected = false;
     fetch("/api/scan", { method: "POST" })
-      .then((res) => {
-        const dest = res.ok ? "/dashboard" : "/dashboard?scan_error=1";
+      .then(async (res) => {
+        if (!res.ok) {
+          const msg = res.status === 401 ? "Not authenticated — please log in again." : `Scan failed (${res.status}). Please try again.`;
+          setScanError(msg);
+          return;
+        }
+        const data = await res.json();
+        const params = new URLSearchParams();
+        if (data.dataSource?.figma === "error") params.set("figma_error", data.dataSource.figmaError || "unknown");
+        if (data.dataSource?.github === "error") params.set("github_error", data.dataSource.githubError || "unknown");
+        const dest = `/dashboard${params.toString() ? "?" + params.toString() : ""}`;
         const remaining = SCAN_PROGRESS_SEQUENCE.length * STEP_DURATION_MS;
         setTimeout(() => {
           if (!redirected) {
@@ -36,8 +43,8 @@ export function ScanProgress({ workspaceName }: { workspaceName: string }) {
           }
         }, remaining);
       })
-      .catch(() => {
-        router.push("/dashboard?scan_error=1");
+      .catch((err) => {
+        setScanError(err instanceof Error ? err.message : "Network error — check your connection and try again.");
       });
 
     return () => {
@@ -51,6 +58,13 @@ export function ScanProgress({ workspaceName }: { workspaceName: string }) {
     <div className="w-full max-w-[420px]">
       <h1 className="text-[22px] font-semibold tracking-tight mb-1">Scanning {workspaceName}</h1>
       <p className="text-[13.5px] text-gray mb-8">This usually takes a moment.</p>
+
+      {scanError && (
+        <div className="mb-6 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[13px] text-[#B91C1C] px-4 py-3">
+          {scanError}
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
         {SCAN_PROGRESS_SEQUENCE.map((step, i) => {
           const isDone = i < stepIndex || complete;

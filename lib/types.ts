@@ -141,6 +141,13 @@ export interface TeamInsight {
   count: number;
 }
 
+export interface ScanDataSource {
+  figma: "real" | "mock" | "error";
+  github: "real" | "mock" | "error";
+  figmaError?: string;
+  githubError?: string;
+}
+
 export interface ScanReport {
   id: string;
   workspaceName: string;
@@ -156,6 +163,7 @@ export interface ScanReport {
   findings: Finding[];
   recommendations: Recommendation[];
   teamInsights: TeamInsight[];
+  dataSource?: ScanDataSource;
 }
 
 export type ScanProgressState =

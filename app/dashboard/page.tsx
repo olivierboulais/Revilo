@@ -12,14 +12,14 @@ const riskLevelLabel: Record<string, string> = { low: "Low risk", medium: "Mediu
 const riskLevelColor: Record<string, string> = { low: "#34D399", medium: "#FBBF24", high: "#EF4444" };
 
 interface Props {
-  searchParams: Promise<{ scan_error?: string; upgraded?: string }>;
+  searchParams: Promise<{ scan_error?: string; upgraded?: string; figma_error?: string; github_error?: string }>;
 }
 
 export default async function OverviewPage({ searchParams }: Props) {
   const session = await getSession();
   if (!session) redirect("/signup");
 
-  const { scan_error, upgraded } = await searchParams;
+  const { scan_error, upgraded, figma_error, github_error } = await searchParams;
 
   let report = await getReport(session.email);
   if (!report) {
@@ -61,6 +61,16 @@ export default async function OverviewPage({ searchParams }: Props) {
       {scan_error && (
         <div className="mb-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[13px] text-[#B91C1C] px-4 py-3">
           The scan encountered an error. Showing your previous report. Try again with the Re-scan button.
+        </div>
+      )}
+      {figma_error && (
+        <div className="mb-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[13px] text-[#B91C1C] px-4 py-3">
+          Figma data failed to load: {figma_error}. The report below uses sample Figma data. Try reconnecting in <a href="/connect" className="underline font-medium">Sources</a>.
+        </div>
+      )}
+      {github_error && (
+        <div className="mb-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[13px] text-[#B91C1C] px-4 py-3">
+          GitHub data failed to load: {github_error}. The report below uses sample GitHub data. Try reconnecting in <a href="/connect" className="underline font-medium">Sources</a>.
         </div>
       )}
       {upgraded && (

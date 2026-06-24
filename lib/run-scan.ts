@@ -1,4 +1,4 @@
-import { ScanReport, RiskLevel } from "@/lib/types";
+import { ScanReport, ScanDataSource, RiskLevel } from "@/lib/types";
 import { fetchFigmaComponents, fetchFigmaTokens, fetchFigmaUsageSignals } from "@/lib/figma/api";
 import { fetchGithubComponents, fetchGithubTokens } from "@/lib/github/api";
 import { fetchFigmaComponents as mockFigmaComponents, fetchFigmaTokens as mockFigmaTokens, fetchFigmaUsageSignals as mockFigmaUsageSignals } from "@/lib/mock/figma";
@@ -20,26 +20,28 @@ function riskFromScores(alignment: number, adoption: number, architecture: numbe
 }
 
 export async function runScan(workspaceName: string, userEmail?: string): Promise<ScanReport> {
-  // Resolve user so we can look up their connected sources
   let userId: string | null = null;
   if (userEmail) {
     const user = await findUserByEmail(userEmail);
     userId = user?.id ?? null;
   }
 
-  // Figma data — real if a connected source with a file key exists, else mock
   let figmaSource = userId ? await getSource(userId, "figma") : null;
   const hasFigma =
     figmaSource?.status === "connected" &&
     figmaSource.access_token &&
     figmaSource.figma_file_key;
 
-  // GitHub data — real if a connected source with a repo exists, else mock
   let githubSource = userId ? await getSource(userId, "github") : null;
   const hasGithub =
     githubSource?.status === "connected" &&
     githubSource.access_token &&
     githubSource.github_repo;
+
+  const dataSource: ScanDataSource = {
+    figma: hasFigma ? "real" : "mock",
+    github: hasGithub ? "real" : "mock",
+  };
 
   const [figmaRawComponents, figmaRawTokens, githubRawComponents, githubRawTokens, figmaUsageSignals] =
     await Promise.all([
@@ -50,7 +52,11 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
             figmaSource!.access_token!,
             figmaSource!.refresh_token,
             figmaSource!.token_expires_at
-          ).catch((err) => { console.error("Figma components fetch failed, using mock:", err); return mockFigmaComponents(); })
+          ).catch((err) => {
+            dataSource.figma = "error";
+            dataSource.figmaError = err instanceof Error ? err.message : String(err);
+            return mockFigmaComponents();
+          })
         : mockFigmaComponents(),
 
       hasFigma
@@ -60,17 +66,29 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
             figmaSource!.access_token!,
             figmaSource!.refresh_token,
             figmaSource!.token_expires_at
-          ).catch((err) => { console.error("Figma tokens fetch failed, using mock:", err); return mockFigmaTokens(); })
+          ).catch((err) => {
+            dataSource.figma = "error";
+            dataSource.figmaError = err instanceof Error ? err.message : String(err);
+            return mockFigmaTokens();
+          })
         : mockFigmaTokens(),
 
       hasGithub
         ? fetchGithubComponents(githubSource!.github_repo!, githubSource!.access_token!)
-            .catch((err) => { console.error("GitHub components fetch failed, using mock:", err); return mockGithubComponents(); })
+            .catch((err) => {
+              dataSource.github = "error";
+              dataSource.githubError = err instanceof Error ? err.message : String(err);
+              return mockGithubComponents();
+            })
         : mockGithubComponents(),
 
       hasGithub
         ? fetchGithubTokens(githubSource!.github_repo!, githubSource!.access_token!)
-            .catch((err) => { console.error("GitHub tokens fetch failed, using mock:", err); return mockGithubTokens(); })
+            .catch((err) => {
+              dataSource.github = "error";
+              dataSource.githubError = err instanceof Error ? err.message : String(err);
+              return mockGithubTokens();
+            })
         : mockGithubTokens(),
 
       hasFigma
@@ -80,37 +98,33 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
             figmaSource!.access_token!,
             figmaSource!.refresh_token,
             figmaSource!.token_expires_at
-          ).catch((err) => { console.error("Figma usage signals fetch failed, using mock:", err); return mockFigmaUsageSignals(); })
+          ).catch((err) => {
+            dataSource.figma = "error";
+            dataSource.figmaError = err instanceof Error ? err.message : String(err);
+            return mockFigmaUsageSignals();
+          })
         : mockFigmaUsageSignals(),
     ]);
 
-  // 2. Normalize
   const components = normalizeComponents([...figmaRawComponents, ...githubRawComponents]);
   const tokens = normalizeTokens([...figmaRawTokens, ...githubRawTokens]);
 
-  // 3. Match
   const compMatch = matchComponents(components);
   const tokMatch = matchTokens(tokens);
   const structureAnalysis = analyzeStructureConsistency(components);
 
-  // 4. Score
   const alignment = scoreAlignment(components, compMatch, tokens, tokMatch);
   const adoption = scoreAdoption(components, tokMatch.hardcodedValues.length, figmaUsageSignals.length);
   const architecture = scoreArchitecture(tokens, tokMatch, compMatch, structureAnalysis);
 
-  // 5. Findings
   const findings = [
     ...generateFindings(compMatch, tokMatch, components),
     ...generateDesignUsageFindings(figmaUsageSignals),
     ...generateStructureFindings(structureAnalysis.mismatches),
   ];
 
-  // 6. Recommendations (AI-backed when ANTHROPIC_API_KEY set, templates otherwise)
   const recommendations = await generateRecommendations(findings);
-
-  // 7. Team insights
   const teamInsights = generateTeamInsights(findings, components);
-
   const riskLevel = riskFromScores(alignment.overall, adoption.overall, architecture.overall);
 
   return {
@@ -128,5 +142,6 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
     findings,
     recommendations,
     teamInsights,
+    dataSource,
   };
 }

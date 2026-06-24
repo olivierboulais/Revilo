@@ -1,9 +1,9 @@
 "use server";
 
-import { findUserByEmail, createUser } from "@/lib/db/users";
+import { findUserByEmail, createUser, markEmailVerified } from "@/lib/db/users";
 import { createSessionForUser } from "@/lib/auth/session";
 import { createVerificationToken } from "@/lib/db/verification-tokens";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail, isEmailConfigured } from "@/lib/email";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
@@ -48,16 +48,19 @@ export async function signupAction(formData: FormData): Promise<SignupResult> {
   const user = await createUser(email, passwordHash, workspaceName);
   await createSessionForUser(user.id);
 
-  // Send verification email (non-blocking — failure doesn't prevent signup)
-  try {
-    const headersList = await headers();
-    const host = headersList.get("host") ?? "localhost:3000";
-    const proto = process.env.NODE_ENV === "production" ? "https" : "http";
-    const baseUrl = `${proto}://${host}`;
-    const token = await createVerificationToken(user.id, "email_verify");
-    await sendVerificationEmail(email, token, baseUrl);
-  } catch (err) {
-    console.error("Failed to send verification email:", err);
+  if (isEmailConfigured()) {
+    try {
+      const headersList = await headers();
+      const host = headersList.get("host") ?? "localhost:3000";
+      const proto = process.env.NODE_ENV === "production" ? "https" : "http";
+      const baseUrl = `${proto}://${host}`;
+      const token = await createVerificationToken(user.id, "email_verify");
+      await sendVerificationEmail(email, token, baseUrl);
+    } catch (err) {
+      console.error("Failed to send verification email:", err);
+    }
+  } else {
+    await markEmailVerified(user.id);
   }
 
   redirect("/connect");
