@@ -1,10 +1,21 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // @react-pdf/renderer and its transitive deps (fontkit, png-js, etc.) use
-  // Node.js built-ins that can't be bundled by webpack. Marking them as
-  // external tells Next.js to require() them at runtime instead of bundling.
   serverExternalPackages: ["@react-pdf/renderer", "canvas"],
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

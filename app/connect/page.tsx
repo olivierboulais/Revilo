@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { getSession } from "@/lib/auth/session";
 import { findUserByEmail } from "@/lib/db/users";
 import { getSource } from "@/lib/db/sources";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
+
+export const metadata: Metadata = { title: "Connect sources — Revilo" };
 import { ConnectFlow } from "@/components/ConnectFlow";
 
 interface Props {

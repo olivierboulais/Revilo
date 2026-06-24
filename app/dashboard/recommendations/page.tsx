@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { getSession } from "@/lib/auth/session";
+
+export const metadata: Metadata = { title: "Recommendations — Revilo" };
 import { getReport, saveReport } from "@/lib/store";
 import { runScan } from "@/lib/run-scan";
 import { redirect } from "next/navigation";

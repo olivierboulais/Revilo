@@ -25,6 +25,7 @@ async function githubGet<T>(path: string, token: string): Promise<T> {
       "X-GitHub-Api-Version": "2022-11-28",
     },
     next: { revalidate: 0 },
+    signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) {
     throw new Error(`GitHub API ${path} → ${res.status}`);
@@ -40,6 +41,7 @@ async function getFileContent(owner: string, repo: string, path: string, token: 
       "X-GitHub-Api-Version": "2022-11-28",
     },
     next: { revalidate: 0 },
+    signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) return "";
   return res.text();

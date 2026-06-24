@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { getSession } from "@/lib/auth/session";
+
+export const metadata: Metadata = { title: "Settings — Revilo" };
 import { redirect } from "next/navigation";
 import { SettingsClient } from "./SettingsClient";
 

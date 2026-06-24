@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { AuthVisual } from "@/components/AuthVisual";
 import { SignupForm } from "./SignupForm";
+
+export const metadata: Metadata = { title: "Sign up — Revilo" };
 
 export default async function SignupPage() {
   const session = await getSession();

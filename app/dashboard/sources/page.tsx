@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { getSession } from "@/lib/auth/session";
+
+export const metadata: Metadata = { title: "Sources — Revilo" };
 import { findUserByEmail } from "@/lib/db/users";
 import { getSource } from "@/lib/db/sources";
 import { redirect } from "next/navigation";

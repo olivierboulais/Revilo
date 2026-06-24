@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { AuthVisual } from "@/components/AuthVisual";
 import { LoginForm } from "./LoginForm";
+
+export const metadata: Metadata = { title: "Log in — Revilo" };
 
 interface Props {
   searchParams: Promise<{ reset?: string; error?: string }>;

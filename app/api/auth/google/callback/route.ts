@@ -44,6 +44,10 @@ export async function GET(request: Request) {
   const profile = await userInfoRes.json();
   const email = profile.email as string;
 
+  if (!email || !profile.email_verified) {
+    return NextResponse.redirect(new URL("/login?error=email_not_verified", request.url));
+  }
+
   let user = await findUserByEmail(email);
   if (!user) {
     const placeholderPassword = randomBytes(32).toString("hex");

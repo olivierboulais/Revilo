@@ -29,7 +29,8 @@ export async function GET() {
     );
   }
 
-  const filename = `revilo-report-${report.workspaceName.replace(/\s+/g, "-").toLowerCase()}-${new Date(report.scannedAt).toISOString().slice(0, 10)}.pdf`;
+  const safeName = report.workspaceName.replace(/[^a-zA-Z0-9 _-]/g, "").replace(/\s+/g, "-").toLowerCase();
+  const filename = `revilo-report-${safeName}-${new Date(report.scannedAt).toISOString().slice(0, 10)}.pdf`;
 
   return new NextResponse(new Uint8Array(pdf), {
     headers: {

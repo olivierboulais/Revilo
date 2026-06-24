@@ -49,6 +49,8 @@ interface FigmaVariablesResponse {
 
 // ── Token refresh helper ───────────────────────────────────────────────────
 
+const inflightRefresh = new Map<string, Promise<string>>();
+
 async function getFigmaToken(
   userId: string,
   accessToken: string,
@@ -60,10 +62,23 @@ async function getFigmaToken(
   if (Date.now() < expiresAt - 60_000) return accessToken;
 
   if (!refreshToken) throw new Error("Figma token expired and no refresh token available");
-  const refreshed = await refreshFigmaToken(refreshToken);
-  const newExpiresAt = new Date(Date.now() + refreshed.expires_in * 1000).toISOString();
-  await updateSourceToken(userId, "figma", refreshed.access_token, newExpiresAt);
-  return refreshed.access_token;
+
+  const existing = inflightRefresh.get(userId);
+  if (existing) return existing;
+
+  const promise = (async () => {
+    const refreshed = await refreshFigmaToken(refreshToken);
+    const newExpiresAt = new Date(Date.now() + refreshed.expires_in * 1000).toISOString();
+    await updateSourceToken(userId, "figma", refreshed.access_token, newExpiresAt);
+    return refreshed.access_token;
+  })();
+
+  inflightRefresh.set(userId, promise);
+  try {
+    return await promise;
+  } finally {
+    inflightRefresh.delete(userId);
+  }
 }
 
 // ── HTTP helper ────────────────────────────────────────────────────────────
@@ -72,6 +87,7 @@ async function figmaGet<T>(path: string, token: string): Promise<T> {
   const res = await fetch(`${FIGMA_API_BASE}${path}`, {
     headers: { Authorization: `Bearer ${token}` },
     next: { revalidate: 0 },
+    signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");

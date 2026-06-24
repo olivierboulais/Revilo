@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { getSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { ScanProgress } from "@/components/ScanProgress";
+
+export const metadata: Metadata = { title: "Scanning — Revilo" };
 
 export default async function ScanPage() {
   const session = await getSession();
