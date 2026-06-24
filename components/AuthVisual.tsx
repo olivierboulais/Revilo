@@ -20,7 +20,7 @@ export function AuthVisual() {
         @keyframes bar-fill-2 { 0%,55% { width:0; } 75%,100% { width:62%; } }
         @keyframes bar-fill-3 { 0%,60% { width:0; } 80%,100% { width:74%; } }
         .av-score-ring { animation: score-fill 3s ease-out forwards; stroke-dasharray: 251; stroke-dashoffset: 251; }
-        .av-card { border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.04); }
+        .av-card { border-radius: 16px; background: white; box-shadow: 0 2px 8px rgba(124,58,237,.12), 0 8px 24px rgba(124,58,237,.08); }
         .av-fade-1 { animation: fade-up-1 3s ease-out both; }
         .av-fade-2 { animation: fade-up-2 3s ease-out both; }
         .av-fade-3 { animation: fade-up-3 3s ease-out both; }

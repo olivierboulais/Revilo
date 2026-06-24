@@ -54,7 +54,7 @@ export default async function LoginPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 items-center justify-center bg-[#F8F7F4] relative overflow-hidden">
+      <div className="hidden lg:flex flex-1 items-center justify-center bg-lilac relative overflow-hidden">
         <AuthVisual />
       </div>
     </main>
