@@ -87,14 +87,14 @@ export default function UpgradePage() {
   }
 
   return (
-    <main className="flex-1 px-6 py-16">
+    <main className="flex-1 px-6 py-16 relative">
+      <a href="/dashboard" className="absolute top-6 left-6 text-[13px] text-gray hover:text-[#1C1C1A] transition-colors flex items-center gap-1">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4.5 7l4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        Back
+      </a>
       <div className="max-w-[820px] mx-auto">
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex justify-center mb-10">
           <Logo />
-          <a href="/dashboard" className="text-[13px] text-gray hover:text-[#1C1C1A] transition-colors flex items-center gap-1">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4.5 7l4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            Back
-          </a>
         </div>
         <h1 className="text-[26px] font-semibold tracking-tight mb-2">Unlock your full report</h1>
         <p className="text-[14px] text-gray mb-10">Pick the option that fits how you want to use Revilo.</p>
