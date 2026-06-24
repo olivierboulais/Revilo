@@ -26,7 +26,7 @@ export default async function AdoptionPage() {
 
   if (!isPaid) {
     return (
-      <div className="px-6 py-8">
+      <div className="px-3 sm:px-6 py-6 sm:py-8">
         <h1 className="text-[22px] font-semibold tracking-tight mb-1">Adoption</h1>
         <p className="text-[13px] text-gray mb-6">Whether teams are actually using the design system.</p>
         <UpgradeBanner message="Adoption findings show where teams are bypassing the design system." />
@@ -35,7 +35,7 @@ export default async function AdoptionPage() {
   }
 
   return (
-    <div className="px-6 py-8">
+    <div className="px-3 sm:px-6 py-6 sm:py-8">
       <h1 className="text-[22px] font-semibold tracking-tight mb-1">Adoption</h1>
       <p className="text-[13px] text-gray mb-6">Whether teams are actually using the design system.</p>
 

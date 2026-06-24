@@ -52,7 +52,7 @@ export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; sc
 
   return (
     <header
-      className="h-16 flex items-center justify-between pl-6 pr-4 sticky top-4 z-10 rounded-full"
+      className="h-14 sm:h-16 flex items-center justify-between pl-4 pr-3 sm:pl-6 sm:pr-4 sticky top-2 sm:top-4 z-10 rounded-full"
       style={{
         background: "var(--glass)",
         backdropFilter: "blur(20px)",
@@ -60,22 +60,22 @@ export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; sc
         boxShadow: "0 8px 30px rgba(28,28,26,0.06)",
       }}
     >
-      <div className="flex items-center gap-3 min-w-0">
-        <span className="text-[14px] font-medium truncate">{workspaceName}</span>
-        <span className="w-1 h-1 rounded-full bg-line" />
-        <span className="text-[12px] text-gray flex items-center gap-1.5 flex-shrink-0">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <span className="text-[13px] sm:text-[14px] font-medium truncate">{workspaceName}</span>
+        <span className="w-1 h-1 rounded-full bg-line hidden sm:block" />
+        <span className="text-[11px] sm:text-[12px] text-gray items-center gap-1.5 flex-shrink-0 hidden sm:flex">
           <span className="w-1.5 h-1.5 rounded-full bg-good" />
           Last scan {timeAgo(lastScannedAt)}
         </span>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <button
           onClick={rescan}
           disabled={scanning}
-          className="flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 sm:px-3 py-1.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors disabled:opacity-50"
         >
           {scanning ? <SpinnerIcon /> : <RescanIcon />}
-          {scanning ? "Scanning…" : "Re-scan"}
+          <span className="hidden sm:inline">{scanning ? "Scanning…" : "Re-scan"}</span>
         </button>
         <Logo width={72} height={22} />
       </div>

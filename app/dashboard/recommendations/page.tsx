@@ -25,7 +25,7 @@ export default async function RecommendationsPage() {
 
   if (!isPaid) {
     return (
-      <div className="px-6 py-8">
+      <div className="px-3 sm:px-6 py-6 sm:py-8">
         <h1 className="text-[22px] font-semibold tracking-tight mb-1">Recommendations</h1>
         <p className="text-[13px] text-gray mb-6">What to fix first, grouped by effort.</p>
         <UpgradeBanner message={`${report.recommendations.length} prioritized recommendations are in the full report.`} />
@@ -34,7 +34,7 @@ export default async function RecommendationsPage() {
   }
 
   return (
-    <div className="px-6 py-8">
+    <div className="px-3 sm:px-6 py-6 sm:py-8">
       <h1 className="text-[22px] font-semibold tracking-tight mb-1">Recommendations</h1>
       <p className="text-[13px] text-gray mb-6">What to fix first, grouped by effort.</p>
 

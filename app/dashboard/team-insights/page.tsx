@@ -20,7 +20,7 @@ export default async function TeamInsightsPage() {
 
   if (!isPaid) {
     return (
-      <div className="px-6 py-8">
+      <div className="px-3 sm:px-6 py-6 sm:py-8">
         <h1 className="text-[22px] font-semibold tracking-tight mb-1">Team Insights</h1>
         <p className="text-[13px] text-gray mb-6">Where drift is being created, and by which team.</p>
         <UpgradeBanner message="See design vs. engineering patterns behind the drift." />
@@ -34,7 +34,7 @@ export default async function TeamInsightsPage() {
   const mostCommon = [...report.teamInsights].sort((a, b) => b.count - a.count).slice(0, 3);
 
   return (
-    <div className="px-6 py-8">
+    <div className="px-3 sm:px-6 py-6 sm:py-8">
       <h1 className="text-[22px] font-semibold tracking-tight mb-1">Team Insights</h1>
       <p className="text-[13px] text-gray mb-6">Where drift is being created, and by which team.</p>
 

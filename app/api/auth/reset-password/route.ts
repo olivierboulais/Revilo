@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { findVerificationToken, deleteVerificationToken } from "@/lib/db/verification-tokens";
-import { findUserById } from "@/lib/db/users";
-import { getDb } from "@/lib/db/client";
+import { findUserById, updatePasswordHash } from "@/lib/db/users";
 import bcrypt from "bcryptjs";
 
 export async function POST(request: Request) {
@@ -27,8 +26,7 @@ export async function POST(request: Request) {
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
-  const db = await getDb();
-  await db.run("UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?", [passwordHash, user.id]);
+  await updatePasswordHash(user.id, passwordHash);
   await deleteVerificationToken(token);
 
   return NextResponse.json({ ok: true });

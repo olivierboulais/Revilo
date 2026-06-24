@@ -40,7 +40,7 @@ export default async function AlignmentPage() {
       );
 
   return (
-    <div className="px-6 py-8">
+    <div className="px-3 sm:px-6 py-6 sm:py-8">
       <h1 className="text-[22px] font-semibold tracking-tight mb-1">Alignment</h1>
       <p className="text-[13px] text-gray mb-6">Where design and code are out of sync.</p>
 

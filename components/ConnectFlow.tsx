@@ -143,7 +143,15 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
 
       {error && (
         <div className="mb-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[13px] text-[#B91C1C] px-4 py-3">
-          {errorMessage(error)}
+          <p>{errorMessage(error)}</p>
+          {isNotConfiguredError(error) && (
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="mt-2 text-[12px] font-medium text-[#B91C1C] underline underline-offset-2 hover:text-[#991B1B] transition-colors"
+            >
+              Continue with sample data instead
+            </button>
+          )}
         </div>
       )}
 
@@ -259,16 +267,20 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
   );
 }
 
+function isNotConfiguredError(code: string): boolean {
+  return code === "figma_not_configured" || code === "github_not_configured";
+}
+
 function errorMessage(code: string): string {
   const map: Record<string, string> = {
     figma_denied: "You declined the Figma authorization. Click Connect to try again.",
-    figma_not_configured: "Figma OAuth is not configured yet. Set FIGMA_CLIENT_ID and FIGMA_CLIENT_SECRET.",
-    figma_state_mismatch: "OAuth state mismatch — please try connecting Figma again.",
-    figma_token_exchange_failed: "Could not complete Figma authorization. Please try again.",
+    figma_not_configured: "Figma integration is not available yet. You can continue with sample data for now.",
+    figma_state_mismatch: "Something went wrong verifying the Figma connection. Please try connecting again.",
+    figma_token_exchange_failed: "Failed to connect Figma. Please try again.",
     github_denied: "You declined the GitHub authorization. Click Connect to try again.",
-    github_not_configured: "GitHub OAuth is not configured yet. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET.",
-    github_state_mismatch: "OAuth state mismatch — please try connecting GitHub again.",
-    github_token_exchange_failed: "Could not complete GitHub authorization. Please try again.",
+    github_not_configured: "GitHub integration is not available yet. You can continue with sample data for now.",
+    github_state_mismatch: "Something went wrong verifying the GitHub connection. Please try connecting again.",
+    github_token_exchange_failed: "Failed to connect GitHub. Please try again.",
   };
   return map[code] ?? `Something went wrong (${code}). Please try again.`;
 }

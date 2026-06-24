@@ -35,9 +35,9 @@ export default async function OverviewPage({ searchParams }: Props) {
   const history = await getScoreHistory(session.email, report);
 
   return (
-    <div className="px-6 py-8">
-      <div className="flex items-center justify-between mb-1">
-        <h1 className="text-[22px] font-semibold tracking-tight">Overview</h1>
+    <div className="px-3 sm:px-6 py-6 sm:py-8">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+        <h1 className="text-[20px] sm:text-[22px] font-semibold tracking-tight">Overview</h1>
         <div className="flex items-center gap-2">
           {isPaid && (
             <a
@@ -95,11 +95,11 @@ export default async function OverviewPage({ searchParams }: Props) {
       </div>
 
       {/* Trend chart */}
-      <div className="rounded-2xl border border-line bg-white p-5 mb-6">
+      <div className="rounded-2xl border border-line bg-white p-3 sm:p-5 mb-6">
         <div className="flex items-center justify-between mb-1">
           <div className="text-[12.5px] font-medium text-[#1C1C1A]">Score trend</div>
           {!history.isReal && (
-            <span className="text-[10.5px] text-gray/70">Illustrative — scan a few more times to see your real trend</span>
+            <span className="text-[10.5px] text-gray/70 hidden sm:inline">Illustrative — scan a few more times to see your real trend</span>
           )}
         </div>
         <p className="text-[11.5px] text-gray mb-4">How alignment{isPaid ? ", adoption, and architecture have" : " has"} moved over recent scans.</p>
@@ -119,7 +119,7 @@ export default async function OverviewPage({ searchParams }: Props) {
       </div>
 
       {/* Third row: 3 category modules */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <CategoryModule
           title="Components"
           score={report.alignment.componentAlignment}

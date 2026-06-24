@@ -31,7 +31,7 @@ export default async function ArchitecturePage() {
 
   if (!isPaid) {
     return (
-      <div className="px-6 py-8">
+      <div className="px-3 sm:px-6 py-6 sm:py-8">
         <h1 className="text-[22px] font-semibold tracking-tight mb-1">Architecture</h1>
         <p className="text-[13px] text-gray mb-6">Whether the design system is structured to scale.</p>
         <UpgradeBanner message="Architecture findings cover token structure and component hierarchy quality." />
@@ -40,11 +40,11 @@ export default async function ArchitecturePage() {
   }
 
   return (
-    <div className="px-6 py-8">
+    <div className="px-3 sm:px-6 py-6 sm:py-8">
       <h1 className="text-[22px] font-semibold tracking-tight mb-1">Architecture</h1>
       <p className="text-[13px] text-gray mb-6">Whether the design system is structured to scale.</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <SummaryCard label="Architecture Score" value={report.architecture.overall} />
         <SummaryStatCard label="Maturity Level" value={maturityLevel(report.architecture.overall)} />
         <SummaryStatCard

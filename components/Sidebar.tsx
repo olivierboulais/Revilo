@@ -99,7 +99,7 @@ const navItems: NavItem[] = [
   { href: "/dashboard/settings", label: "Settings", icon: <IconSettings /> },
 ];
 
-export function Sidebar({ workspaceName, isPaid, email }: { workspaceName: string; isPaid: boolean; email: string }) {
+export function Sidebar({ workspaceName, isPaid, email, mobileOpen, onMobileClose }: { workspaceName: string; isPaid: boolean; email: string; mobileOpen?: boolean; onMobileClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isRescanning, setIsRescanning] = useState(false);
@@ -115,16 +115,23 @@ export function Sidebar({ workspaceName, isPaid, email }: { workspaceName: strin
   }
 
   return (
-    <aside
-      className="w-[220px] flex-shrink-0 sticky top-4 flex flex-col rounded-[28px] overflow-hidden"
-      style={{
-        height: "calc(100vh - 2rem)",
-        background: "var(--glass)",
-        backdropFilter: "blur(20px)",
-        border: "1px solid var(--line)",
-        boxShadow: "0 8px 30px rgba(28,28,26,0.06)",
-      }}
-    >
+    <>
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={onMobileClose} />
+      )}
+      <aside
+        className={`w-[220px] flex-shrink-0 flex flex-col rounded-[28px] overflow-hidden
+          fixed top-4 left-4 z-50 transition-transform duration-200 lg:sticky lg:top-4 lg:z-auto lg:translate-x-0
+          ${mobileOpen ? "translate-x-0" : "-translate-x-[260px]"}`}
+        style={{
+          height: "calc(100vh - 2rem)",
+          background: "var(--glass)",
+          backdropFilter: "blur(20px)",
+          border: "1px solid var(--line)",
+          boxShadow: "0 8px 30px rgba(28,28,26,0.06)",
+        }}
+      >
       <div className="px-4 pt-5 pb-3">
         <button
           onClick={handleRescan}
@@ -181,5 +188,6 @@ export function Sidebar({ workspaceName, isPaid, email }: { workspaceName: strin
         </form>
       </div>
     </aside>
+    </>
   );
 }

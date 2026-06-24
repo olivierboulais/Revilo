@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET } from "@/lib/stripe/config";
+import { STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRO_PRICE_ID, STRIPE_MONITORING_PRICE_ID } from "@/lib/stripe/config";
 import { findUserByEmail } from "@/lib/db/users";
 import { updateUserTier } from "@/lib/db/users";
 
@@ -47,6 +47,44 @@ export async function POST(request: Request) {
   if (event.type === "customer.subscription.deleted") {
     const sub = event.data.object as import("stripe").Stripe.Subscription;
     const customer = await stripe.customers.retrieve(sub.customer as string);
+    const email = "email" in customer ? customer.email : null;
+    if (email) {
+      const user = await findUserByEmail(email);
+      if (user) await updateUserTier(user.id, "free");
+    }
+  }
+
+  // Handle failed payment → downgrade to free
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object as import("stripe").Stripe.Invoice;
+    const customer = await stripe.customers.retrieve(invoice.customer as string);
+    const email = "email" in customer ? customer.email : null;
+    if (email) {
+      const user = await findUserByEmail(email);
+      if (user) await updateUserTier(user.id, "free");
+    }
+  }
+
+  // Handle subscription update → sync tier to new price
+  if (event.type === "customer.subscription.updated") {
+    const sub = event.data.object as import("stripe").Stripe.Subscription;
+    const priceId = sub.items.data[0]?.price?.id ?? null;
+    let tier: "pro" | "monitoring" | "free" = "free";
+    if (priceId === STRIPE_PRO_PRICE_ID) tier = "pro";
+    else if (priceId === STRIPE_MONITORING_PRICE_ID) tier = "monitoring";
+
+    const customer = await stripe.customers.retrieve(sub.customer as string);
+    const email = "email" in customer ? customer.email : null;
+    if (email) {
+      const user = await findUserByEmail(email);
+      if (user) await updateUserTier(user.id, tier);
+    }
+  }
+
+  // Handle charge refund → downgrade to free
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as import("stripe").Stripe.Charge;
+    const customer = await stripe.customers.retrieve(charge.customer as string);
     const email = "email" in customer ? customer.email : null;
     if (email) {
       const user = await findUserByEmail(email);
