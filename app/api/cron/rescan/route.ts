@@ -4,6 +4,7 @@ import { getReport, saveReport } from "@/lib/store";
 import { runScan } from "@/lib/run-scan";
 import { detectDrift } from "@/lib/drift/detect";
 import { sendDriftAlert } from "@/lib/drift/alert";
+import { deleteExpiredSessions } from "@/lib/db/sessions";
 
 // Vercel Cron calls this with an Authorization header:
 // Authorization: Bearer <CRON_SECRET>
@@ -19,6 +20,8 @@ export async function GET(request: Request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  await deleteExpiredSessions();
 
   const users = await getUsersByTier("monitoring");
   const origin = new URL(request.url).origin;

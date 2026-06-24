@@ -1,14 +1,14 @@
 import { ScanReport } from "@/lib/types";
 import { findUserByEmail } from "@/lib/db/users";
 import { getScanHistoryForUser } from "@/lib/db/scans";
-import { generateScoreHistory } from "@/lib/mock-history";
 
 export interface ScoreHistory {
   labels: string[];
   alignment: number[];
   adoption: number[];
   architecture: number[];
-  isReal: boolean; // false when falling back to the illustrative mock trend
+  isReal: boolean; // false when falling back to a single-point placeholder
+  insufficient: boolean; // true when fewer than MIN_REAL_SCANS exist
 }
 
 const MIN_REAL_SCANS = 2; // a single point can't show a "trend"
@@ -22,11 +22,10 @@ function relativeLabel(iso: string, now: Date, isMostRecent: boolean): string {
   return `${Math.round(days / 7)}w ago`;
 }
 
-// Real history once enough scans exist for a user; otherwise the same
-// illustrative trailing-trend mock used before scan history existed at all
-// (see lib/mock-history.ts) — explicitly flagged via `isReal` so callers
-// can decide whether to show a "this is illustrative" note, the same way
-// the rest of this codebase is honest about mocked vs. real data.
+// Real history once enough scans exist for a user; otherwise a single-point
+// placeholder with the current scan's scores — flagged via `isReal: false`
+// and `insufficient: true` so callers can show a "not enough data" message
+// instead of a misleading fake trend line.
 export async function getScoreHistory(email: string, current: ScanReport): Promise<ScoreHistory> {
   const user = await findUserByEmail(email).catch(() => null);
 
@@ -41,10 +40,19 @@ export async function getScoreHistory(email: string, current: ScanReport): Promi
         adoption: oldestFirst.map((s) => s.adoption.overall),
         architecture: oldestFirst.map((s) => s.architecture.overall),
         isReal: true,
+        insufficient: false,
       };
     }
   }
 
-  const mock = generateScoreHistory(current.alignment.overall, current.adoption.overall, current.architecture.overall);
-  return { ...mock, isReal: false };
+  // Instead of generating fake historical data, return a single-point dataset
+  // showing only the current scan scores so the chart doesn't mislead new users.
+  return {
+    labels: ["This scan"],
+    alignment: [current.alignment.overall],
+    adoption: [current.adoption.overall],
+    architecture: [current.architecture.overall],
+    isReal: false,
+    insufficient: true,
+  };
 }

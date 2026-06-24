@@ -49,10 +49,12 @@ export function TrendChart({
   labels,
   series,
   height = 220,
+  insufficient = false,
 }: {
   labels: string[];
   series: Series[];
   height?: number;
+  insufficient?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(800);
@@ -116,6 +118,11 @@ export function TrendChart({
         </div>
         {isZoomed && <span className="text-[10.5px] text-gray/70">Axis zoomed to {yMin}–{yMax} to show detail</span>}
       </div>
+      {insufficient && (
+        <p className="text-[11.5px] text-gray/70 text-center py-3">
+          Not enough data yet — scan a few more times to see a trend line.
+        </p>
+      )}
       <svg width={width} height={height} className="w-full block" style={{ height }}>
         {yTicks.map((t) => (
           <line key={t} x1={padLeft} x2={width - padRight} y1={yFor(t)} y2={yFor(t)} stroke="rgba(28,28,26,0.08)" strokeWidth="1" />

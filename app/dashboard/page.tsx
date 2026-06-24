@@ -105,6 +105,7 @@ export default async function OverviewPage({ searchParams }: Props) {
         <p className="text-[11.5px] text-gray mb-4">How alignment{isPaid ? ", adoption, and architecture have" : " has"} moved over recent scans.</p>
         <TrendChart
           labels={history.labels}
+          insufficient={history.insufficient}
           series={
             isPaid
               ? [

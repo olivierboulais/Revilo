@@ -18,7 +18,17 @@ export async function GET() {
     await saveReport(session.email, report);
   }
 
-  const pdf = await generateReportPdf(report);
+  let pdf: Buffer;
+  try {
+    pdf = await generateReportPdf(report);
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+    return NextResponse.json(
+      { error: "Failed to generate PDF report" },
+      { status: 500 },
+    );
+  }
+
   const filename = `revilo-report-${report.workspaceName.replace(/\s+/g, "-").toLowerCase()}-${new Date(report.scannedAt).toISOString().slice(0, 10)}.pdf`;
 
   return new NextResponse(new Uint8Array(pdf), {

@@ -46,7 +46,8 @@ export async function GET(request: Request) {
   try {
     const redirectUri = getRedirectUri(request.url);
     const tokenResponse = await exchangeCodeForToken(code, redirectUri);
-    await upsertSource(user.id, "figma", tokenResponse.access_token, tokenResponse.refresh_token);
+    const tokenExpiresAt = new Date(Date.now() + tokenResponse.expires_in * 1000).toISOString();
+    await upsertSource(user.id, "figma", tokenResponse.access_token, tokenResponse.refresh_token, null, tokenExpiresAt);
   } catch (err) {
     console.error("Figma OAuth callback failed:", err);
     connectUrl.searchParams.set("error", "figma_token_exchange_failed");
