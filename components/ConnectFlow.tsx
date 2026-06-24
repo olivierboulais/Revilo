@@ -236,6 +236,7 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
 
       <Button
         variant="dark"
+        withArrow={false}
         className="justify-center w-full mt-8"
         disabled={!bothReady}
         onClick={() => router.push("/scan")}
