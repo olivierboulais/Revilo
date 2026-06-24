@@ -194,7 +194,7 @@ export function SettingsClient({ email, workspaceName, tier, emailVerified }: Pr
             </div>
           </div>
           {tier === "free" && (
-            <a href="/upgrade" className="text-[13px] font-medium px-3 py-1.5 rounded-full bg-[#1C1C1A] text-white hover:opacity-80 transition-opacity">
+            <a href="/upgrade" className="text-[13px] font-medium px-3 py-1.5 rounded-full bg-[#1C1C1A] hover:opacity-80 transition-opacity" style={{ color: "#ffffff" }}>
               Upgrade
             </a>
           )}

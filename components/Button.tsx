@@ -36,11 +36,13 @@ export function Button({
   withArrow = false,
   children,
   className = "",
+  style,
   ...rest
 }: CommonProps & ButtonHTMLAttributes<HTMLButtonElement>) {
   const base = withArrow ? baseWithArrow : baseNoArrow;
+  const mergedStyle = variant === "dark" ? { color: "#ffffff", ...style } : style;
   return (
-    <button className={`${base} ${variantClasses[variant]} ${className}`} {...rest}>
+    <button className={`${base} ${variantClasses[variant]} ${className}`} style={mergedStyle} {...rest}>
       {children}
       {withArrow && <Arrow />}
     </button>
@@ -53,11 +55,13 @@ export function LinkButton({
   children,
   className = "",
   href,
+  style,
   ...rest
 }: CommonProps & AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
   const base = withArrow ? baseWithArrow : baseNoArrow;
+  const mergedStyle = variant === "dark" ? { color: "#ffffff", ...style } : style;
   return (
-    <Link href={href} className={`${base} ${variantClasses[variant]} ${className}`} {...rest}>
+    <Link href={href} className={`${base} ${variantClasses[variant]} ${className}`} style={mergedStyle} {...rest}>
       {children}
       {withArrow && <Arrow />}
     </Link>
