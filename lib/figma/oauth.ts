@@ -18,6 +18,8 @@ function basicAuthHeader(): string {
 // grant — the code expires after that.
 export async function exchangeCodeForToken(code: string, redirectUri: string): Promise<FigmaTokenResponse> {
   const body = new URLSearchParams({
+    client_id: FIGMA_CLIENT_ID!,
+    client_secret: FIGMA_CLIENT_SECRET!,
     redirect_uri: redirectUri,
     code,
     grant_type: "authorization_code",
@@ -27,7 +29,6 @@ export async function exchangeCodeForToken(code: string, redirectUri: string): P
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: basicAuthHeader(),
     },
     body: body.toString(),
   });
@@ -50,13 +51,16 @@ export interface FigmaRefreshResponse {
 // invalidates the previous one, so the caller must immediately persist the
 // new token or the connection breaks.
 export async function refreshFigmaToken(refreshToken: string): Promise<FigmaRefreshResponse> {
-  const body = new URLSearchParams({ refresh_token: refreshToken });
+  const body = new URLSearchParams({
+    client_id: FIGMA_CLIENT_ID!,
+    client_secret: FIGMA_CLIENT_SECRET!,
+    refresh_token: refreshToken,
+  });
 
   const response = await fetch(FIGMA_REFRESH_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: basicAuthHeader(),
     },
     body: body.toString(),
   });
