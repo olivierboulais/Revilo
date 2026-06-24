@@ -2,7 +2,7 @@
 
 export function AuthVisual() {
   return (
-    <div className="relative w-[340px] h-[360px]">
+    <div className="relative w-[391px] h-[414px]" style={{ transform: "scale(1.15)", transformOrigin: "center" }}>
       <style>{`
         @keyframes score-fill {
           0% { stroke-dashoffset: 251; }

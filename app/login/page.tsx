@@ -58,7 +58,17 @@ export default async function LoginPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 items-center justify-center bg-lilac relative overflow-hidden">
+      <div
+        className="hidden lg:flex flex-1 items-center justify-center relative overflow-hidden"
+        style={{
+          background: `
+            radial-gradient(ellipse 65% 70% at 15% 10%, rgba(239,217,255,.9) 0%, transparent 55%),
+            radial-gradient(ellipse 55% 65% at 85% 85%, rgba(192,132,252,.5) 0%, transparent 50%),
+            radial-gradient(ellipse 45% 55% at 65% 25%, rgba(220,200,255,.6) 0%, transparent 45%),
+            radial-gradient(ellipse 70% 60% at 40% 70%, rgba(240,225,255,.5) 0%, transparent 50%),
+            #F3E8FF`,
+        }}
+      >
         <AuthVisual />
       </div>
     </main>
