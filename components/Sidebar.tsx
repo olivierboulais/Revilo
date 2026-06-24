@@ -207,18 +207,26 @@ export function Sidebar({
                 </svg>
               </Link>
             ) : (
-              <div className="rounded-2xl p-3 flex flex-col gap-3" style={{ background: "linear-gradient(135deg, #F5EDFF 0%, #EFD9FF 100%)", border: "1px solid rgba(124,58,237,0.12)" }}>
-                <div>
-                  <div className="text-[11px] text-[#706F6A] mb-0.5">{tierLabel} plan</div>
-                  <div className="text-[13px] font-semibold text-[#1C1C1A] leading-snug">Unlock the full report</div>
+              <Link href="/upgrade" className="block rounded-2xl p-3 relative overflow-hidden group hover:scale-[1.01] transition-transform" style={{ background: "linear-gradient(135deg, #F5EDFF 0%, #EFD9FF 100%)", border: "1px solid rgba(124,58,237,0.12)" }}>
+                {/* Decorative mini chart */}
+                <svg width="60" height="48" viewBox="0 0 60 48" fill="none" className="absolute top-2 right-2 opacity-30 group-hover:opacity-50 transition-opacity">
+                  <rect x="2" y="28" width="8" height="18" rx="3" fill="#C084FC" />
+                  <rect x="14" y="18" width="8" height="28" rx="3" fill="#A855F7" />
+                  <rect x="26" y="22" width="8" height="24" rx="3" fill="#C084FC" />
+                  <rect x="38" y="8" width="8" height="38" rx="3" fill="#7C3AED" />
+                  <rect x="50" y="2" width="8" height="44" rx="3" fill="#A855F7" />
+                </svg>
+                <div className="relative z-[1]">
+                  <div className="text-[10px] text-[#7C3AED] font-medium uppercase tracking-wider mb-1">{tierLabel} plan</div>
+                  <div className="text-[13px] font-semibold text-[#1C1C1A] leading-snug mb-3">Unlock your full<br/>design system report</div>
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-full text-[11.5px] font-medium bg-[#1C1C1A] text-white">
+                    Upgrade
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <path d="M3 7L7 3M7 3H4M7 3v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
                 </div>
-                <Link
-                  href="/upgrade"
-                  className="flex items-center justify-center w-full py-[9px] rounded-full text-[12px] font-medium bg-[#1C1C1A] text-white hover:scale-[1.02] transition-transform"
-                >
-                  Upgrade to Pro
-                </Link>
-              </div>
+              </Link>
             )
           )}
 
