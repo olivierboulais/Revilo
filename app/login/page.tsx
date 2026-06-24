@@ -22,7 +22,7 @@ export default async function LoginPage({ searchParams }: Props) {
           Back
         </a>
         <div className="w-full max-w-[400px]">
-          <div className="flex justify-center mb-10">
+          <div className="mb-10">
             <Logo />
           </div>
           <h1 className="text-[32px] font-semibold tracking-tight leading-tight mb-2">

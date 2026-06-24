@@ -93,7 +93,7 @@ export default function UpgradePage() {
         Back
       </a>
       <div className="max-w-[820px] mx-auto">
-        <div className="flex justify-center mb-10">
+        <div className="mb-10">
           <Logo />
         </div>
         <h1 className="text-[26px] font-semibold tracking-tight mb-2">Unlock your full report</h1>
