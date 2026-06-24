@@ -90,7 +90,7 @@ function ResetPasswordForm() {
             className="w-full text-[14px] rounded-xl border border-line px-4 py-2.5 outline-none focus:border-[#1C1C1A] bg-white"
           />
         </div>
-        <Button type="submit" variant="dark" className="justify-center w-full mt-1" disabled={loading}>
+        <Button type="submit" variant="dark" withArrow={false} className="justify-center w-full mt-1" disabled={loading}>
           {loading ? "Saving…" : "Set new password"}
         </Button>
       </form>
