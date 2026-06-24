@@ -117,7 +117,7 @@ export default function UpgradePage() {
             label="Subscription"
             name="Monthly Monitoring"
             description="Re-scan on a cadence and track whether your system is improving."
-            price="$49"
+            price="$99.99"
             priceSuffix="/mo"
             features={["Everything in Pro Report", "Automatic re-scans", "Score trend over time", "Drift alerts"]}
             tier="monitoring"
@@ -127,7 +127,6 @@ export default function UpgradePage() {
           />
         </div>
 
-        <p className="text-[11px] text-gray mt-4">Monthly Monitoring pricing is an early placeholder and may change before launch.</p>
 
         <div className="rounded-2xl bg-[#F8F7F4] border border-line p-6 mt-8 flex items-center justify-between gap-4 flex-wrap">
           <div>
