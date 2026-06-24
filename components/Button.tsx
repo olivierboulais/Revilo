@@ -33,7 +33,7 @@ interface CommonProps {
 
 export function Button({
   variant = "dark",
-  withArrow = true,
+  withArrow = false,
   children,
   className = "",
   ...rest
@@ -49,7 +49,7 @@ export function Button({
 
 export function LinkButton({
   variant = "dark",
-  withArrow = true,
+  withArrow = false,
   children,
   className = "",
   href,
