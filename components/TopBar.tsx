@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -13,7 +14,22 @@ function timeAgo(iso: string): string {
 }
 
 export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; scannedAt: string }) {
-  const [lastScannedAt] = useState(scannedAt);
+  const router = useRouter();
+  const [lastScannedAt, setLastScannedAt] = useState(scannedAt);
+  const [scanning, setScanning] = useState(false);
+
+  async function rescan() {
+    setScanning(true);
+    try {
+      const res = await fetch("/api/scan", { method: "POST" });
+      if (res.ok) {
+        setLastScannedAt(new Date().toISOString());
+        router.refresh();
+      }
+    } finally {
+      setScanning(false);
+    }
+  }
 
   return (
     <header
@@ -33,6 +49,17 @@ export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; sc
           Last scan {timeAgo(lastScannedAt)}
         </span>
       </div>
+      <button
+        onClick={rescan}
+        disabled={scanning}
+        className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 sm:px-3 py-1.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors disabled:opacity-50"
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className={scanning ? "animate-spin" : undefined}>
+          <path d="M11.5 3.5A5.5 5.5 0 1 0 12.5 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+          <path d="M12.5 2V5H9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span className="hidden sm:inline">{scanning ? "Scanning…" : "Re-scan"}</span>
+      </button>
     </header>
   );
 }

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 interface NavItem {
   href: string;
@@ -79,14 +78,6 @@ function IconSettings() {
     </svg>
   );
 }
-function IconRescan({ spinning }: { spinning?: boolean }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={spinning ? "animate-spin" : undefined}>
-      <path d="M2 7C2 4.2 4.2 2 7 2C8.8 2 10.4 2.9 11.3 4.3M12 7C12 9.8 9.8 12 7 12C5.2 12 3.6 11.1 2.7 9.7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-      <path d="M11.3 1.8V4.3H8.8M2.7 12.2V9.7H5.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 function IconCollapse() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -131,18 +122,6 @@ export function Sidebar({
   onToggleCollapse?: () => void;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const [isRescanning, setIsRescanning] = useState(false);
-
-  async function handleRescan() {
-    setIsRescanning(true);
-    try {
-      await fetch("/api/scan", { method: "POST" });
-      router.refresh();
-    } finally {
-      setIsRescanning(false);
-    }
-  }
 
   const isCollapsed = collapsed && !mobileOpen;
 
@@ -167,21 +146,7 @@ export function Sidebar({
           boxShadow: "0 8px 30px rgba(28,28,26,0.06)",
         }}
       >
-        <div className={`pt-5 pb-3 ${isCollapsed ? "px-2.5" : "px-4"}`}>
-          <button
-            onClick={handleRescan}
-            disabled={isRescanning}
-            title={isCollapsed ? (isRescanning ? "Scanning…" : "Rescan") : undefined}
-            className={`flex items-center justify-center gap-2 rounded-full text-[13px] font-medium transition-all disabled:opacity-60 bg-white border border-line hover:bg-black/[0.03] text-[#1C1C1A] ${
-              isCollapsed ? "w-[44px] h-[44px] mx-auto p-0" : "w-full px-3 py-2.5"
-            }`}
-          >
-            <IconRescan spinning={isRescanning} />
-            {!isCollapsed && (isRescanning ? "Scanning…" : "Rescan")}
-          </button>
-        </div>
-
-        <nav className={`flex-1 flex flex-col gap-0.5 overflow-y-auto pt-1 ${isCollapsed ? "px-2" : "px-3"}`}>
+        <nav className={`flex-1 flex flex-col gap-0.5 overflow-y-auto pt-4 ${isCollapsed ? "px-2" : "px-3"}`}>
           {navItems.map((item) => {
             const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
             return (
