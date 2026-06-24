@@ -54,9 +54,9 @@ export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; sc
         disabled={scanning}
         className="flex items-center gap-2 text-[13px] font-medium px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors disabled:opacity-50"
       >
-        <svg width="16" height="16" viewBox="0 0 14 14" fill="none" className={scanning ? "animate-spin" : undefined}>
-          <path d="M11.5 3.5A5.5 5.5 0 1 0 12.5 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-          <path d="M12.5 2V5H9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={scanning ? "animate-spin" : undefined}>
+          <path d="M13 4A6.5 6.5 0 1 0 14 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M14 2.5V5.5H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <span className="hidden sm:inline">{scanning ? "Scanning…" : "Re-scan"}</span>
       </button>
