@@ -138,9 +138,11 @@ export default function UpgradePage() {
             <h3 className="text-[15px] font-medium mb-1">Need help implementing the findings?</h3>
             <p className="text-[13px] text-gray">A 90-minute workshop with roadmap and prioritization, from $1,500.</p>
           </div>
-          <Button variant="outline" withArrow={false}>
-            Book Expert Review
-          </Button>
+          <a href="mailto:ob@olivierboulais.ca?subject=Revilo Expert Review">
+            <Button variant="outline" withArrow={false}>
+              Book Expert Review
+            </Button>
+          </a>
         </div>
       </div>
     </main>
