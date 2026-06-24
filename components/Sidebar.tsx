@@ -135,7 +135,7 @@ export function Sidebar({
         <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={onMobileClose} />
       )}
       <aside
-        className={`flex-shrink-0 flex flex-col rounded-[28px] overflow-hidden transition-all duration-200
+        className={`flex-shrink-0 flex flex-col rounded-[28px] transition-all duration-200 relative
           fixed top-4 left-4 z-50 lg:sticky lg:top-4 lg:z-auto lg:translate-x-0
           ${mobileOpen ? "translate-x-0 w-[220px]" : isCollapsed ? "w-[68px]" : "w-[220px]"}
           ${!mobileOpen ? "-translate-x-[260px] lg:translate-x-0" : ""}`}
@@ -145,15 +145,31 @@ export function Sidebar({
           backdropFilter: "blur(20px)",
           border: "1px solid var(--line)",
           boxShadow: "0 8px 30px rgba(28,28,26,0.06)",
+          overflow: "visible",
         }}
       >
+        {/* Collapse/Expand floating button on right edge */}
+        <button
+          onClick={onToggleCollapse}
+          className="hidden lg:flex items-center justify-center w-[24px] h-[24px] rounded-full border border-line bg-white hover:bg-black/[0.03] transition-colors absolute top-[26px] -right-[12px] z-10 shadow-sm"
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            {isCollapsed ? (
+              <path d="M4.5 2.5L8 6l-3.5 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            ) : (
+              <path d="M7.5 2.5L4 6l3.5 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            )}
+          </svg>
+        </button>
+
         {/* Logo */}
         <div className={`pt-5 pb-2 flex items-center ${isCollapsed ? "justify-center px-2" : "px-4 gap-2.5"}`}>
           <ReviloLogo size={isCollapsed ? 32 : 28} />
           {!isCollapsed && <span className="text-[14px] font-semibold tracking-tight">Revilo</span>}
         </div>
 
-        <nav className={`flex-1 flex flex-col gap-0.5 overflow-y-auto pt-2 ${isCollapsed ? "px-2" : "px-3"}`}>
+        <nav className={`flex-1 flex flex-col gap-0.5 overflow-y-auto overflow-x-hidden pt-2 ${isCollapsed ? "px-2" : "px-3"}`}>
           {navItems.map((item) => {
             const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
             return (
@@ -246,20 +262,6 @@ export function Sidebar({
             </>
           )}
 
-          {/* Collapse/Expand circular button */}
-          <button
-            onClick={onToggleCollapse}
-            className="hidden lg:flex items-center justify-center w-[30px] h-[30px] rounded-full border border-line bg-white hover:bg-black/[0.03] transition-colors mx-auto mt-1"
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              {isCollapsed ? (
-                <path d="M5.5 3L9.5 7l-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-              ) : (
-                <path d="M8.5 3L4.5 7l4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-              )}
-            </svg>
-          </button>
         </div>
       </aside>
     </>
