@@ -60,7 +60,7 @@ export function LoginForm() {
         />
       </div>
       {error && <p className="text-[12.5px] text-[#B3401F] -mt-1">{error}</p>}
-      <Button type="submit" variant="dark" className="justify-center mt-2 w-full" disabled={isSubmitting}>
+      <Button type="submit" variant="dark" className="justify-center mt-2 w-full" disabled={isSubmitting} withArrow={false}>
         {isSubmitting ? "Logging in…" : "Continue"}
       </Button>
     </form>
