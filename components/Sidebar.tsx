@@ -200,32 +200,22 @@ export function Sidebar({
               <Link
                 href="/upgrade"
                 title="Upgrade"
-                className="flex items-center justify-center w-[44px] h-[44px] mx-auto rounded-xl"
-                style={{ background: "linear-gradient(135deg, #EFD9FF 0%, #DCC2FB 100%)" }}
+                className="flex items-center justify-center w-[44px] h-[44px] mx-auto rounded-full bg-[#1C1C1A] text-white hover:scale-[1.02] transition-transform"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 2l2 4.5 5 1-3.5 3.5 1 5L8 13.5 3.5 16l1-5L1 7.5l5-1L8 2Z" stroke="#7C3AED" strokeWidth="1.2" strokeLinejoin="round" />
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 1.5v11M1.5 7h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </Link>
             ) : (
-              <div className="rounded-xl p-3" style={{ background: "linear-gradient(135deg, #F5EDFF 0%, #EFD9FF 100%)", border: "1px solid rgba(124,58,237,0.15)" }}>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <ReviloLogo size={18} />
-                  <div>
-                    <div className="text-[10px] text-[#706F6A]">Current plan:</div>
-                    <div className="text-[12px] font-semibold text-[#1C1C1A]">{tierLabel}</div>
-                  </div>
+              <div className="rounded-2xl p-3 flex flex-col gap-3" style={{ background: "linear-gradient(135deg, #F5EDFF 0%, #EFD9FF 100%)", border: "1px solid rgba(124,58,237,0.12)" }}>
+                <div>
+                  <div className="text-[11px] text-[#706F6A] mb-0.5">{tierLabel} plan</div>
+                  <div className="text-[13px] font-semibold text-[#1C1C1A] leading-snug">Unlock the full report</div>
                 </div>
-                <p className="text-[11px] text-[#706F6A] mb-2.5 leading-snug">
-                  Upgrade to Pro to get the full report and exclusive features
-                </p>
                 <Link
                   href="/upgrade"
-                  className="flex items-center justify-center gap-1.5 w-full py-1.5 rounded-lg text-[11.5px] font-medium bg-[#7C3AED] text-white hover:bg-[#6D28D9] transition-colors"
+                  className="flex items-center justify-center w-full py-[9px] rounded-full text-[12px] font-medium bg-[#1C1C1A] text-white hover:scale-[1.02] transition-transform"
                 >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M6 1l1.5 3.5 4 .8-2.8 2.8.8 4L6 10.3 2.5 12.1l.8-4L.5 5.3l4-.8L6 1Z" fill="currentColor" />
-                  </svg>
                   Upgrade to Pro
                 </Link>
               </div>
