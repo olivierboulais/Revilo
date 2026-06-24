@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { SummaryCard } from "@/components/SummaryCard";
 import { CollapsibleIssueGroup, IssueCard } from "@/components/IssueCard";
 import { UpgradeBanner } from "@/components/UpgradeBanner";
+import { EmptySourcesState } from "@/components/EmptySourcesState";
 import { Finding } from "@/lib/types";
 
 export default async function AlignmentPage() {
@@ -18,6 +19,18 @@ export default async function AlignmentPage() {
   }
 
   const isPaid = session.tier !== "free";
+  const hasRealData = report.dataSource?.figma !== "mock" || report.dataSource?.github !== "mock";
+
+  if (!hasRealData) {
+    return (
+      <div className="px-3 sm:px-6 py-6 sm:py-8">
+        <h1 className="text-[22px] font-semibold tracking-tight mb-1">Alignment</h1>
+        <p className="text-[13px] text-gray mb-6">Where design and code are out of sync.</p>
+        <EmptySourcesState page="alignment" />
+      </div>
+    );
+  }
+
   const alignmentFindings = report.findings.filter((f) => f.sourceArea === "alignment");
 
   const groups: { title: string; findings: Finding[] }[] = [

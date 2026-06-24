@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { SummaryCard } from "@/components/SummaryCard";
 import { IssueCard } from "@/components/IssueCard";
 import { UpgradeBanner } from "@/components/UpgradeBanner";
+import { EmptySourcesState } from "@/components/EmptySourcesState";
 
 export default async function AdoptionPage() {
   const session = await getSession();
@@ -17,6 +18,18 @@ export default async function AdoptionPage() {
   }
 
   const isPaid = session.tier !== "free";
+  const hasRealData = report.dataSource?.figma !== "mock" || report.dataSource?.github !== "mock";
+
+  if (!hasRealData) {
+    return (
+      <div className="px-3 sm:px-6 py-6 sm:py-8">
+        <h1 className="text-[22px] font-semibold tracking-tight mb-1">Adoption</h1>
+        <p className="text-[13px] text-gray mb-6">Whether teams are actually using the design system.</p>
+        <EmptySourcesState page="adoption" />
+      </div>
+    );
+  }
+
   const adoptionFindings = report.findings.filter((f) => f.sourceArea === "adoption");
 
   const designFindings = adoptionFindings.filter((f) => f.type === "detached_instance" || f.type === "local_style" || f.type === "local_variable");

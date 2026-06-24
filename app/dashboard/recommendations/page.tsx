@@ -4,6 +4,7 @@ import { runScan } from "@/lib/run-scan";
 import { redirect } from "next/navigation";
 import { RecommendationCard } from "@/components/RecommendationCard";
 import { UpgradeBanner } from "@/components/UpgradeBanner";
+import { EmptySourcesState } from "@/components/EmptySourcesState";
 
 const tierConfig = [
   { key: "quick_win" as const, title: "Quick Wins", description: "Low effort, ship these first." },
@@ -22,6 +23,17 @@ export default async function RecommendationsPage() {
   }
 
   const isPaid = session.tier !== "free";
+  const hasRealData = report.dataSource?.figma !== "mock" || report.dataSource?.github !== "mock";
+
+  if (!hasRealData) {
+    return (
+      <div className="px-3 sm:px-6 py-6 sm:py-8">
+        <h1 className="text-[22px] font-semibold tracking-tight mb-1">Recommendations</h1>
+        <p className="text-[13px] text-gray mb-6">What to fix first, grouped by effort.</p>
+        <EmptySourcesState page="recommendations" />
+      </div>
+    );
+  }
 
   if (!isPaid) {
     return (

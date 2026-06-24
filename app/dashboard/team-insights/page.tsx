@@ -4,6 +4,7 @@ import { runScan } from "@/lib/run-scan";
 import { redirect } from "next/navigation";
 import { TeamInsightsList } from "@/components/TeamInsightsList";
 import { UpgradeBanner } from "@/components/UpgradeBanner";
+import { EmptySourcesState } from "@/components/EmptySourcesState";
 import { teamDriftCounts } from "@/lib/overview-helpers";
 
 export default async function TeamInsightsPage() {
@@ -17,6 +18,17 @@ export default async function TeamInsightsPage() {
   }
 
   const isPaid = session.tier !== "free";
+  const hasRealData = report.dataSource?.figma !== "mock" || report.dataSource?.github !== "mock";
+
+  if (!hasRealData) {
+    return (
+      <div className="px-3 sm:px-6 py-6 sm:py-8">
+        <h1 className="text-[22px] font-semibold tracking-tight mb-1">Team Insights</h1>
+        <p className="text-[13px] text-gray mb-6">Where drift is being created, and by which team.</p>
+        <EmptySourcesState page="team insights" />
+      </div>
+    );
+  }
 
   if (!isPaid) {
     return (

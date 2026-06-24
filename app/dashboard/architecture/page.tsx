@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { SummaryCard, SummaryStatCard } from "@/components/SummaryCard";
 import { IssueCard } from "@/components/IssueCard";
 import { UpgradeBanner } from "@/components/UpgradeBanner";
+import { EmptySourcesState } from "@/components/EmptySourcesState";
 
 function maturityLevel(score: number): string {
   if (score >= 85) return "Mature";
@@ -24,6 +25,18 @@ export default async function ArchitecturePage() {
   }
 
   const isPaid = session.tier !== "free";
+  const hasRealData = report.dataSource?.figma !== "mock" || report.dataSource?.github !== "mock";
+
+  if (!hasRealData) {
+    return (
+      <div className="px-3 sm:px-6 py-6 sm:py-8">
+        <h1 className="text-[22px] font-semibold tracking-tight mb-1">Architecture</h1>
+        <p className="text-[13px] text-gray mb-6">Whether the design system is structured to scale.</p>
+        <EmptySourcesState page="architecture" />
+      </div>
+    );
+  }
+
   const architectureFindings = report.findings.filter((f) => f.sourceArea === "architecture");
   const tokenArchFindings = architectureFindings.filter((f) => f.type === "token_missing_semantic_layer");
   const structureFindings = architectureFindings.filter((f) => f.type === "naming_inconsistency");
