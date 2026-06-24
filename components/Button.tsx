@@ -9,8 +9,10 @@ const variantClasses: Record<Variant, string> = {
   lilac: "bg-lilac text-[#1C1C1A]",
 };
 
-const base =
+const baseWithArrow =
   "inline-flex items-center gap-[9px] rounded-full pl-[18px] pr-2 py-[9px] text-[13px] font-medium whitespace-nowrap cursor-pointer transition-transform duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100";
+const baseNoArrow =
+  "inline-flex items-center gap-[9px] rounded-full px-[18px] py-[11px] text-[13px] font-medium whitespace-nowrap cursor-pointer transition-transform duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100";
 
 function Arrow() {
   return (
@@ -36,6 +38,7 @@ export function Button({
   className = "",
   ...rest
 }: CommonProps & ButtonHTMLAttributes<HTMLButtonElement>) {
+  const base = withArrow ? baseWithArrow : baseNoArrow;
   return (
     <button className={`${base} ${variantClasses[variant]} ${className}`} {...rest}>
       {children}
@@ -52,6 +55,7 @@ export function LinkButton({
   href,
   ...rest
 }: CommonProps & AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
+  const base = withArrow ? baseWithArrow : baseNoArrow;
   return (
     <Link href={href} className={`${base} ${variantClasses[variant]} ${className}`} {...rest}>
       {children}
