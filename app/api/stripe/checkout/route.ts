@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     mode: tier === "pro" ? "payment" : "subscription",
     line_items: [{ price: priceId, quantity: 1 }],
     customer_email: session.email,
-    success_url: `${origin}/dashboard?upgraded=${tier}`,
+    success_url: `${origin}/connect?upgraded=${tier}`,
     cancel_url: `${origin}/upgrade`,
     metadata: { email: session.email, tier },
   });

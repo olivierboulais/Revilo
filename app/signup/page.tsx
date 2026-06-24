@@ -11,7 +11,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
   const session = await getSession();
   const { tier } = await searchParams;
   const tierParam = tier === "pro" || tier === "monitoring" ? tier : null;
-  if (session) redirect(tierParam ? `/connect?tier=${tierParam}` : "/connect");
+  if (session) redirect(tierParam ? `/upgrade?tier=${tierParam}` : "/connect");
 
   return (
     <main className="flex min-h-screen">

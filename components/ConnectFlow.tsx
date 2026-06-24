@@ -75,10 +75,9 @@ interface Props {
   githubConnected: boolean;
   githubRepo: string | null;
   error?: string | null;
-  tier?: string | null;
 }
 
-export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, githubRepo, error, tier }: Props) {
+export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, githubRepo, error }: Props) {
   const router = useRouter();
   const [fileKeyInput, setFileKeyInput] = useState(figmaFileKey ?? "");
   const [repoInput, setRepoInput] = useState(githubRepo ?? "");
@@ -240,7 +239,7 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
         withArrow={false}
         className="justify-center w-full mt-8"
         disabled={!bothReady}
-        onClick={() => router.push(tier ? `/scan?tier=${tier}` : "/scan")}
+        onClick={() => router.push("/scan")}
       >
         Run scan
       </Button>

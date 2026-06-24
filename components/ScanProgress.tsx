@@ -6,7 +6,7 @@ import { SCAN_PROGRESS_SEQUENCE } from "@/lib/types";
 
 const STEP_DURATION_MS = 850;
 
-export function ScanProgress({ workspaceName, tier }: { workspaceName: string; tier?: string | null }) {
+export function ScanProgress({ workspaceName }: { workspaceName: string }) {
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
   const [scanError, setScanError] = useState<string | null>(null);
@@ -34,7 +34,7 @@ export function ScanProgress({ workspaceName, tier }: { workspaceName: string; t
         const params = new URLSearchParams();
         if (data.dataSource?.figma === "error") params.set("figma_error", data.dataSource.figmaError || "unknown");
         if (data.dataSource?.github === "error") params.set("github_error", data.dataSource.githubError || "unknown");
-        const dest = tier ? `/upgrade?tier=${tier}` : `/dashboard${params.toString() ? "?" + params.toString() : ""}`;
+        const dest = `/dashboard${params.toString() ? "?" + params.toString() : ""}`;
         const remaining = SCAN_PROGRESS_SEQUENCE.length * STEP_DURATION_MS;
         setTimeout(() => {
           if (!redirected) {
