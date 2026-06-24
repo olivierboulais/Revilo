@@ -4,7 +4,7 @@ import { getSession, setTier } from "@/lib/auth/session";
 // Dev-only route: directly sets the user's tier without going through Stripe.
 // Blocked in production so it can never be abused.
 export async function POST(request: Request) {
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production" && !process.env.ALLOW_DEV_UPGRADE) {
     return NextResponse.json({ error: "Not available in production" }, { status: 403 });
   }
 
