@@ -9,14 +9,14 @@ export const metadata: Metadata = { title: "Connect sources — Revilo" };
 import { ConnectFlow } from "@/components/ConnectFlow";
 
 interface Props {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; detail?: string }>;
 }
 
 export default async function ConnectPage({ searchParams }: Props) {
   const session = await getSession();
   if (!session) redirect("/signup");
 
-  const { error } = await searchParams;
+  const { error, detail } = await searchParams;
 
   const user = await findUserByEmail(session.email);
   const [figmaSource, githubSource] = user
@@ -41,6 +41,7 @@ export default async function ConnectPage({ searchParams }: Props) {
         githubConnected={githubConnected}
         githubRepo={githubSource?.github_repo ?? null}
         error={error ?? null}
+        errorDetail={detail ?? null}
       />
     </main>
   );

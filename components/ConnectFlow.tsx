@@ -75,9 +75,10 @@ interface Props {
   githubConnected: boolean;
   githubRepo: string | null;
   error?: string | null;
+  errorDetail?: string | null;
 }
 
-export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, githubRepo, error }: Props) {
+export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, githubRepo, error, errorDetail }: Props) {
   const router = useRouter();
   const [fileKeyInput, setFileKeyInput] = useState(figmaFileKey ?? "");
   const [repoInput, setRepoInput] = useState(githubRepo ?? "");
@@ -144,6 +145,7 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
       {error && (
         <div className="mb-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[13px] text-[#B91C1C] px-4 py-3">
           <p>{errorMessage(error)}</p>
+          {errorDetail && <p className="text-[11px] mt-1 opacity-70">{errorDetail}</p>}
           {isNotConfiguredError(error) && (
             <button
               onClick={() => router.push("/dashboard")}

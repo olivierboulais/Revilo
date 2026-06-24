@@ -50,7 +50,9 @@ export async function GET(request: Request) {
     await upsertSource(user.id, "figma", tokenResponse.access_token, tokenResponse.refresh_token, null, tokenExpiresAt);
   } catch (err) {
     console.error("Figma OAuth callback failed:", err);
+    const msg = err instanceof Error ? err.message : "unknown";
     connectUrl.searchParams.set("error", "figma_token_exchange_failed");
+    connectUrl.searchParams.set("detail", msg);
     return NextResponse.redirect(connectUrl);
   }
 

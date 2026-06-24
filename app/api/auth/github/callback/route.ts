@@ -53,7 +53,9 @@ export async function GET(request: Request) {
     );
   } catch (err) {
     console.error("GitHub OAuth callback failed:", err);
+    const msg = err instanceof Error ? err.message : "unknown";
     connectUrl.searchParams.set("error", "github_token_exchange_failed");
+    connectUrl.searchParams.set("detail", msg);
     return NextResponse.redirect(connectUrl);
   }
 
