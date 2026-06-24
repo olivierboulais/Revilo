@@ -10,8 +10,8 @@
 //   3. Select scopes: file_content:read, file_variables:read
 //   4. Set FIGMA_CLIENT_ID and FIGMA_CLIENT_SECRET in the environment
 
-export const FIGMA_CLIENT_ID = process.env.FIGMA_CLIENT_ID;
-export const FIGMA_CLIENT_SECRET = process.env.FIGMA_CLIENT_SECRET;
+export const FIGMA_CLIENT_ID = process.env.FIGMA_CLIENT_ID?.trim();
+export const FIGMA_CLIENT_SECRET = process.env.FIGMA_CLIENT_SECRET?.trim();
 
 export const FIGMA_SCOPES = "file_content:read";
 export const FIGMA_AUTHORIZE_URL = "https://www.figma.com/oauth";
