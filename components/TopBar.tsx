@@ -52,11 +52,14 @@ export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; sc
       <button
         onClick={rescan}
         disabled={scanning}
-        className="flex items-center gap-2 text-[13px] font-medium px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#7C3AED] text-white hover:bg-[#6D28D9] transition-colors disabled:opacity-50"
+        className="flex items-center gap-2 text-[13px] font-medium px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[#3B1D6E] hover:opacity-90 transition-opacity disabled:opacity-50"
+        style={{ background: "linear-gradient(135deg, #EFD9FF 0%, #C084FC 100%)" }}
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={scanning ? "animate-spin" : undefined}>
-          <path d="M13 4A6.5 6.5 0 1 0 14 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M14 2.5V5.5H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M3.5 8a4.5 4.5 0 0 1 7.6-3.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M12.5 8a4.5 4.5 0 0 1-7.6 3.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M11.5 2.5L11.1 5.2 8.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M4.5 13.5l.4-2.7 2.6.7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <span className="hidden sm:inline">{scanning ? "Scanning…" : "Re-scan"}</span>
       </button>
