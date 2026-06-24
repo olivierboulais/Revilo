@@ -6,16 +6,18 @@ import { ScanProgress } from "@/components/ScanProgress";
 
 export const metadata: Metadata = { title: "Scanning — Revilo" };
 
-export default async function ScanPage() {
+export default async function ScanPage({ searchParams }: { searchParams: Promise<{ tier?: string }> }) {
   const session = await getSession();
   if (!session) redirect("/signup");
+  const { tier } = await searchParams;
+  const tierParam = tier === "pro" || tier === "monitoring" ? tier : null;
 
   return (
     <main className="flex-1 flex flex-col items-center justify-center px-6 py-16">
       <div className="mb-10">
         <Logo />
       </div>
-      <ScanProgress workspaceName={session.workspaceName} />
+      <ScanProgress workspaceName={session.workspaceName} tier={tierParam} />
     </main>
   );
 }

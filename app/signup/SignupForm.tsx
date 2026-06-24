@@ -16,7 +16,7 @@ function GoogleIcon() {
   );
 }
 
-export function SignupForm() {
+export function SignupForm({ tier }: { tier: string | null }) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -39,7 +39,7 @@ export function SignupForm() {
   return (
     <div className="flex flex-col gap-4">
       <a
-        href="/api/auth/google/start"
+        href={tier ? `/api/auth/google/start?tier=${tier}` : "/api/auth/google/start"}
         className="flex items-center justify-center gap-3 w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] font-medium hover:bg-[#f9f9f8] transition-colors"
       >
         <GoogleIcon />
@@ -53,6 +53,7 @@ export function SignupForm() {
       </div>
 
       <form action={handleSubmit} className="flex flex-col gap-3">
+        {tier && <input type="hidden" name="tier" value={tier} />}
         <div>
           <label htmlFor="workspaceName" className="block text-[12px] font-medium text-gray mb-1.5">
             Workspace name

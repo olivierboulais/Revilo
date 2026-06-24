@@ -63,5 +63,7 @@ export async function signupAction(formData: FormData): Promise<SignupResult> {
     await markEmailVerified(user.id);
   }
 
-  redirect("/connect");
+  const tier = String(formData.get("tier") ?? "").trim();
+  const redirectUrl = tier === "pro" || tier === "monitoring" ? `/connect?tier=${tier}` : "/connect";
+  redirect(redirectUrl);
 }

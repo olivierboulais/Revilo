@@ -7,9 +7,11 @@ import { SignupForm } from "./SignupForm";
 
 export const metadata: Metadata = { title: "Sign up — Revilo" };
 
-export default async function SignupPage() {
+export default async function SignupPage({ searchParams }: { searchParams: Promise<{ tier?: string }> }) {
   const session = await getSession();
-  if (session) redirect("/connect");
+  const { tier } = await searchParams;
+  const tierParam = tier === "pro" || tier === "monitoring" ? tier : null;
+  if (session) redirect(tierParam ? `/connect?tier=${tierParam}` : "/connect");
 
   return (
     <main className="flex min-h-screen">
@@ -28,7 +30,7 @@ export default async function SignupPage() {
           <p className="text-[15px] text-gray mb-8 leading-relaxed">
             Get started — it's free. No credit card needed.
           </p>
-          <SignupForm />
+          <SignupForm tier={tierParam} />
           <p className="text-[13px] text-gray mt-8 text-center">
             Already have an account?{" "}
             <a href="/login" className="text-lilac-deep font-medium hover:underline">
