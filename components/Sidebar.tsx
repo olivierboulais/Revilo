@@ -266,19 +266,24 @@ export function Sidebar({
 
         <div className={`pb-4 pt-3 flex flex-col gap-1.5 ${isCollapsed ? "px-2" : "px-3"}`}>
           {/* Upgrade */}
-          {!isPaid && (
+          {tier !== "pro" && tier !== "monitoring" && (
             isCollapsed ? (
               <Link
                 href="/upgrade"
-                title="Upgrade"
-                className="flex items-center justify-center w-[44px] h-[44px] mx-auto rounded-full bg-[#1C1C1A] text-white hover:scale-[1.02] transition-transform"
+                title="Upgrade to Pro"
+                className="flex items-center justify-center w-[44px] h-[44px] mx-auto rounded-xl hover:scale-[1.02] transition-transform"
+                style={{ background: "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 50%, #DDD6FE 100%)" }}
               >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M7 1.5v11M1.5 7h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 2l1.8 3.6 4 .6-2.9 2.8.7 4L7 11.2 3.4 13l.7-4L1.2 6.2l4-.6L7 2Z" fill="#7C3AED" />
                 </svg>
               </Link>
             ) : (
-              <Link href="/upgrade" className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-black/[0.04] transition-colors group">
+              <Link
+                href="/upgrade"
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:scale-[1.01] transition-transform group"
+                style={{ background: "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 50%, #DDD6FE 100%)" }}
+              >
                 <span className="w-8 h-8 rounded-lg bg-[#1C1C1A] flex items-center justify-center flex-shrink-0">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                     <path d="M7 2l1.8 3.6 4 .6-2.9 2.8.7 4L7 11.2 3.4 13l.7-4L1.2 6.2l4-.6L7 2Z" fill="#C084FC" />
@@ -286,7 +291,7 @@ export function Sidebar({
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12.5px] font-medium text-[#1C1C1A]">Upgrade to Pro</div>
-                  <div className="text-[11px] text-[#706F6A]">Unlock the full report</div>
+                  <div className="text-[11px] text-[#1C1C1A]/60">Unlock the full report</div>
                 </div>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0 text-[#1C1C1A]/30 group-hover:text-[#1C1C1A]/60 transition-colors">
                   <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
