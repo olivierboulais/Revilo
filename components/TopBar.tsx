@@ -52,8 +52,7 @@ export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; sc
       <button
         onClick={rescan}
         disabled={scanning}
-        className="flex items-center gap-2 text-[13px] font-medium px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[#3B1D6E] hover:opacity-90 transition-opacity disabled:opacity-50"
-        style={{ background: "linear-gradient(135deg, #EFD9FF 0%, #C084FC 100%)" }}
+        className="flex items-center gap-2 text-[13px] font-medium px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[#1C1C1A] bg-white border border-line hover:bg-black/[0.03] transition-colors disabled:opacity-50"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={scanning ? "animate-spin" : undefined}>
           <path d="M3.5 8a4.5 4.5 0 0 1 7.6-3.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
