@@ -7,11 +7,13 @@ export function DashboardShell({
   workspaceName,
   isPaid,
   email,
+  tier,
   children,
 }: {
   workspaceName: string;
   isPaid: boolean;
   email: string;
+  tier: string;
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -33,6 +35,7 @@ export function DashboardShell({
         workspaceName={workspaceName}
         isPaid={isPaid}
         email={email}
+        tier={tier}
         mobileOpen={sidebarOpen}
         onMobileClose={() => setSidebarOpen(false)}
         collapsed={collapsed}

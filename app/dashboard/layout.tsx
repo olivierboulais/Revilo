@@ -34,6 +34,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       workspaceName={session.workspaceName}
       isPaid={isPaid}
       email={session.email}
+      tier={session.tier}
     >
       <div className="flex-1 min-w-0 flex flex-col gap-4">
         <TopBar workspaceName={session.workspaceName} scannedAt={report.scannedAt} />

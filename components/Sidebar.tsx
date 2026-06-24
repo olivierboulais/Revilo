@@ -9,6 +9,20 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
+function ReviloLogo({ size = 28 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 500 500" fill="none">
+      <rect width="500" height="500" rx="100" fill="black"/>
+      <mask id="rl" style={{ maskType: "luminance" }} maskUnits="userSpaceOnUse" x="188" y="105" width="125" height="290">
+        <path fillRule="evenodd" clipRule="evenodd" d="M188 105H312.101V394.306H188V105Z" fill="white"/>
+      </mask>
+      <g mask="url(#rl)">
+        <path fillRule="evenodd" clipRule="evenodd" d="M308.074 225.878V154.565C308.074 121.524 293.3 104.999 263.751 104.999H188V394.31H226.682V295.267V277.459V244.419V233.948V140.054H252.066C263.617 140.054 269.392 147.043 269.392 161.006V219.113V223.461V244.419H252.066H242.95L252.928 290.678L275.436 394.31H312.103L285.107 273.827C300.418 267.117 308.074 251.134 308.074 225.878Z" fill="white"/>
+      </g>
+    </svg>
+  );
+}
+
 function IconOverview() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -78,20 +92,6 @@ function IconSettings() {
     </svg>
   );
 }
-function IconCollapse() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-function IconExpand() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: <IconOverview /> },
@@ -108,6 +108,7 @@ export function Sidebar({
   workspaceName,
   isPaid,
   email,
+  tier,
   mobileOpen,
   onMobileClose,
   collapsed,
@@ -116,6 +117,7 @@ export function Sidebar({
   workspaceName: string;
   isPaid: boolean;
   email: string;
+  tier: string;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
   collapsed?: boolean;
@@ -124,6 +126,8 @@ export function Sidebar({
   const pathname = usePathname();
 
   const isCollapsed = collapsed && !mobileOpen;
+
+  const tierLabel = tier === "monitoring" ? "Monitoring" : tier === "pro" ? "Pro" : "Free";
 
   return (
     <>
@@ -134,9 +138,6 @@ export function Sidebar({
         className={`flex-shrink-0 flex flex-col rounded-[28px] overflow-hidden transition-all duration-200
           fixed top-4 left-4 z-50 lg:sticky lg:top-4 lg:z-auto lg:translate-x-0
           ${mobileOpen ? "translate-x-0 w-[220px]" : isCollapsed ? "w-[68px]" : "w-[220px]"}
-          ${!mobileOpen && !isCollapsed ? "" : ""}
-          ${!mobileOpen && isCollapsed ? "lg:translate-x-0" : ""}
-          ${!mobileOpen && !isCollapsed ? "lg:translate-x-0" : ""}
           ${!mobileOpen ? "-translate-x-[260px] lg:translate-x-0" : ""}`}
         style={{
           height: "calc(100vh - 2rem)",
@@ -146,7 +147,13 @@ export function Sidebar({
           boxShadow: "0 8px 30px rgba(28,28,26,0.06)",
         }}
       >
-        <nav className={`flex-1 flex flex-col gap-0.5 overflow-y-auto pt-4 ${isCollapsed ? "px-2" : "px-3"}`}>
+        {/* Logo */}
+        <div className={`pt-5 pb-2 flex items-center ${isCollapsed ? "justify-center px-2" : "px-4 gap-2.5"}`}>
+          <ReviloLogo size={isCollapsed ? 32 : 28} />
+          {!isCollapsed && <span className="text-[14px] font-semibold tracking-tight">Revilo</span>}
+        </div>
+
+        <nav className={`flex-1 flex flex-col gap-0.5 overflow-y-auto pt-2 ${isCollapsed ? "px-2" : "px-3"}`}>
           {navItems.map((item) => {
             const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
             return (
@@ -170,41 +177,56 @@ export function Sidebar({
           })}
         </nav>
 
-        <div className={`pb-4 pt-3 border-t border-line flex flex-col gap-0.5 ${isCollapsed ? "px-2" : "px-3"}`}>
-          {/* Collapse/Expand toggle — desktop only */}
-          <button
-            onClick={onToggleCollapse}
-            className="hidden lg:flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12.5px] text-[#1C1C1A]/50 hover:bg-black/[0.04] w-full justify-center"
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? <IconExpand /> : <IconCollapse />}
-            {!isCollapsed && <span className="flex-1 text-left">Collapse</span>}
-          </button>
-
-          {isCollapsed ? (
-            <>
+        <div className={`pb-4 pt-3 border-t border-line flex flex-col gap-1.5 ${isCollapsed ? "px-2" : "px-3"}`}>
+          {/* Upgrade banner (expanded) or icon (collapsed) */}
+          {!isPaid && (
+            isCollapsed ? (
               <Link
-                href="/dashboard/settings"
-                title={workspaceName}
-                className="flex items-center justify-center py-2 rounded-lg text-[#1C1C1A]/70 hover:bg-black/[0.04]"
+                href="/upgrade"
+                title="Upgrade"
+                className="flex items-center justify-center w-[44px] h-[44px] mx-auto rounded-xl"
+                style={{ background: "linear-gradient(135deg, #EFD9FF 0%, #DCC2FB 100%)" }}
               >
-                <span className="w-7 h-7 rounded-full bg-lilac flex items-center justify-center text-[11px] font-medium text-[#3B1D6E] flex-shrink-0">
-                  {email.charAt(0).toUpperCase()}
-                </span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 2l2 4.5 5 1-3.5 3.5 1 5L8 13.5 3.5 16l1-5L1 7.5l5-1L8 2Z" stroke="#7C3AED" strokeWidth="1.2" strokeLinejoin="round" />
+                </svg>
               </Link>
-              {!isPaid && (
+            ) : (
+              <div className="rounded-xl p-3" style={{ background: "linear-gradient(135deg, #F5EDFF 0%, #EFD9FF 100%)", border: "1px solid rgba(124,58,237,0.15)" }}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <ReviloLogo size={18} />
+                  <div>
+                    <div className="text-[10px] text-[#706F6A]">Current plan:</div>
+                    <div className="text-[12px] font-semibold text-[#1C1C1A]">{tierLabel}</div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-[#706F6A] mb-2.5 leading-snug">
+                  Upgrade to Pro to get the full report and exclusive features
+                </p>
                 <Link
                   href="/upgrade"
-                  title="Upgrade"
-                  className="flex items-center justify-center py-2 rounded-lg text-[12.5px] font-medium"
-                  style={{ background: "#EFD9FF", color: "#1C1C1A" }}
+                  className="flex items-center justify-center gap-1.5 w-full py-1.5 rounded-lg text-[11.5px] font-medium bg-[#7C3AED] text-white hover:bg-[#6D28D9] transition-colors"
                 >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M7 1L9 5.5L14 6.5L10.5 10L11.5 14L7 11.5L2.5 14L3.5 10L0 6.5L5 5.5L7 1Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M6 1l1.5 3.5 4 .8-2.8 2.8.8 4L6 10.3 2.5 12.1l.8-4L.5 5.3l4-.8L6 1Z" fill="currentColor" />
                   </svg>
+                  Upgrade to Pro
                 </Link>
-              )}
-            </>
+              </div>
+            )
+          )}
+
+          {/* User info */}
+          {isCollapsed ? (
+            <Link
+              href="/dashboard/settings"
+              title={workspaceName}
+              className="flex items-center justify-center py-2 rounded-lg text-[#1C1C1A]/70 hover:bg-black/[0.04]"
+            >
+              <span className="w-7 h-7 rounded-full bg-lilac flex items-center justify-center text-[11px] font-medium text-[#3B1D6E] flex-shrink-0">
+                {email.charAt(0).toUpperCase()}
+              </span>
+            </Link>
           ) : (
             <>
               <button className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-[12.5px] text-[#1C1C1A]/70 hover:bg-black/[0.04] w-full text-left">
@@ -216,11 +238,6 @@ export function Sidebar({
                   <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-              {!isPaid && (
-                <Link href="/upgrade" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12.5px] font-medium" style={{ background: "#EFD9FF", color: "#1C1C1A" }}>
-                  Upgrade
-                </Link>
-              )}
               <form action="/api/logout" method="POST">
                 <button type="submit" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12.5px] text-[#1C1C1A]/50 hover:bg-black/[0.04] w-full text-left">
                   Log out
@@ -228,6 +245,21 @@ export function Sidebar({
               </form>
             </>
           )}
+
+          {/* Collapse/Expand circular button */}
+          <button
+            onClick={onToggleCollapse}
+            className="hidden lg:flex items-center justify-center w-[30px] h-[30px] rounded-full border border-line bg-white hover:bg-black/[0.03] transition-colors mx-auto mt-1"
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              {isCollapsed ? (
+                <path d="M5.5 3L9.5 7l-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              ) : (
+                <path d="M8.5 3L4.5 7l4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              )}
+            </svg>
+          </button>
         </div>
       </aside>
     </>
