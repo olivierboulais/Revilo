@@ -11,7 +11,7 @@ export function UpgradeBanner({ message }: { message: string }) {
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/60 px-6 text-center">
         <p className="text-[13.5px] text-[#1C1C1A] font-medium max-w-[280px]">{message}</p>
-        <LinkButton href="/upgrade" variant="dark" withArrow={false} className="text-[13px] !text-white">
+        <LinkButton href="/upgrade" variant="dark" withArrow={false} className="text-[13px]" style={{ color: "#ffffff" }}>
           Unlock full report
         </LinkButton>
       </div>
