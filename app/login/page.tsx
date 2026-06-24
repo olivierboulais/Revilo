@@ -18,8 +18,12 @@ export default async function LoginPage({ searchParams }: Props) {
     <main className="flex min-h-screen">
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 bg-white">
         <div className="w-full max-w-[400px]">
-          <div className="mb-10">
+          <div className="flex items-center justify-between mb-10">
             <Logo />
+            <a href="/" className="text-[13px] text-gray hover:text-[#1C1C1A] transition-colors flex items-center gap-1">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4.5 7l4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Back
+            </a>
           </div>
           <h1 className="text-[32px] font-semibold tracking-tight leading-tight mb-2">
             Welcome back
