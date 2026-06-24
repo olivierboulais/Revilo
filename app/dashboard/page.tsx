@@ -28,7 +28,7 @@ export default async function OverviewPage({ searchParams }: Props) {
   }
 
   const isPaid = session.tier !== "free";
-  const hasRealData = report.dataSource?.figma !== "mock" || report.dataSource?.github !== "mock";
+  const hasRealData = report.dataSource?.figma === "real" || report.dataSource?.github === "real";
   const categories = groupByCategory(report.findings);
   const risks = topRisks(report.findings);
   const actions = topActions(report.recommendations);

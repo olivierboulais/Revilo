@@ -18,7 +18,7 @@ export default async function AdoptionPage() {
   }
 
   const isPaid = session.tier !== "free";
-  const hasRealData = report.dataSource?.figma !== "mock" || report.dataSource?.github !== "mock";
+  const hasRealData = report.dataSource?.figma === "real" || report.dataSource?.github === "real";
 
   if (!hasRealData) {
     return (
