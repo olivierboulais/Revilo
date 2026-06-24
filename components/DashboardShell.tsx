@@ -15,10 +15,10 @@ export function DashboardShell({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-[#F8F7F4] p-2 sm:p-4 gap-2 sm:gap-4">
-      {/* Mobile menu button -- visible only below lg */}
       <button
         onClick={() => setSidebarOpen(true)}
         className="fixed bottom-4 left-4 z-30 lg:hidden w-12 h-12 rounded-full bg-[#1C1C1A] text-white flex items-center justify-center shadow-lg"
@@ -35,6 +35,8 @@ export function DashboardShell({
         email={email}
         mobileOpen={sidebarOpen}
         onMobileClose={() => setSidebarOpen(false)}
+        collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed(!collapsed)}
       />
       {children}
     </div>

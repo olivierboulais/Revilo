@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Logo } from "@/components/Logo";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -34,7 +33,6 @@ export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; sc
           Last scan {timeAgo(lastScannedAt)}
         </span>
       </div>
-      <Logo width={72} height={22} />
     </header>
   );
 }
