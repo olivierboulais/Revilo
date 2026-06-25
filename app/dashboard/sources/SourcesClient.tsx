@@ -33,6 +33,21 @@ function GithubIcon() {
   );
 }
 
+interface FigmaFileEntry {
+  key: string;
+  role: string;
+  label: string;
+}
+
+function parseFigmaFilesForDisplay(raw: string | null): FigmaFileEntry[] {
+  if (!raw) return [];
+  const trimmed = raw.trim();
+  if (trimmed.startsWith("[")) {
+    try { return JSON.parse(trimmed) as FigmaFileEntry[]; } catch { return []; }
+  }
+  return [{ key: trimmed, role: "project", label: "" }];
+}
+
 interface FigmaInfo {
   externalName: string | null;
   fileKey: string | null;
@@ -107,15 +122,28 @@ export function SourcesClient({ figma: initialFigma, github: initialGithub }: Pr
         </div>
         {figma && (
           <>
-            <div className="grid grid-cols-2 gap-3 text-[12.5px] mb-3">
-              <div>
-                <div className="text-gray mb-0.5">File key</div>
-                <div className="font-medium font-mono text-[11.5px]">{figma.fileKey ?? "Not set"}</div>
+            <div className="text-[12.5px] mb-3">
+              <div className="grid grid-cols-2 gap-3 mb-2">
+                <div>
+                  <div className="text-gray mb-0.5">Files</div>
+                  <div className="font-medium">{parseFigmaFilesForDisplay(figma.fileKey).length || "Not set"}</div>
+                </div>
+                <div>
+                  <div className="text-gray mb-0.5">Connected</div>
+                  <div className="font-medium">{timeAgo(figma.connectedAt)}</div>
+                </div>
               </div>
-              <div>
-                <div className="text-gray mb-0.5">Connected</div>
-                <div className="font-medium">{timeAgo(figma.connectedAt)}</div>
-              </div>
+              {parseFigmaFilesForDisplay(figma.fileKey).length > 0 && (
+                <div className="flex flex-col gap-1">
+                  {parseFigmaFilesForDisplay(figma.fileKey).map((f, i) => (
+                    <div key={i} className="flex items-center gap-2 text-[11.5px]">
+                      <span className="px-1.5 py-0.5 rounded bg-[#F8F7F4] text-gray font-mono text-[10px] uppercase">{f.role}</span>
+                      <span className="font-mono text-gray truncate">{f.key}</span>
+                      {f.label && <span className="text-gray">— {f.label}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="text-[11.5px] text-gray pt-3 border-t border-line flex items-center justify-between">
               <span>

@@ -157,23 +157,50 @@ export function analyzeStructureConsistency(components: NormalizedComponent[]): 
   const matchedFigma = components.filter((c) => c.source === "figma" && c.status === "matched" && c.matchedComponentId);
   const mismatches: StructureMismatch[] = [];
 
+  // Build a map of all GitHub component groupings to detect inconsistent patterns
+  const githubGroupings = new Map<string, string[]>();
+
   for (const f of matchedFigma) {
     const github = components.find((c) => c.id === f.matchedComponentId);
     if (!github) continue;
 
-    // Figma group = the segment before the component's own category (e.g. "Forms" from "Foundations/Forms").
-    const figmaSegments = f.path.split("/");
+    // Figma group: extract meaningful category segments
+    const figmaSegments = f.path.split("/").filter((s) => s && s !== "Figma Library");
     const figmaGroup = figmaSegments[figmaSegments.length - 1] ?? f.path;
 
-    // GitHub group = the folder the component file lives in directly above its own name.
-    const githubSegments = github.path.split("/");
-    const githubGroup = githubSegments[githubSegments.length - 2] ?? github.path;
+    // GitHub group: extract the meaningful folder path above the component
+    const githubSegments = github.path.split("/").filter(Boolean);
+    // Find the most specific grouping folder (skip generic containers)
+    const genericFolders = new Set(["src", "lib", "app", "packages", "modules"]);
+    const meaningfulSegments = githubSegments.filter((s) => !genericFolders.has(s.toLowerCase()));
+    const githubGroup = meaningfulSegments.length > 0
+      ? meaningfulSegments[meaningfulSegments.length - 1]
+      : githubSegments[githubSegments.length - 1] ?? github.path;
 
-    // If GitHub's immediate parent folder is just a generic "components"
-    // bucket (no sub-grouping by category at all), that's a structural
-    // mismatch against Figma's categorized library.
+    // Track groupings for consistency analysis
+    const groupKey = githubGroup.toLowerCase();
+    if (!githubGroupings.has(groupKey)) githubGroupings.set(groupKey, []);
+    githubGroupings.get(groupKey)!.push(github.name);
+
+    // Check for structural mismatch:
+    // 1. GitHub has no meaningful sub-grouping (everything in flat "components" folder)
+    // 2. Figma has a category but GitHub path doesn't reflect it
     const githubHasNoSubGrouping = githubGroup.toLowerCase() === "components";
-    if (githubHasNoSubGrouping) {
+    const figmaHasCategory = figmaSegments.length > 1;
+
+    // Normalize names for comparison
+    const figmaNorm = figmaGroup.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const githubNorm = githubGroup.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Mismatch when GitHub is flat but Figma has categories, OR when
+    // the grouping names don't share any meaningful overlap
+    const groupingsMatch = figmaNorm === githubNorm ||
+      figmaNorm.includes(githubNorm) || githubNorm.includes(figmaNorm) ||
+      github.name.toLowerCase().replace(/[^a-z0-9]/g, "") === githubNorm;
+
+    if (githubHasNoSubGrouping && figmaHasCategory) {
+      mismatches.push({ figma: f, github, figmaGroup, githubGroup });
+    } else if (!groupingsMatch && figmaHasCategory && !githubHasNoSubGrouping) {
       mismatches.push({ figma: f, github, figmaGroup, githubGroup });
     }
   }

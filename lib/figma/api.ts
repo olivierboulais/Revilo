@@ -27,9 +27,23 @@ interface FigmaStyle {
 
 interface FigmaFileResponse {
   name: string;
+  document: FigmaDocumentNode;
   components: Record<string, FigmaComponent>;
   componentSets: Record<string, FigmaComponentSet>;
   styles: Record<string, FigmaStyle>;
+}
+
+// ── Figma document tree node shapes (minimal for depth=2 traversal) ──────
+
+interface FigmaDocumentNode {
+  id: string;
+  name: string;
+  type: string;
+  children?: FigmaDocumentNode[];
+  /** Style references on the node — keys are style types, values are style IDs */
+  styles?: Record<string, string>;
+  /** Present on INSTANCE nodes */
+  componentId?: string;
 }
 
 interface FigmaVariable {
@@ -234,15 +248,123 @@ export async function fetchFigmaTokens(
 }
 
 // ── Usage signals (detached instances / local styles) ─────────────────────
-// Requires walking file nodes — expensive for large files and requires the
-// full document tree. We return an empty array here; the scan still runs with
-// component + token data. A future enhancement can add node traversal.
+
+const MAX_SIGNALS = 50;
+
+/**
+ * Detect design-quality signals in a Figma file:
+ * - Detached instances: FRAME/GROUP nodes whose name matches a known component
+ * - Local styles: styles defined in the file rather than pulled from a library
+ */
 export async function fetchFigmaUsageSignals(
-  _userId: string,
-  _fileKey: string,
-  _accessToken: string,
-  _refreshToken: string | null,
-  _tokenExpiresAt: string | null
+  userId: string,
+  fileKey: string,
+  accessToken: string,
+  refreshToken: string | null,
+  tokenExpiresAt: string | null
 ): Promise<RawDesignUsageSignal[]> {
-  return [];
+  const token = await getFigmaToken(userId, accessToken, refreshToken, tokenExpiresAt);
+
+  // Fetch file at depth=2: gives us pages + top-level frames without the full tree
+  const file = await figmaGet<FigmaFileResponse>(`/files/${fileKey}?depth=2`, token);
+
+  const signals: RawDesignUsageSignal[] = [];
+
+  // ── 1. Detached instances ──────────────────────────────────────────────
+  // Build a set of known component names (base names, without variant suffixes)
+  const componentNames = new Set<string>();
+  for (const comp of Object.values(file.components ?? {})) {
+    const baseName = comp.name.split("/")[0].trim();
+    if (baseName) componentNames.add(baseName);
+  }
+  for (const cs of Object.values(file.componentSets ?? {})) {
+    const baseName = cs.name.split("/")[0].trim();
+    if (baseName) componentNames.add(baseName);
+  }
+
+  // Walk the document tree looking for non-INSTANCE nodes with component-like names
+  const detachedTypes = new Set(["FRAME", "GROUP"]);
+
+  function walkForDetached(node: FigmaDocumentNode, pageName: string) {
+    if (signals.length >= MAX_SIGNALS) return;
+
+    if (detachedTypes.has(node.type) && node.type !== "INSTANCE") {
+      const nodeName = node.name.trim();
+      if (componentNames.has(nodeName)) {
+        signals.push({
+          type: "detached_instance",
+          componentName: nodeName,
+          fileName: file.name,
+          description: `"${nodeName}" on page "${pageName}" is a ${node.type} that matches component name — likely a detached instance`,
+        });
+      }
+    }
+
+    if (node.children) {
+      for (const child of node.children) {
+        if (signals.length >= MAX_SIGNALS) return;
+        walkForDetached(child, pageName);
+      }
+    }
+  }
+
+  // Pages are the top-level children of the document
+  for (const page of file.document?.children ?? []) {
+    walkForDetached(page, page.name);
+  }
+
+  // ── 2. Local styles ────────────────────────────────────────────────────
+  // Collect all style IDs referenced in the document nodes
+  const referencedStyleIds = new Set<string>();
+
+  function walkForStyles(node: FigmaDocumentNode) {
+    if (node.styles) {
+      for (const styleId of Object.values(node.styles)) {
+        referencedStyleIds.add(styleId);
+      }
+    }
+    if (node.children) {
+      for (const child of node.children) {
+        walkForStyles(child);
+      }
+    }
+  }
+
+  for (const page of file.document?.children ?? []) {
+    walkForStyles(page);
+  }
+
+  // Styles defined in file.styles are local to this file. Any style that appears
+  // in the file's styles map (keyed by node ID) is local, not from a shared library.
+  const localStyleIds = new Set(Object.keys(file.styles ?? {}));
+
+  for (const styleId of Array.from(referencedStyleIds)) {
+    if (signals.length >= MAX_SIGNALS) break;
+
+    if (localStyleIds.has(styleId)) {
+      const style = file.styles[styleId];
+      signals.push({
+        type: "local_style",
+        componentName: style.name,
+        fileName: file.name,
+        description: `"${style.name}" is a local ${style.styleType.toLowerCase()} style — not from a shared library`,
+      });
+    }
+  }
+
+  // Also flag local styles that exist in the file but aren't referenced in nodes
+  // (these are still signals of non-library style usage)
+  for (const [styleId, style] of Object.entries(file.styles ?? {})) {
+    if (signals.length >= MAX_SIGNALS) break;
+    if (referencedStyleIds.has(styleId)) continue; // already reported above
+
+    signals.push({
+      type: "local_style",
+      componentName: style.name,
+      fileName: file.name,
+      description: `"${style.name}" is an unused local ${style.styleType.toLowerCase()} style`,
+    });
+  }
+
+  return signals.slice(0, MAX_SIGNALS);
 }

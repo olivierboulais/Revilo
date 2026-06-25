@@ -1,9 +1,9 @@
-import { ScanReport, ScanDataSource, RiskLevel } from "@/lib/types";
+import { ScanReport, ScanDataSource, RiskLevel, RawComponent, RawToken, RawDesignUsageSignal } from "@/lib/types";
 import { fetchFigmaComponents, fetchFigmaTokens, fetchFigmaUsageSignals } from "@/lib/figma/api";
 import { fetchGithubComponents, fetchGithubTokens } from "@/lib/github/api";
 import { fetchFigmaComponents as mockFigmaComponents, fetchFigmaTokens as mockFigmaTokens, fetchFigmaUsageSignals as mockFigmaUsageSignals } from "@/lib/mock/figma";
 import { fetchGithubComponents as mockGithubComponents, fetchGithubTokens as mockGithubTokens } from "@/lib/mock/github";
-import { getSource } from "@/lib/db/sources";
+import { getSource, parseFigmaFiles, FigmaFile, FigmaFileRole } from "@/lib/db/sources";
 import { findUserByEmail } from "@/lib/db/users";
 import { normalizeComponents, normalizeTokens } from "@/lib/normalize";
 import { matchComponents, matchTokens, analyzeStructureConsistency } from "@/lib/match";
@@ -26,13 +26,14 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
     userId = user?.id ?? null;
   }
 
-  let figmaSource = userId ? await getSource(userId, "figma") : null;
+  const figmaSource = userId ? await getSource(userId, "figma") : null;
+  const figmaFiles = parseFigmaFiles(figmaSource?.figma_file_key ?? null);
   const hasFigma =
     figmaSource?.status === "connected" &&
     figmaSource.access_token &&
-    figmaSource.figma_file_key;
+    figmaFiles.length > 0;
 
-  let githubSource = userId ? await getSource(userId, "github") : null;
+  const githubSource = userId ? await getSource(userId, "github") : null;
   const hasGithub =
     githubSource?.status === "connected" &&
     githubSource.access_token &&
@@ -43,68 +44,97 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
     github: hasGithub ? "real" : "mock",
   };
 
-  const [figmaRawComponents, figmaRawTokens, githubRawComponents, githubRawTokens, figmaUsageSignals] =
-    await Promise.all([
-      hasFigma
-        ? fetchFigmaComponents(
-            userId!,
-            figmaSource!.figma_file_key!,
-            figmaSource!.access_token!,
-            figmaSource!.refresh_token,
-            figmaSource!.token_expires_at
+  // Map file roles to token tiers for downstream classification
+  const roleToTierHint: Record<FigmaFileRole, string> = {
+    seed: "primitive",
+    primitive: "primitive",
+    semantic: "semantic",
+    component: "semantic",
+    project: "semantic",
+  };
+
+  // Fetch from all Figma files in parallel, tagging tokens with their role
+  let figmaRawComponents: RawComponent[] = [];
+  let figmaRawTokens: RawToken[] = [];
+  let figmaUsageSignals: RawDesignUsageSignal[] = [];
+
+  if (hasFigma) {
+    const fileResults = await Promise.all(
+      figmaFiles.map(async (file: FigmaFile) => {
+        const comps = await fetchFigmaComponents(
+          userId!, file.key, figmaSource!.access_token!,
+          figmaSource!.refresh_token, figmaSource!.token_expires_at
+        ).catch((err) => {
+          dataSource.figma = "error";
+          dataSource.figmaError = err instanceof Error ? err.message : String(err);
+          return [] as RawComponent[];
+        });
+
+        const toks = await fetchFigmaTokens(
+          userId!, file.key, figmaSource!.access_token!,
+          figmaSource!.refresh_token, figmaSource!.token_expires_at
+        ).then((tokens) =>
+          tokens.map((t) => ({ ...t, tierHint: roleToTierHint[file.role] }))
+        ).catch((err) => {
+          dataSource.figma = "error";
+          dataSource.figmaError = err instanceof Error ? err.message : String(err);
+          return [] as RawToken[];
+        });
+
+        // Only fetch usage signals from component/project files
+        let signals: RawDesignUsageSignal[] = [];
+        if (file.role === "component" || file.role === "project") {
+          signals = await fetchFigmaUsageSignals(
+            userId!, file.key, figmaSource!.access_token!,
+            figmaSource!.refresh_token, figmaSource!.token_expires_at
           ).catch((err) => {
             dataSource.figma = "error";
             dataSource.figmaError = err instanceof Error ? err.message : String(err);
-            return mockFigmaComponents();
+            return [] as RawDesignUsageSignal[];
+          });
+        }
+
+        return { comps, toks, signals };
+      })
+    );
+
+    for (const r of fileResults) {
+      figmaRawComponents.push(...r.comps);
+      figmaRawTokens.push(...r.toks);
+      figmaUsageSignals.push(...r.signals);
+    }
+
+    if (figmaRawComponents.length === 0 && figmaRawTokens.length === 0) {
+      figmaRawComponents = await mockFigmaComponents();
+      figmaRawTokens = await mockFigmaTokens();
+      figmaUsageSignals = await mockFigmaUsageSignals();
+      dataSource.figma = "mock";
+    }
+  } else {
+    figmaRawComponents = await mockFigmaComponents();
+    figmaRawTokens = await mockFigmaTokens();
+    figmaUsageSignals = await mockFigmaUsageSignals();
+  }
+
+  const [githubRawComponents, githubRawTokens] = await Promise.all([
+    hasGithub
+      ? fetchGithubComponents(githubSource!.github_repo!, githubSource!.access_token!)
+          .catch((err) => {
+            dataSource.github = "error";
+            dataSource.githubError = err instanceof Error ? err.message : String(err);
+            return mockGithubComponents();
           })
-        : mockFigmaComponents(),
+      : mockGithubComponents(),
 
-      hasFigma
-        ? fetchFigmaTokens(
-            userId!,
-            figmaSource!.figma_file_key!,
-            figmaSource!.access_token!,
-            figmaSource!.refresh_token,
-            figmaSource!.token_expires_at
-          ).catch((err) => {
-            dataSource.figma = "error";
-            dataSource.figmaError = err instanceof Error ? err.message : String(err);
-            return mockFigmaTokens();
+    hasGithub
+      ? fetchGithubTokens(githubSource!.github_repo!, githubSource!.access_token!)
+          .catch((err) => {
+            dataSource.github = "error";
+            dataSource.githubError = err instanceof Error ? err.message : String(err);
+            return mockGithubTokens();
           })
-        : mockFigmaTokens(),
-
-      hasGithub
-        ? fetchGithubComponents(githubSource!.github_repo!, githubSource!.access_token!)
-            .catch((err) => {
-              dataSource.github = "error";
-              dataSource.githubError = err instanceof Error ? err.message : String(err);
-              return mockGithubComponents();
-            })
-        : mockGithubComponents(),
-
-      hasGithub
-        ? fetchGithubTokens(githubSource!.github_repo!, githubSource!.access_token!)
-            .catch((err) => {
-              dataSource.github = "error";
-              dataSource.githubError = err instanceof Error ? err.message : String(err);
-              return mockGithubTokens();
-            })
-        : mockGithubTokens(),
-
-      hasFigma
-        ? fetchFigmaUsageSignals(
-            userId!,
-            figmaSource!.figma_file_key!,
-            figmaSource!.access_token!,
-            figmaSource!.refresh_token,
-            figmaSource!.token_expires_at
-          ).catch((err) => {
-            dataSource.figma = "error";
-            dataSource.figmaError = err instanceof Error ? err.message : String(err);
-            return mockFigmaUsageSignals();
-          })
-        : mockFigmaUsageSignals(),
-    ]);
+      : mockGithubTokens(),
+  ]);
 
   const components = normalizeComponents([...figmaRawComponents, ...githubRawComponents]);
   const tokens = normalizeTokens([...figmaRawTokens, ...githubRawTokens]);

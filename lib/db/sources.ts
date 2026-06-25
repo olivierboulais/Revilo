@@ -2,6 +2,14 @@ import { randomUUID } from "crypto";
 import { getSupabaseClient, isSupabase } from "@/lib/db/supabase";
 import { getDb } from "@/lib/db/client";
 
+export type FigmaFileRole = "seed" | "primitive" | "semantic" | "component" | "project";
+
+export interface FigmaFile {
+  key: string;
+  role: FigmaFileRole;
+  label: string;
+}
+
 export interface SourceRecord {
   id: string;
   user_id: string;
@@ -14,6 +22,20 @@ export interface SourceRecord {
   github_repo: string | null;
   token_expires_at: string | null;
   connected_at: string;
+}
+
+export function parseFigmaFiles(raw: string | null): FigmaFile[] {
+  if (!raw) return [];
+  const trimmed = raw.trim();
+  if (trimmed.startsWith("[")) {
+    try { return JSON.parse(trimmed) as FigmaFile[]; } catch { /* fall through */ }
+  }
+  return [{ key: trimmed, role: "project", label: "Design System" }];
+}
+
+export function serializeFigmaFiles(files: FigmaFile[]): string {
+  if (files.length === 0) return "";
+  return JSON.stringify(files);
 }
 
 async function sb() { return getSupabaseClient(); }

@@ -78,7 +78,15 @@ function isTokenFile(path: string): boolean {
     lower.includes("variables") ||
     lower.includes("design-system") ||
     lower.includes("foundation") ||
-    lower.includes("primitive")
+    lower.includes("primitive") ||
+    lower.includes("palette") ||
+    lower.includes("typography") ||
+    lower.includes("shadow") ||
+    lower.includes("border") ||
+    lower.includes("motion") ||
+    lower.includes("breakpoint") ||
+    lower.includes("z-index") ||
+    lower.includes("opacity")
   );
 }
 
@@ -107,19 +115,41 @@ function extractComponentsFromSource(source: string, filePath: string): string[]
 // Detect variant-like props from TypeScript union types in source
 function extractVariantsFromSource(source: string): string[] {
   const variants: string[] = [];
+
   // type Variant = "primary" | "secondary" | ...
   const variantTypes = [...source.matchAll(/type\s+\w*[Vv]ariant\w*\s*=\s*([^;]+);/g)];
   for (const m of variantTypes) {
-    const unions = [...m[1].matchAll(/"([^"]+)"/g)].map((u) => u[1]);
+    const unions = [...m[1].matchAll(/["']([^"']+)["']/g)].map((u) => u[1]);
     variants.push(...unions);
   }
+
+  // type Size = "small" | "medium" | "large"
+  const sizeTypes = [...source.matchAll(/type\s+\w*(?:Size|Tone|Status|Appearance|Weight)\w*\s*=\s*([^;]+);/g)];
+  for (const m of sizeTypes) {
+    const unions = [...m[1].matchAll(/["']([^"']+)["']/g)].map((u) => u[1]);
+    variants.push(...unions);
+  }
+
   // "variant": "primary" | "secondary" in props/interface
-  const variantProps = [...source.matchAll(/variant\??:\s*([^;\n]+)/g)];
+  const variantProps = [...source.matchAll(/(?:variant|size|tone|status|appearance|weight)\??\s*:\s*([^;\n}]+)/gi)];
   for (const m of variantProps) {
-    const unions = [...m[1].matchAll(/"([^"]+)"/g)].map((u) => u[1]);
+    const unions = [...m[1].matchAll(/["']([^"']+)["']/g)].map((u) => u[1]);
     variants.push(...unions);
   }
-  return [...new Set(variants)].slice(0, 8);
+
+  // Discriminated union: { type: "primary" } | { type: "secondary" }
+  const discUnions = [...source.matchAll(/\{\s*(?:type|kind|variant)\s*:\s*["']([^"']+)["']/g)];
+  for (const m of discUnions) {
+    variants.push(m[1]);
+  }
+
+  // Responsive-style objects: size: "small" | { xs: "small", md: "medium" }
+  const responsiveProps = [...source.matchAll(/(?:xs|sm|md|lg|xl)\s*:\s*["']([^"']+)["']/g)];
+  for (const m of responsiveProps) {
+    variants.push(m[1]);
+  }
+
+  return [...new Set(variants)].slice(0, 12);
 }
 
 // Extract prop names from TypeScript interfaces / Props type
@@ -146,34 +176,88 @@ function extractTokensFromCss(source: string): Array<{ name: string; value: stri
   return tokens;
 }
 
+function guessCategory(name: string, value: string): string {
+  const lower = name.toLowerCase();
+  if (lower.includes("color") || lower.includes("fill") || lower.includes("stroke") || lower.includes("bg") || lower.includes("fg")) return "color";
+  if (lower.includes("space") || lower.includes("padding") || lower.includes("margin") || lower.includes("gap") || lower.includes("size")) return "spacing";
+  if (lower.includes("radius") || lower.includes("border")) return "spacing";
+  if (lower.includes("font") || lower.includes("text") || lower.includes("typography") || lower.includes("line.height")) return "typography";
+  if (lower.includes("shadow") || lower.includes("elevation")) return "other";
+  if (lower.includes("opacity") || lower.includes("z.index") || lower.includes("duration") || lower.includes("motion")) return "other";
+  // Guess from value
+  if (/^#[0-9a-fA-F]{3,8}$/.test(value)) return "color";
+  if (/^rgba?\(/.test(value) || /^hsla?\(/.test(value)) return "color";
+  if (/^\d+(\.\d+)?px$/.test(value) || /^\d+(\.\d+)?rem$/.test(value)) return "spacing";
+  return "other";
+}
+
 function extractTokensFromJs(source: string): Array<{ name: string; value: string; category: string }> {
   const tokens: Array<{ name: string; value: string; category: string }> = [];
+  const seen = new Set<string>();
+
+  function addToken(name: string, value: string) {
+    if (seen.has(name)) return;
+    seen.add(name);
+    tokens.push({ name, value, category: guessCategory(name, value) });
+  }
 
   // Flat exports: export const colorBluePrimary = "#3B82F6"
   const flatExports = [...source.matchAll(/export\s+const\s+([a-z][a-zA-Z0-9]*)\s*=\s*["']([^"']+)["']/g)];
   for (const m of flatExports) {
     const name = m[1].replace(/([A-Z])/g, ".$1").toLowerCase();
-    const value = m[2];
-    const category = name.includes("color") ? "color" : name.includes("space") || name.includes("padding") || name.includes("margin") ? "spacing" : "other";
-    tokens.push({ name, value, category });
+    addToken(name, m[2]);
   }
 
-  // Nested object: { blue: { 500: "#3B82F6" } }
-  // Walk simple one/two-level objects exported as `colors`, `spacing`, `tokens`
-  const objExports = [...source.matchAll(/export\s+(?:const|default)\s+(\w+)\s*=\s*\{([\s\S]{1,4000})\}/g)];
+  // Nested objects: handles 1-3 levels of nesting
+  // e.g. export const color = { text: 'rgba(...)' }
+  // e.g. export const color = { gray: { 1: 'rgba(...)' } }
+  const objExports = [...source.matchAll(/export\s+(?:const|default)\s+(\w+)(?:\s*:\s*\w+)?\s*=\s*\{([\s\S]{1,8000})\}/g)];
   for (const m of objExports) {
-    const prefix = m[1].replace(/s$/, ""); // "colors" → "color"
+    const prefix = m[1].replace(/s$/, "");
     const body = m[2];
-    const entries = [...body.matchAll(/["']?([a-zA-Z0-9._-]+)["']?\s*:\s*["']([^"']+)["']/g)];
-    for (const e of entries) {
-      const name = `${prefix}.${e[1]}`;
-      const value = e[2];
-      const category = prefix.includes("color") ? "color" : prefix.includes("space") || prefix.includes("radius") ? "spacing" : "other";
-      tokens.push({ name, value, category });
-    }
+    extractNestedTokens(body, prefix, addToken);
+  }
+
+  // Standalone object assignments: const tokens = { ... }
+  const standaloneObjs = [...source.matchAll(/(?:const|let|var)\s+(\w+)(?:\s*:\s*\w+)?\s*=\s*\{([\s\S]{1,8000})\}/g)];
+  for (const m of standaloneObjs) {
+    if (source.includes(`export`) && !source.includes(`export ${m[0].slice(0, 20)}`)) continue;
+    const prefix = m[1].replace(/s$/, "");
+    if (seen.has(`__obj_${prefix}`)) continue;
+    seen.add(`__obj_${prefix}`);
+    extractNestedTokens(m[2], prefix, addToken);
   }
 
   return tokens;
+}
+
+function extractNestedTokens(body: string, prefix: string, addToken: (name: string, value: string) => void) {
+  // Level 1: key: 'value' or key: "value"
+  const l1 = [...body.matchAll(/["']?([a-zA-Z0-9_-]+)["']?\s*:\s*["']([^"']+)["']/g)];
+  for (const e of l1) {
+    addToken(`${prefix}.${e[1]}`, e[2]);
+  }
+
+  // Level 1: key: number (numeric values like spacing: { 1: 4, 2: 8 })
+  const l1Num = [...body.matchAll(/["']?([a-zA-Z0-9_-]+)["']?\s*:\s*(\d+(?:\.\d+)?)\s*[,\n}]/g)];
+  for (const e of l1Num) {
+    addToken(`${prefix}.${e[1]}`, e[2]);
+  }
+
+  // Level 2: nested objects like { gray: { 1: 'rgba(...)' } }
+  const nestedBlocks = [...body.matchAll(/["']?([a-zA-Z0-9_-]+)["']?\s*:\s*\{([^{}]{1,2000})\}/g)];
+  for (const block of nestedBlocks) {
+    const subPrefix = `${prefix}.${block[1]}`;
+    const subBody = block[2];
+    const entries = [...subBody.matchAll(/["']?([a-zA-Z0-9_.-]+)["']?\s*:\s*["']([^"']+)["']/g)];
+    for (const e of entries) {
+      addToken(`${subPrefix}.${e[1]}`, e[2]);
+    }
+    const numEntries = [...subBody.matchAll(/["']?([a-zA-Z0-9_-]+)["']?\s*:\s*(\d+(?:\.\d+)?)\s*[,\n}]/g)];
+    for (const e of numEntries) {
+      addToken(`${subPrefix}.${e[1]}`, e[2]);
+    }
+  }
 }
 
 function extractHardcodedValues(source: string, filePath: string): Array<{ name: string; value: string; category: string }> {
@@ -210,6 +294,39 @@ function extractHardcodedValues(source: string, filePath: string): Array<{ name:
   }
 
   return hardcoded;
+}
+
+// ── JSON token extraction ─────────────────────────────────────────────────
+
+function extractTokensFromJson(source: string, filePath: string): Array<{ name: string; value: string; category: string }> {
+  const tokens: Array<{ name: string; value: string; category: string }> = [];
+  try {
+    const parsed = JSON.parse(source);
+    const prefix = filePath.split("/").pop()?.replace(/\.json$/, "").replace(/s$/, "") ?? "token";
+    walkJsonTokens(parsed, prefix, tokens);
+  } catch {
+    // not valid JSON
+  }
+  return tokens.slice(0, 200);
+}
+
+function walkJsonTokens(obj: unknown, prefix: string, tokens: Array<{ name: string; value: string; category: string }>, depth = 0) {
+  if (depth > 5 || !obj || typeof obj !== "object") return;
+  for (const [key, val] of Object.entries(obj as Record<string, unknown>)) {
+    const name = `${prefix}.${key}`;
+    if (typeof val === "string" || typeof val === "number") {
+      const strVal = String(val);
+      tokens.push({ name, value: strVal, category: guessCategory(name, strVal) });
+    } else if (typeof val === "object" && val !== null) {
+      // W3C Design Token format: { "$value": "...", "$type": "..." }
+      const dtVal = (val as Record<string, unknown>)["$value"] ?? (val as Record<string, unknown>)["value"];
+      if (typeof dtVal === "string" || typeof dtVal === "number") {
+        tokens.push({ name, value: String(dtVal), category: guessCategory(name, String(dtVal)) });
+      } else {
+        walkJsonTokens(val, name, tokens, depth + 1);
+      }
+    }
+  }
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────
@@ -302,9 +419,14 @@ export async function fetchGithubTokens(
 
   for (const { path, source } of tokenFileSources) {
     if (!source) continue;
-    const extracted = path.endsWith(".css")
-      ? extractTokensFromCss(source)
-      : extractTokensFromJs(source);
+    let extracted: Array<{ name: string; value: string; category: string }>;
+    if (path.endsWith(".css")) {
+      extracted = extractTokensFromCss(source);
+    } else if (path.endsWith(".json")) {
+      extracted = extractTokensFromJson(source, path);
+    } else {
+      extracted = extractTokensFromJs(source);
+    }
 
     for (const t of extracted) {
       if (!seen.has(t.name)) {

@@ -69,6 +69,22 @@ function SourceCard({ name, description, icon, status, onConnect, children }: So
   );
 }
 
+type FigmaFileRole = "seed" | "primitive" | "semantic" | "component" | "project";
+
+interface FigmaFileEntry {
+  key: string;
+  role: FigmaFileRole;
+  label: string;
+}
+
+const ROLE_OPTIONS: { value: FigmaFileRole; label: string; hint: string }[] = [
+  { value: "project", label: "Project", hint: "File where components are used" },
+  { value: "component", label: "Components", hint: "Component library (atoms, molecules, etc.)" },
+  { value: "semantic", label: "Semantic tokens", hint: "Purpose-driven tokens (color.action.primary)" },
+  { value: "primitive", label: "Primitive tokens", hint: "Base scale tokens (color.blue.500)" },
+  { value: "seed", label: "Seed variables", hint: "Raw values (plain colors, numbers)" },
+];
+
 interface Props {
   figmaConnected: boolean;
   figmaFileKey: string | null;
@@ -78,13 +94,25 @@ interface Props {
   errorDetail?: string | null;
 }
 
+function parseFigmaFiles(raw: string | null): FigmaFileEntry[] {
+  if (!raw) return [];
+  const trimmed = raw.trim();
+  if (trimmed.startsWith("[")) {
+    try { return JSON.parse(trimmed) as FigmaFileEntry[]; } catch { /* fall through */ }
+  }
+  return [{ key: trimmed, role: "project", label: "Design System" }];
+}
+
 export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, githubRepo, error, errorDetail }: Props) {
   const router = useRouter();
-  const [fileKeyInput, setFileKeyInput] = useState(figmaFileKey ?? "");
+  const [figmaFiles, setFigmaFiles] = useState<FigmaFileEntry[]>(() => {
+    const parsed = parseFigmaFiles(figmaFileKey);
+    return parsed.length > 0 ? parsed : [{ key: "", role: "project", label: "" }];
+  });
   const [repoInput, setRepoInput] = useState(githubRepo ?? "");
   const [savingFileKey, setSavingFileKey] = useState(false);
   const [savingRepo, setSavingRepo] = useState(false);
-  const [fileKeySaved, setFileKeySaved] = useState(Boolean(figmaFileKey));
+  const [fileKeySaved, setFileKeySaved] = useState(() => parseFigmaFiles(figmaFileKey).length > 0 && parseFigmaFiles(figmaFileKey).every(f => f.key));
   const [repoSaved, setRepoSaved] = useState(Boolean(githubRepo));
   const [fieldError, setFieldError] = useState<string | null>(null);
 
@@ -92,20 +120,36 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
   const githubReady = githubConnected && repoSaved;
   const bothReady = figmaReady && githubReady;
 
+  function updateFile(index: number, updates: Partial<FigmaFileEntry>) {
+    setFigmaFiles(prev => prev.map((f, i) => i === index ? { ...f, ...updates } : f));
+    setFileKeySaved(false);
+  }
+
+  function addFile() {
+    setFigmaFiles(prev => [...prev, { key: "", role: "project", label: "" }]);
+    setFileKeySaved(false);
+  }
+
+  function removeFile(index: number) {
+    setFigmaFiles(prev => prev.length <= 1 ? prev : prev.filter((_, i) => i !== index));
+    setFileKeySaved(false);
+  }
+
   async function saveFileKey() {
-    if (!fileKeyInput.trim()) return;
+    const validFiles = figmaFiles.filter(f => f.key.trim());
+    if (validFiles.length === 0) return;
     setSavingFileKey(true);
     setFieldError(null);
     try {
       const res = await fetch("/api/sources/figma/file-key", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileKey: fileKeyInput.trim() }),
+        body: JSON.stringify({ files: validFiles }),
       });
-      if (!res.ok) throw new Error("Failed to save file key");
+      if (!res.ok) throw new Error("Failed to save files");
       setFileKeySaved(true);
     } catch {
-      setFieldError("Could not save the Figma file key. Please try again.");
+      setFieldError("Could not save Figma files. Please try again.");
     } finally {
       setSavingFileKey(false);
     }
@@ -168,30 +212,71 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
         >
           {figmaConnected && (
             <div className="mt-4 pt-4 border-t border-line">
-              <label className="text-[12.5px] text-gray block mb-1.5">
-                Figma file URL or key
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={fileKeyInput}
-                  onChange={(e) => { setFileKeyInput(e.target.value); setFileKeySaved(false); }}
-                  placeholder="https://www.figma.com/file/…"
-                  className="flex-1 text-[13px] rounded-xl border border-line px-3 py-2 outline-none focus:border-[#1C1C1A] bg-white"
-                />
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[12.5px] text-gray">Figma files</label>
+                <button
+                  onClick={addFile}
+                  className="text-[11.5px] font-medium text-[#1C1C1A] hover:underline"
+                >
+                  + Add file
+                </button>
+              </div>
+              <div className="flex flex-col gap-2.5">
+                {figmaFiles.map((file, i) => (
+                  <div key={i} className="flex gap-2 items-start">
+                    <div className="flex-1 flex flex-col gap-1.5">
+                      <input
+                        type="text"
+                        value={file.key}
+                        onChange={(e) => updateFile(i, { key: e.target.value })}
+                        placeholder="https://www.figma.com/file/… or file key"
+                        className="w-full text-[13px] rounded-xl border border-line px-3 py-2 outline-none focus:border-[#1C1C1A] bg-white"
+                      />
+                      <div className="flex gap-1.5">
+                        <select
+                          value={file.role}
+                          onChange={(e) => updateFile(i, { role: e.target.value as FigmaFileRole })}
+                          className="text-[11.5px] rounded-lg border border-line px-2 py-1 outline-none focus:border-[#1C1C1A] bg-white text-gray"
+                        >
+                          {ROLE_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                        <input
+                          type="text"
+                          value={file.label}
+                          onChange={(e) => updateFile(i, { label: e.target.value })}
+                          placeholder={ROLE_OPTIONS.find(o => o.value === file.role)?.hint ?? "Label"}
+                          className="flex-1 text-[11.5px] rounded-lg border border-line px-2 py-1 outline-none focus:border-[#1C1C1A] bg-white"
+                        />
+                      </div>
+                    </div>
+                    {figmaFiles.length > 1 && (
+                      <button
+                        onClick={() => removeFile(i)}
+                        className="text-[11px] text-gray hover:text-[#B3401F] mt-2 flex-shrink-0"
+                        title="Remove file"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between mt-2.5">
+                <p className="text-[11px] text-gray">
+                  Add files in order: seeds → primitives → semantics → components
+                </p>
                 <Button
                   variant={fileKeySaved ? "outline" : "dark"}
                   withArrow={false}
                   onClick={saveFileKey}
-                  disabled={savingFileKey || !fileKeyInput.trim()}
+                  disabled={savingFileKey || figmaFiles.every(f => !f.key.trim())}
                   className="text-[13px] flex-shrink-0"
                 >
                   {savingFileKey ? "Saving…" : fileKeySaved ? "Saved" : "Save"}
                 </Button>
               </div>
-              <p className="text-[11.5px] text-gray mt-1">
-                Open the file in Figma and copy the URL from the address bar.
-              </p>
             </div>
           )}
         </SourceCard>
