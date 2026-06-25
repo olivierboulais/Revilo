@@ -33,6 +33,27 @@ async function githubGet<T>(path: string, token: string): Promise<T> {
   return res.json();
 }
 
+// Resolve canonical owner/repo for renamed/transferred repos
+const resolvedRepos = new Map<string, string>();
+
+async function resolveRepo(owner: string, repo: string, token: string): Promise<[string, string]> {
+  const key = `${owner}/${repo}`;
+  const cached = resolvedRepos.get(key);
+  if (cached) {
+    const [o, r] = cached.split("/");
+    return [o, r];
+  }
+
+  try {
+    const data = await githubGet<{ full_name: string }>(`/repos/${owner}/${repo}`, token);
+    const [resolvedOwner, resolvedRepo] = data.full_name.split("/");
+    resolvedRepos.set(key, data.full_name);
+    return [resolvedOwner, resolvedRepo];
+  } catch {
+    return [owner, repo];
+  }
+}
+
 async function getFileContent(owner: string, repo: string, path: string, token: string): Promise<string> {
   const res = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${path}`, {
     headers: {
@@ -452,8 +473,9 @@ export async function fetchGithubComponents(
   repo: string,
   accessToken: string
 ): Promise<RawComponent[]> {
-  const [owner, repoName] = repo.split("/");
+  let [owner, repoName] = repo.split("/");
   if (!owner || !repoName) throw new Error(`Invalid repo format: ${repo} (expected owner/repo)`);
+  [owner, repoName] = await resolveRepo(owner, repoName, accessToken);
 
   // Get the full file tree
   const tree = await githubGet<GitTree>(
@@ -519,8 +541,9 @@ export async function fetchGithubTokens(
   repo: string,
   accessToken: string
 ): Promise<RawToken[]> {
-  const [owner, repoName] = repo.split("/");
+  let [owner, repoName] = repo.split("/");
   if (!owner || !repoName) throw new Error(`Invalid repo format: ${repo}`);
+  [owner, repoName] = await resolveRepo(owner, repoName, accessToken);
 
   const tree = await githubGet<GitTree>(
     `/repos/${owner}/${repoName}/git/trees/HEAD?recursive=1`,
