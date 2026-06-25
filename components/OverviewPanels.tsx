@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Finding, Recommendation } from "@/lib/types";
 import { SeverityDot } from "@/components/Visuals";
+import { AnimatedNumber } from "@/components/AnimatedNumber";
 
 function PanelShell({
   title,
@@ -154,7 +155,7 @@ export function CategoryModule({
         <span className="text-[12.5px] font-medium">{title}</span>
         {!locked && (
           <span className="text-[18px] font-semibold tracking-tight" style={{ color: score >= 80 ? "#34D399" : score >= 60 ? "#FBBF24" : "#EF4444" }}>
-            {score}
+            <AnimatedNumber value={score} />
           </span>
         )}
       </div>
