@@ -93,6 +93,14 @@ function isTokenFile(path: string): boolean {
   // Skip test, spec, story, and migration files
   if (/\.(test|spec|stories)\.(ts|tsx|js|jsx)$/.test(path)) return false;
   if (/\/(tests|__tests__|__mocks__|migrations?|migrator)\//.test(path)) return false;
+  // Skip config, manifest, and re-export files
+  const filename = path.split("/").pop()?.toLowerCase() ?? "";
+  if (/^(package|package-lock|turbo|lerna|nx|yarn\.lock)\.json$/.test(filename)) return false;
+  if (/^tsconfig(\..+)?\.json$/.test(filename)) return false;
+  if (/\.(config|rc)\.(js|ts|mjs|cjs|json)$/.test(filename)) return false;
+  if (/^\.(eslintrc|prettierrc|stylelintrc)/.test(filename)) return false;
+  if (["index.ts", "index.js", "index.tsx", "index.mjs"].includes(filename)) return false;
+  if (["changelog.md", "readme.md", "license", "license.md"].includes(filename)) return false;
   const lower = path.toLowerCase();
   return (
     lower.includes("token") ||

@@ -96,6 +96,22 @@ export async function GET() {
           const name = i.path.split("/").pop()?.replace(/\.(tsx|jsx)$/, "") ?? "";
           return /^[A-Z][a-zA-Z0-9]+$/.test(name) && !/\.(test|spec|stories)\./.test(i.path) && !/\/index\./.test(i.path);
         });
+        const tokenKeywords = ["token", "theme", "color", "spacing", "variables", "design-system", "foundation", "primitive", "palette", "typography", "shadow", "border", "motion", "breakpoint", "z-index", "opacity"];
+        const tokenLikeFiles = allItems.filter((i: { type: string; path: string }) => {
+          if (i.type !== "blob") return false;
+          if (!/\.(ts|tsx|js|jsx|json|css)$/.test(i.path)) return false;
+          if (/\/(node_modules|\.next|dist|build)\//.test(i.path)) return false;
+          if (/\.(test|spec|stories)\.(ts|tsx|js|jsx)$/.test(i.path)) return false;
+          if (/\/(tests|__tests__|__mocks__|migrations?|migrator)\//.test(i.path)) return false;
+          const fn = i.path.split("/").pop()?.toLowerCase() ?? "";
+          if (/^(package|package-lock|turbo|lerna)\.json$/.test(fn)) return false;
+          if (/^tsconfig(\..+)?\.json$/.test(fn)) return false;
+          if (/\.(config|rc)\.(js|ts|mjs|cjs|json)$/.test(fn)) return false;
+          if (/^\.(eslintrc|prettierrc|stylelintrc)/.test(fn)) return false;
+          if (["index.ts", "index.js", "index.tsx", "index.mjs", "changelog.md", "readme.md", "license", "license.md"].includes(fn)) return false;
+          const lower = i.path.toLowerCase();
+          return tokenKeywords.some(kw => lower.includes(kw));
+        });
         result.githubTreeDiag = {
           status: treeStatus,
           redirected: treeRedirected,
@@ -105,6 +121,8 @@ export async function GET() {
           tsxFiles: tsxFiles.length,
           componentLikeFiles: componentLike.length,
           samplePaths: componentLike.slice(0, 10).map((i: { path: string }) => i.path),
+          tokenLikeFiles: tokenLikeFiles.length,
+          tokenFilePaths: tokenLikeFiles.slice(0, 25).map((i: { path: string }) => i.path),
         };
       } else {
         const body = await treeRes.text().catch(() => "");
@@ -151,7 +169,7 @@ export async function GET() {
       };
       result.githubTokens = {
         count: tokens.length,
-        sample: tokens.slice(0, 15).map(t => ({ name: t.name, value: t.value, category: t.category })),
+        sample: tokens.slice(0, 15).map(t => ({ name: t.name, value: t.value, category: t.category, source: t.source })),
       };
     } catch (err) {
       result.githubError = err instanceof Error ? err.message : String(err);
