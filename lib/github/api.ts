@@ -90,6 +90,9 @@ function isLikelyComponent(path: string): boolean {
 function isTokenFile(path: string): boolean {
   if (!/\.(ts|tsx|js|jsx|json|css)$/.test(path)) return false;
   if (/\/(node_modules|\.next|dist|build)\//.test(path)) return false;
+  // Skip test, spec, story, and migration files
+  if (/\.(test|spec|stories)\.(ts|tsx|js|jsx)$/.test(path)) return false;
+  if (/\/(tests|__tests__|__mocks__|migrations?|migrator)\//.test(path)) return false;
   const lower = path.toLowerCase();
   return (
     lower.includes("token") ||
@@ -559,10 +562,20 @@ export async function fetchGithubTokens(
     componentFilePaths = await discoverComponentFiles(owner, repoName, accessToken);
     componentFilePaths = componentFilePaths.slice(0, 30);
   } else {
-    tokenFilePaths = tree.tree
+    const allTokenPaths = tree.tree
       .filter((item) => item.type === "blob" && isTokenFile(item.path))
-      .map((item) => item.path)
-      .slice(0, 20);
+      .map((item) => item.path);
+    // Prioritize files in token/theme-specific directories over scattered matches
+    const tokenDirScore = (p: string) => {
+      const lower = p.toLowerCase();
+      if (lower.includes("/tokens/") || lower.includes("-tokens/")) return 0;
+      if (lower.includes("/theme") || lower.includes("/foundation") || lower.includes("/primitive")) return 1;
+      if (lower.includes("/styles/") || lower.includes("/design-system/")) return 2;
+      return 3;
+    };
+    tokenFilePaths = allTokenPaths
+      .sort((a, b) => tokenDirScore(a) - tokenDirScore(b) || a.split("/").length - b.split("/").length)
+      .slice(0, 25);
     componentFilePaths = tree.tree
       .filter((item) => item.type === "blob" && isComponentFile(item.path))
       .map((item) => item.path)
