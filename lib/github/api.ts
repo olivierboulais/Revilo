@@ -329,6 +329,123 @@ function walkJsonTokens(obj: unknown, prefix: string, tokens: Array<{ name: stri
   }
 }
 
+// ── Directory listing for large repos ─────────────────────────────────────
+
+interface GithubContentItem {
+  name: string;
+  path: string;
+  type: "file" | "dir";
+}
+
+async function listDirectory(owner: string, repo: string, path: string, token: string): Promise<GithubContentItem[]> {
+  try {
+    return await githubGet<GithubContentItem[]>(`/repos/${owner}/${repo}/contents/${path}`, token);
+  } catch {
+    return [];
+  }
+}
+
+async function discoverComponentFiles(owner: string, repo: string, token: string): Promise<string[]> {
+  const paths: string[] = [];
+
+  // Try common component directory patterns
+  const candidateDirs = [
+    "src/components",
+    "components",
+    "lib/components",
+    "packages",
+  ];
+
+  // First, check root to detect monorepo structure
+  const root = await listDirectory(owner, repo, "", token);
+  const rootDirs = root.filter(i => i.type === "dir").map(i => i.name);
+
+  // Add monorepo package dirs that might contain components
+  for (const dir of rootDirs) {
+    if (dir.includes("react") || dir.includes("component") || dir.includes("ui") || dir.includes("core")) {
+      candidateDirs.push(`${dir}/src/components`, `${dir}/components`, `${dir}/src`);
+    }
+  }
+
+  // Check packages/ directory for monorepo setups
+  if (rootDirs.includes("packages")) {
+    const packages = await listDirectory(owner, repo, "packages", token);
+    for (const pkg of packages.filter(i => i.type === "dir")) {
+      if (pkg.name.includes("react") || pkg.name.includes("component") || pkg.name.includes("ui") || pkg.name.includes("core")) {
+        candidateDirs.push(`packages/${pkg.name}/src/components`, `packages/${pkg.name}/components`, `packages/${pkg.name}/src`);
+      }
+    }
+  }
+
+  for (const dir of candidateDirs) {
+    const items = await listDirectory(owner, repo, dir, token);
+    if (items.length === 0) continue;
+
+    // Look for component subdirectories (PascalCase dirs) or direct component files
+    for (const item of items) {
+      if (item.type === "dir" && /^[A-Z]/.test(item.name)) {
+        // PascalCase directory — look for the main component file inside
+        const subItems = await listDirectory(owner, repo, item.path, token);
+        for (const sub of subItems) {
+          if (sub.type === "file" && isComponentFile(sub.path) && isLikelyComponent(sub.path)) {
+            paths.push(sub.path);
+          }
+        }
+        if (paths.length >= 80) break;
+      } else if (item.type === "file" && isComponentFile(item.path) && isLikelyComponent(item.path)) {
+        paths.push(item.path);
+      }
+    }
+    if (paths.length >= 80) break;
+  }
+
+  return paths.slice(0, 80);
+}
+
+async function discoverTokenFiles(owner: string, repo: string, token: string): Promise<string[]> {
+  const paths: string[] = [];
+
+  const root = await listDirectory(owner, repo, "", token);
+  const rootDirs = root.filter(i => i.type === "dir").map(i => i.name);
+
+  const candidateDirs = ["src", "lib", "tokens", "styles"];
+
+  // Look for token-specific packages in monorepos
+  for (const dir of rootDirs) {
+    if (dir.includes("token") || dir.includes("theme") || dir.includes("foundation") || dir.includes("primitive")) {
+      candidateDirs.push(dir, `${dir}/src`);
+    }
+  }
+
+  if (rootDirs.includes("packages")) {
+    const packages = await listDirectory(owner, repo, "packages", token);
+    for (const pkg of packages.filter(i => i.type === "dir")) {
+      if (pkg.name.includes("token") || pkg.name.includes("theme") || pkg.name.includes("foundation")) {
+        candidateDirs.push(`packages/${pkg.name}/src`, `packages/${pkg.name}`);
+      }
+    }
+  }
+
+  for (const dir of candidateDirs) {
+    const items = await listDirectory(owner, repo, dir, token);
+    for (const item of items) {
+      if (item.type === "file" && isTokenFile(item.path)) {
+        paths.push(item.path);
+      } else if (item.type === "dir" && isTokenFile(item.path + "/")) {
+        const subItems = await listDirectory(owner, repo, item.path, token);
+        for (const sub of subItems) {
+          if (sub.type === "file" && isTokenFile(sub.path)) {
+            paths.push(sub.path);
+          }
+        }
+      }
+    }
+    if (paths.length >= 30) break;
+  }
+
+  return paths.slice(0, 30);
+}
+
 // ── Public API ─────────────────────────────────────────────────────────────
 
 export async function fetchGithubComponents(
@@ -344,25 +461,33 @@ export async function fetchGithubComponents(
     accessToken
   );
 
-  const componentFiles = tree.tree
-    .filter((item) => item.type === "blob" && isComponentFile(item.path) && isLikelyComponent(item.path))
-    .slice(0, 60); // cap at 60 files to avoid rate limits
+  let componentFilePaths: string[];
+
+  if (tree.truncated) {
+    // Large repo — use Contents API to discover component files
+    componentFilePaths = await discoverComponentFiles(owner, repoName, accessToken);
+  } else {
+    componentFilePaths = tree.tree
+      .filter((item) => item.type === "blob" && isComponentFile(item.path) && isLikelyComponent(item.path))
+      .map((item) => item.path)
+      .slice(0, 80);
+  }
 
   const components: RawComponent[] = [];
 
   // Process files in batches of 10 to avoid overwhelming the API
   const BATCH = 10;
-  for (let i = 0; i < componentFiles.length; i += BATCH) {
-    const batch = componentFiles.slice(i, i + BATCH);
+  for (let i = 0; i < componentFilePaths.length; i += BATCH) {
+    const batch = componentFilePaths.slice(i, i + BATCH);
     const results = await Promise.all(
-      batch.map(async (file) => {
-        const source = await getFileContent(owner, repoName, file.path, accessToken);
+      batch.map(async (filePath) => {
+        const source = await getFileContent(owner, repoName, filePath, accessToken);
         if (!source) return null;
 
-        const names = extractComponentsFromSource(source, file.path);
+        const names = extractComponentsFromSource(source, filePath);
         if (names.length === 0) return null;
 
-        const pathParts = file.path.split("/");
+        const pathParts = filePath.split("/");
         const dir = pathParts.slice(0, -1).join("/");
         const variants = extractVariantsFromSource(source);
         const props = extractPropsFromSource(source);
@@ -397,23 +522,33 @@ export async function fetchGithubTokens(
     accessToken
   );
 
-  const tokenFiles = tree.tree
-    .filter((item) => item.type === "blob" && isTokenFile(item.path))
-    .slice(0, 20);
+  let tokenFilePaths: string[];
+  let componentFilePaths: string[];
 
-  // Also grab component files for hardcoded value detection
-  const componentFiles = tree.tree
-    .filter((item) => item.type === "blob" && isComponentFile(item.path))
-    .slice(0, 30);
+  if (tree.truncated) {
+    tokenFilePaths = await discoverTokenFiles(owner, repoName, accessToken);
+    // Reuse already-discovered component paths for hardcoded value detection
+    componentFilePaths = await discoverComponentFiles(owner, repoName, accessToken);
+    componentFilePaths = componentFilePaths.slice(0, 30);
+  } else {
+    tokenFilePaths = tree.tree
+      .filter((item) => item.type === "blob" && isTokenFile(item.path))
+      .map((item) => item.path)
+      .slice(0, 20);
+    componentFilePaths = tree.tree
+      .filter((item) => item.type === "blob" && isComponentFile(item.path))
+      .map((item) => item.path)
+      .slice(0, 30);
+  }
 
   const tokens: RawToken[] = [];
   const seen = new Set<string>();
 
   // Extract design tokens from token/theme files
   const tokenFileSources = await Promise.all(
-    tokenFiles.map(async (f) => ({
-      path: f.path,
-      source: await getFileContent(owner, repoName, f.path, accessToken),
+    tokenFilePaths.map(async (filePath) => ({
+      path: filePath,
+      source: await getFileContent(owner, repoName, filePath, accessToken),
     }))
   );
 
@@ -438,9 +573,9 @@ export async function fetchGithubTokens(
 
   // Extract hardcoded values from component files
   const compFileSources = await Promise.all(
-    componentFiles.map(async (f) => ({
-      path: f.path,
-      source: await getFileContent(owner, repoName, f.path, accessToken),
+    componentFilePaths.map(async (filePath) => ({
+      path: filePath,
+      source: await getFileContent(owner, repoName, filePath, accessToken),
     }))
   );
 
