@@ -8,12 +8,12 @@ type SourceStatus = "idle" | "connected";
 
 function FigmaIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 38 57" fill="none">
-      <path d="M19 28.5a9.5 9.5 0 1 1 9.5-9.5 9.5 9.5 0 0 1-9.5 9.5Z" fill="#1ABCFE" />
-      <path d="M9.5 38a9.5 9.5 0 0 1 9.5-9.5v19A9.5 9.5 0 0 1 9.5 38Z" fill="#0ACF83" />
-      <path d="M19 0v19H9.5a9.5 9.5 0 1 1 0-19H19Z" fill="#FF7262" />
-      <path d="M19 19h9.5a9.5 9.5 0 1 1 0 19H19V19Z" fill="#A259FF" />
-      <path d="M0 9.5A9.5 9.5 0 0 1 9.5 0H19v19H9.5A9.5 9.5 0 0 1 0 9.5Z" fill="#F24E1E" />
+    <svg width="20" height="20" viewBox="0 0 38 57" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9.5 57C14.747 57 19 52.747 19 47.5V38H9.5C4.253 38 0 42.253 0 47.5S4.253 57 9.5 57Z" fill="#0ACF83"/>
+      <path d="M0 28.5C0 23.253 4.253 19 9.5 19H19v19H9.5C4.253 38 0 33.747 0 28.5Z" fill="#A259FF"/>
+      <path d="M0 9.5C0 4.253 4.253 0 9.5 0H19v19H9.5C4.253 19 0 14.747 0 9.5Z" fill="#F24E1E"/>
+      <path d="M19 0h9.5C33.747 0 38 4.253 38 9.5S33.747 19 28.5 19H19V0Z" fill="#FF7262"/>
+      <path d="M38 28.5c0 5.247-4.253 9.5-9.5 9.5S19 33.747 19 28.5s4.253-9.5 9.5-9.5 9.5 4.253 9.5 9.5Z" fill="#1ABCFE"/>
     </svg>
   );
 }
