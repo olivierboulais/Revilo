@@ -101,6 +101,12 @@ function isTokenFile(path: string): boolean {
   if (/^\.(eslintrc|prettierrc|stylelintrc)/.test(filename)) return false;
   if (["index.ts", "index.js", "index.tsx", "index.mjs"].includes(filename)) return false;
   if (["changelog.md", "readme.md", "license", "license.md"].includes(filename)) return false;
+  // Skip component source files — they contain UI logic, not token definitions
+  if (/\/components\//.test(path) && /\.(tsx|jsx)$/.test(path)) return false;
+  // Skip script/build tooling files
+  if (/\/scripts\//.test(path)) return false;
+  // Skip utility files that reference colors but aren't token definitions
+  if (/\/(utilities|utils|helpers)\//.test(path) && !/token/i.test(filename)) return false;
   const lower = path.toLowerCase();
   return (
     lower.includes("token") ||

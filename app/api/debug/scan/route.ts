@@ -71,7 +71,20 @@ export async function GET() {
   if (githubSource?.status === "connected" && githubSource.access_token && githubSource.github_repo) {
     const repo = githubSource.github_repo;
     const token = githubSource.access_token;
-    const [owner, repoName] = repo.split("/");
+    let [owner, repoName] = repo.split("/");
+
+    // Resolve canonical repo name (handles renames/transfers)
+    try {
+      const repoData = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (repoData.ok) {
+        const data = await repoData.json();
+        [owner, repoName] = data.full_name.split("/");
+        result.resolvedRepo = data.full_name;
+      }
+    } catch { /* use original */ }
 
     // Step 1: Test raw tree API
     try {
@@ -109,6 +122,9 @@ export async function GET() {
           if (/\.(config|rc)\.(js|ts|mjs|cjs|json)$/.test(fn)) return false;
           if (/^\.(eslintrc|prettierrc|stylelintrc)/.test(fn)) return false;
           if (["index.ts", "index.js", "index.tsx", "index.mjs", "changelog.md", "readme.md", "license", "license.md"].includes(fn)) return false;
+          if (/\/components\//.test(i.path) && /\.(tsx|jsx)$/.test(i.path)) return false;
+          if (/\/scripts\//.test(i.path)) return false;
+          if (/\/(utilities|utils|helpers)\//.test(i.path) && !/token/i.test(fn)) return false;
           const lower = i.path.toLowerCase();
           return tokenKeywords.some(kw => lower.includes(kw));
         });
