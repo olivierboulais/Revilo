@@ -5,6 +5,8 @@ import { getReport, saveReport } from "@/lib/store";
 import { detectDrift } from "@/lib/drift/detect";
 import { sendDriftAlert } from "@/lib/drift/alert";
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   const session = await getSession();
   if (!session) {

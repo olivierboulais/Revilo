@@ -41,7 +41,7 @@ async function getFileContent(owner: string, repo: string, path: string, token: 
       "X-GitHub-Api-Version": "2022-11-28",
     },
     next: { revalidate: 0 },
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(8_000),
   });
   if (!res.ok) return "";
   return res.text();
@@ -467,10 +467,15 @@ export async function fetchGithubComponents(
     // Large repo — use Contents API to discover component files
     componentFilePaths = await discoverComponentFiles(owner, repoName, accessToken);
   } else {
-    componentFilePaths = tree.tree
+    const allComponentPaths = tree.tree
       .filter((item) => item.type === "blob" && isComponentFile(item.path) && isLikelyComponent(item.path))
-      .map((item) => item.path)
-      .slice(0, 80);
+      .map((item) => item.path);
+
+    // Prefer top-level components (fewer path segments = higher-level component)
+    // e.g. polaris-react/src/components/Button/Button.tsx over
+    //      polaris-react/src/components/ActionMenu/components/MenuGroup/MenuGroup.tsx
+    const sorted = allComponentPaths.sort((a, b) => a.split("/").length - b.split("/").length);
+    componentFilePaths = sorted.slice(0, 50);
   }
 
   const components: RawComponent[] = [];
