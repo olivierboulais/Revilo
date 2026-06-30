@@ -17,6 +17,7 @@ export async function GET(request: Request) {
   authorizeUrl.searchParams.set("response_type", "code");
   authorizeUrl.searchParams.set("scope", "openid email profile");
   authorizeUrl.searchParams.set("state", state);
+  authorizeUrl.searchParams.set("access_type", "offline");
   authorizeUrl.searchParams.set("prompt", "select_account");
 
   const response = NextResponse.redirect(authorizeUrl);

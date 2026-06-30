@@ -2,7 +2,7 @@
 
 import { findUserByEmail } from "@/lib/db/users";
 import { createSessionForUser } from "@/lib/auth/session";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimitAsync } from "@/lib/rate-limit";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
@@ -19,7 +19,7 @@ const GENERIC_ERROR = "Incorrect email or password.";
 export async function loginAction(formData: FormData): Promise<LoginResult> {
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const rl = checkRateLimit(`login:${ip}`, 10, 15 * 60 * 1000); // 10 attempts per 15 min
+  const rl = await checkRateLimitAsync(`login:${ip}`, 10, 15 * 60 * 1000); // 10 attempts per 15 min
   if (!rl.allowed) {
     return { error: "Too many login attempts. Please wait 15 minutes and try again." };
   }

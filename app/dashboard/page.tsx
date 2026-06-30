@@ -6,6 +6,8 @@ export const maxDuration = 60;
 import { getReport, saveReport } from "@/lib/store";
 import { runScan } from "@/lib/run-scan";
 import { redirect } from "next/navigation";
+import { findUserByEmail } from "@/lib/db/users";
+import { getSource } from "@/lib/db/sources";
 import { SummaryCard, SummaryStatCard } from "@/components/SummaryCard";
 import { BiggestRisksPanel, TeamDriftPanel, RecommendedActionsPanel, CategoryModule } from "@/components/OverviewPanels";
 import { groupByCategory, topRisks, topActions, teamDriftCounts } from "@/lib/overview-helpers";
@@ -25,7 +27,23 @@ export default async function OverviewPage({ searchParams }: Props) {
 
   const { scan_error, upgraded, figma_error, github_error } = await searchParams;
 
+  // Check if user has real sources connected
+  const user = await findUserByEmail(session.email).catch(() => null);
+  const [figmaSource, githubSource] = user
+    ? await Promise.all([getSource(user.id, "figma"), getSource(user.id, "github")])
+    : [null, null];
+  const hasRealSources =
+    (figmaSource?.status === "connected" && Boolean(figmaSource.figma_file_key)) ||
+    (githubSource?.status === "connected" && Boolean(githubSource.github_repo));
+
   let report = await getReport(session.email);
+
+  // If sources are connected but the cached report used mock data, send the
+  // user through the scan flow so they get real data immediately.
+  if (hasRealSources && (!report || report.usedMockData)) {
+    redirect("/scan");
+  }
+
   if (!report) {
     report = await runScan(session.workspaceName, session.email);
     await saveReport(session.email, report);

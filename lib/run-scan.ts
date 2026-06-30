@@ -161,6 +161,7 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
     id: `scan_${Date.now()}`,
     workspaceName,
     scannedAt: new Date().toISOString(),
+    usedMockData: !hasFigma && !hasGithub,
     componentsScanned: components.filter((c) => c.source === "figma").length,
     tokenSetsScanned: tokens.filter((t) => t.source === "figma").length,
     alignment,

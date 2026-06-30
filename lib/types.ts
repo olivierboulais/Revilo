@@ -152,6 +152,7 @@ export interface ScanReport {
   id: string;
   workspaceName: string;
   scannedAt: string;
+  usedMockData?: boolean;
   componentsScanned: number;
   tokenSetsScanned: number;
   alignment: AlignmentScore;

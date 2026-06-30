@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/Button";
 
@@ -120,6 +120,15 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
   const githubReady = githubConnected && repoSaved;
   const bothReady = figmaReady && githubReady;
 
+  // Auto-proceed to scan once both sources are saved for the first time
+  const autoNavigated = useRef(false);
+  useEffect(() => {
+    if (bothReady && !autoNavigated.current) {
+      autoNavigated.current = true;
+      router.push("/scan");
+    }
+  }, [bothReady, router]);
+
   function updateFile(index: number, updates: Partial<FigmaFileEntry>) {
     setFigmaFiles(prev => prev.map((f, i) => i === index ? { ...f, ...updates } : f));
     setFileKeySaved(false);
@@ -178,6 +187,7 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
       setSavingRepo(false);
     }
   }
+
 
   return (
     <div className="w-full max-w-[480px]">
