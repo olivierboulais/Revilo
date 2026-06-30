@@ -172,23 +172,43 @@ export default async function OverviewPage({ searchParams }: Props) {
           label="Alignment Score"
           value={report.alignment.overall}
           helperText="Figma ↔ code parity"
+          tooltip={[
+            "Are the same components and tokens defined in both Figma and your codebase?",
+            "Revilo compares every Figma component against your GitHub files by name. It checks whether variants match (e.g. primary/secondary/ghost) and whether token values are the same on both sides.",
+            "100 = perfect parity. Lower scores mean things exist in one place but not the other, or their definitions have drifted apart.",
+          ]}
         />
         <SummaryCard
           label="Adoption Score"
           value={report.adoption.overall}
           locked={!isPaid}
           helperText="Design system usage rate"
+          tooltip={[
+            "Is your team actually using the design system — or working around it?",
+            "On the design side: detached Figma instances and local styles signal designers are bypassing the shared library. On the engineering side: hardcoded hex values in components and deprecated component usage lower this score.",
+            "100 = everyone is going through the system. Lower scores mean workarounds are accumulating.",
+          ]}
         />
         <SummaryCard
           label="Architecture Score"
           value={report.architecture.overall}
           locked={!isPaid}
           helperText="Token & component structure"
+          tooltip={[
+            "Is your design system structured the way it should be?",
+            "This checks whether tokens follow a primitive → semantic hierarchy (e.g. color.blue.500 feeds into color.action.primary), whether Figma's component groupings reflect your code folder structure, and whether naming is clean and consistent.",
+            "100 = well-structured. Lower scores mean tokens are ad-hoc, folder organization is flat, or component names are chaotic.",
+          ]}
         />
         <SummaryStatCard
           label="Issues Found"
           value={report.findings.length}
           helperText={`${report.findings.filter(f => f.severity === "high").length} high · ${report.findings.filter(f => f.severity === "medium").length} medium · ${report.findings.filter(f => f.severity === "low").length} low`}
+          tooltip={[
+            "Total findings across all three score areas.",
+            "High = likely causing real inconsistencies in production. Medium = worth fixing in the next sprint. Low = minor polish items.",
+            "Each finding links to a specific recommendation with suggested steps to fix it.",
+          ]}
         />
       </div>
 

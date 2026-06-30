@@ -38,18 +38,61 @@ function useCountUp(target: number, duration = 800) {
   return { value, ref };
 }
 
+function InfoTooltip({ lines }: { lines: string[] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative inline-flex items-center">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-4 h-4 rounded-full border border-gray/30 flex items-center justify-center text-gray/50 hover:text-gray hover:border-gray/60 transition-colors flex-shrink-0"
+        aria-label="Learn how this score is calculated"
+      >
+        <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
+          <circle cx="5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1"/>
+          <path d="M5 4.5v3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+          <circle cx="5" cy="3" r="0.6" fill="currentColor"/>
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1C1C1A] text-white rounded-xl px-4 py-3 shadow-lg z-50 text-left">
+          <div className="flex flex-col gap-1.5">
+            {lines.map((line, i) => (
+              <p key={i} className="text-[11.5px] leading-relaxed">{line}</p>
+            ))}
+          </div>
+          {/* Arrow */}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#1C1C1A]" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SummaryCard({
   label,
   value,
   suffix = "/100",
   locked = false,
   helperText,
+  tooltip,
 }: {
   label: string;
   value: number;
   suffix?: string;
   locked?: boolean;
   helperText?: string;
+  tooltip?: string[];
 }) {
   const counter = useCountUp(value);
 
@@ -65,8 +108,11 @@ export function SummaryCard({
       ) : (
         <RingChart value={value} />
       )}
-      <div className="min-w-0">
-        <div className="text-[11.5px] uppercase tracking-wide text-gray mb-1">{label}</div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 mb-1">
+          <div className="text-[11.5px] uppercase tracking-wide text-gray">{label}</div>
+          {tooltip && !locked && <InfoTooltip lines={tooltip} />}
+        </div>
         {locked ? (
           <div className="text-[13px] text-gray">Unlock to view</div>
         ) : (
@@ -83,7 +129,19 @@ export function SummaryCard({
   );
 }
 
-export function SummaryStatCard({ label, value, helperText, accent }: { label: string; value: string | number; helperText?: string; accent?: string }) {
+export function SummaryStatCard({
+  label,
+  value,
+  helperText,
+  accent,
+  tooltip,
+}: {
+  label: string;
+  value: string | number;
+  helperText?: string;
+  accent?: string;
+  tooltip?: string[];
+}) {
   const numValue = typeof value === "number" ? value : parseInt(value, 10);
   const isNum = !isNaN(numValue);
   const counter = useCountUp(isNum ? numValue : 0);
@@ -91,7 +149,10 @@ export function SummaryStatCard({ label, value, helperText, accent }: { label: s
   return (
     <div ref={counter.ref} className="rounded-2xl border border-line bg-white p-6">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11.5px] uppercase tracking-wide text-gray">{label}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11.5px] uppercase tracking-wide text-gray">{label}</span>
+          {tooltip && <InfoTooltip lines={tooltip} />}
+        </div>
         <span className="w-8 h-8 rounded-lg bg-[#F8F7F4] flex items-center justify-center text-[#1C1C1A]/60 flex-shrink-0">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M2 13.5L6 7.5L9.5 10L14 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
