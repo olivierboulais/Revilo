@@ -195,27 +195,97 @@ function formatVariableValue(variable: FigmaVariable, defaultModeId: string): st
   return String(val);
 }
 
+export interface FigmaTokenResult {
+  tokens: RawToken[];
+  tokenSource: "variables" | "styles" | "none";
+}
+
+interface FigmaNodesResponse {
+  nodes: Record<string, {
+    document: {
+      type: string;
+      fills?: Array<{ type: string; color?: { r: number; g: number; b: number; a: number } }>;
+      strokes?: Array<{ type: string; color?: { r: number; g: number; b: number; a: number } }>;
+      fontFamily?: string;
+      fontSize?: number;
+      fontWeight?: number;
+      lineHeightPx?: number;
+      effects?: Array<{ type: string; color?: { r: number; g: number; b: number; a: number }; radius?: number }>;
+    } | null;
+  } | null>;
+}
+
+function colorToHex(c: { r: number; g: number; b: number }): string {
+  const h = (n: number) => Math.round(n * 255).toString(16).padStart(2, "0");
+  return `#${h(c.r)}${h(c.g)}${h(c.b)}`;
+}
+
+async function fetchStyleValues(
+  fileKey: string,
+  styleNodeIds: string[],
+  token: string
+): Promise<Record<string, string>> {
+  const values: Record<string, string> = {};
+  if (styleNodeIds.length === 0) return values;
+
+  // Figma nodes endpoint accepts up to 300 ids per request
+  const BATCH = 100;
+  for (let i = 0; i < styleNodeIds.length; i += BATCH) {
+    const batch = styleNodeIds.slice(i, i + BATCH);
+    try {
+      const data = await figmaGet<FigmaNodesResponse>(
+        `/files/${fileKey}/nodes?ids=${batch.map(encodeURIComponent).join(",")}`,
+        token
+      );
+      for (const [nodeId, nodeData] of Object.entries(data.nodes ?? {})) {
+        const doc = nodeData?.document;
+        if (!doc) continue;
+
+        // FILL style → first solid fill colour
+        if (doc.fills?.length) {
+          const solid = doc.fills.find((f) => f.type === "SOLID" && f.color);
+          if (solid?.color) { values[nodeId] = colorToHex(solid.color); continue; }
+        }
+
+        // TEXT style → family + size
+        if (doc.fontFamily) {
+          values[nodeId] = `${doc.fontFamily}${doc.fontSize ? ` ${doc.fontSize}px` : ""}${doc.fontWeight ? ` / ${doc.fontWeight}` : ""}`;
+          continue;
+        }
+
+        // EFFECT style → first drop-shadow / blur
+        if (doc.effects?.length) {
+          const fx = doc.effects[0];
+          if (fx.color) values[nodeId] = `${fx.type.toLowerCase()} ${colorToHex(fx.color)}${fx.radius ? ` ${fx.radius}px` : ""}`;
+        }
+      }
+    } catch {
+      // partial failure — continue with whatever we have
+    }
+  }
+  return values;
+}
+
 export async function fetchFigmaTokens(
   userId: string,
   fileKey: string,
   accessToken: string,
   refreshToken: string | null,
   tokenExpiresAt: string | null
-): Promise<RawToken[]> {
+): Promise<FigmaTokenResult> {
   const token = await getFigmaToken(userId, accessToken, refreshToken, tokenExpiresAt);
 
-  // Try the Variables endpoint (Enterprise only)
+  // ── Attempt 1: Variables API (Figma Enterprise) ───────────────────────────
   try {
     const vars = await figmaGet<FigmaVariablesResponse>(`/files/${fileKey}/variables/local`, token);
     const tokens: RawToken[] = [];
     const collections = vars.meta.variableCollections ?? {};
 
     for (const [, variable] of Object.entries(vars.meta.variables ?? {})) {
-      // Find the collection to get the default mode
-      const collection = Object.values(collections).find(
-        (c) => variable.valuesByMode && Object.keys(variable.valuesByMode)[0] === c.defaultModeId
-      ) ?? Object.values(collections)[0];
-
+      const collection =
+        Object.values(collections).find(
+          (c) => variable.valuesByMode && Object.keys(variable.valuesByMode)[0] === c.defaultModeId
+        ) ?? Object.values(collections)[0];
       const defaultModeId = collection?.defaultModeId ?? Object.keys(variable.valuesByMode ?? {})[0];
       tokens.push({
         source: "figma",
@@ -224,27 +294,38 @@ export async function fetchFigmaTokens(
         category: resolvedTypeToCategory(variable.resolvedType),
       });
     }
-    return tokens;
+    if (tokens.length > 0) return { tokens, tokenSource: "variables" };
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;
-    // 403 = Enterprise plan required — fall back to styles
     if (code !== "403") throw err;
+    // 403 = Enterprise plan required — fall through to styles
   }
 
-  // Fallback: extract tokens from the file's styles map (available on all plans)
+  // ── Attempt 2: Styles API with node-value fetching (all plans) ───────────
   const file = await figmaGet<FigmaFileResponse>(`/files/${fileKey}?depth=1`, token);
-  const tokens: RawToken[] = [];
+  const styleEntries = Object.entries(file.styles ?? {});
 
-  for (const [, style] of Object.entries(file.styles ?? {})) {
-    const category = style.styleType === "FILL" ? "color" : style.styleType === "TEXT" ? "typography" : "other";
-    tokens.push({
-      source: "figma",
+  if (styleEntries.length === 0) return { tokens: [], tokenSource: "none" };
+
+  // Fetch actual style values by requesting each style's node from the file
+  const styleNodeIds = styleEntries.map(([nodeId]) => nodeId);
+  const nodeValues = await fetchStyleValues(fileKey, styleNodeIds, token);
+
+  const tokens: RawToken[] = styleEntries.map(([nodeId, style]) => {
+    const category =
+      style.styleType === "FILL" ? "color"
+      : style.styleType === "TEXT" ? "typography"
+      : style.styleType === "EFFECT" ? "shadow"
+      : "other";
+    return {
+      source: "figma" as const,
       name: style.name.replace(/\//g, ".").toLowerCase(),
-      value: "", // style values require node traversal — name quality still analysable
+      value: nodeValues[nodeId] ?? "",
       category,
-    });
-  }
-  return tokens;
+    };
+  });
+
+  return { tokens, tokenSource: "styles" };
 }
 
 // ── Usage signals (detached instances / local styles) ─────────────────────

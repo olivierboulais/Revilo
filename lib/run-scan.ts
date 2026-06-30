@@ -1,5 +1,5 @@
 import { ScanReport, ScanDataSource, RiskLevel, RawComponent, RawToken, RawDesignUsageSignal } from "@/lib/types";
-import { fetchFigmaComponents, fetchFigmaTokens, fetchFigmaUsageSignals } from "@/lib/figma/api";
+import { fetchFigmaComponents, fetchFigmaTokens, fetchFigmaUsageSignals, FigmaTokenResult } from "@/lib/figma/api";
 import { fetchGithubComponents, fetchGithubTokens } from "@/lib/github/api";
 import { fetchFigmaComponents as mockFigmaComponents, fetchFigmaTokens as mockFigmaTokens, fetchFigmaUsageSignals as mockFigmaUsageSignals } from "@/lib/mock/figma";
 import { fetchGithubComponents as mockGithubComponents, fetchGithubTokens as mockGithubTokens } from "@/lib/mock/github";
@@ -70,16 +70,26 @@ export async function runScan(workspaceName: string, userEmail?: string): Promis
           return [] as RawComponent[];
         });
 
-        const toks = await fetchFigmaTokens(
+        const tokenResult: FigmaTokenResult = await fetchFigmaTokens(
           userId!, file.key, figmaSource!.access_token!,
           figmaSource!.refresh_token, figmaSource!.token_expires_at
-        ).then((tokens) =>
-          tokens.map((t) => ({ ...t, tierHint: roleToTierHint[file.role] }))
         ).catch((err) => {
           dataSource.figma = "error";
           dataSource.figmaError = err instanceof Error ? err.message : String(err);
-          return [] as RawToken[];
+          return { tokens: [] as RawToken[], tokenSource: "none" as const };
         });
+
+        // Track the lowest-fidelity token source across all files
+        // (variables > styles > none)
+        const priority = { variables: 0, styles: 1, none: 2 } as const;
+        const current = dataSource.figmaTokenSource ?? "none";
+        if (priority[tokenResult.tokenSource] > priority[current]) {
+          dataSource.figmaTokenSource = tokenResult.tokenSource;
+        } else if (!dataSource.figmaTokenSource) {
+          dataSource.figmaTokenSource = tokenResult.tokenSource;
+        }
+
+        const toks = tokenResult.tokens.map((t) => ({ ...t, tierHint: roleToTierHint[file.role] }));
 
         // Only fetch usage signals from component/project files
         let signals: RawDesignUsageSignal[] = [];

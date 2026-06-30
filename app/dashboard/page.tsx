@@ -51,6 +51,7 @@ export default async function OverviewPage({ searchParams }: Props) {
 
   const isPaid = session.tier !== "free";
   const hasRealData = report.dataSource?.figma === "real" || report.dataSource?.github === "real";
+  const figmaTokenSource = report.dataSource?.figmaTokenSource;
   const categories = groupByCategory(report.findings);
   const risks = topRisks(report.findings);
   const actions = topActions(report.recommendations);
@@ -101,6 +102,39 @@ export default async function OverviewPage({ searchParams }: Props) {
       {upgraded && (
         <div className="mb-4 rounded-xl bg-[#F0FDF4] border border-[#BBF7D0] text-[13px] text-[#15803D] px-4 py-3">
           You&apos;re now on the {upgraded === "monitoring" ? "Monthly Monitoring" : "Pro Report"} plan. Full report unlocked.
+        </div>
+      )}
+
+      {/* Figma token quality notice — shown when connected but not using Variables */}
+      {hasRealData && figmaTokenSource === "styles" && (
+        <div className="mb-4 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] text-[13px] text-[#92400E] px-4 py-3 flex items-start gap-3">
+          <svg className="flex-shrink-0 mt-0.5" width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1.5L14.5 13H1.5L8 1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+            <path d="M8 6V9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            <circle cx="8" cy="11.5" r="0.7" fill="currentColor"/>
+          </svg>
+          <div>
+            <span className="font-medium">Your Figma file uses Styles, not Variables.</span>{" "}
+            Token values are read from your style nodes — naming and structure are fully analysed, but value-level checks (e.g. color mismatches between Figma and code) are more accurate with{" "}
+            <a href="https://help.figma.com/hc/en-us/articles/15339657135383" target="_blank" rel="noopener noreferrer" className="underline font-medium">Figma Variables</a>.{" "}
+            If your file has no Variables set up yet, this is expected.
+          </div>
+        </div>
+      )}
+      {hasRealData && figmaTokenSource === "none" && (
+        <div className="mb-4 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] text-[13px] text-[#92400E] px-4 py-3 flex items-start gap-3">
+          <svg className="flex-shrink-0 mt-0.5" width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1.5L14.5 13H1.5L8 1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+            <path d="M8 6V9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            <circle cx="8" cy="11.5" r="0.7" fill="currentColor"/>
+          </svg>
+          <div>
+            <span className="font-medium">No tokens found in your Figma file.</span>{" "}
+            Component analysis ran successfully, but token checks were skipped because the file has no Variables or Styles defined.{" "}
+            Set up{" "}
+            <a href="https://help.figma.com/hc/en-us/articles/15339657135383" target="_blank" rel="noopener noreferrer" className="underline font-medium">Figma Variables</a>{" "}
+            or Styles to unlock token drift detection.
+          </div>
         </div>
       )}
 

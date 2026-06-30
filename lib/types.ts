@@ -146,6 +146,10 @@ export interface ScanDataSource {
   github: "real" | "mock" | "error";
   figmaError?: string;
   githubError?: string;
+  // "variables" = Figma Variables API (Enterprise) — full values
+  // "styles"    = Styles fallback — names + values via node fetch
+  // "none"      = file has no variables or styles (token analysis skipped)
+  figmaTokenSource?: "variables" | "styles" | "none";
 }
 
 export interface ScanReport {

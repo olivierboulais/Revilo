@@ -47,7 +47,7 @@ export async function GET(request: Request) {
           user.id, file.key, figmaSource.access_token,
           figmaSource.refresh_token, figmaSource.token_expires_at
         );
-        const tokens = await fetchFigmaTokens(
+        const tokenResult = await fetchFigmaTokens(
           user.id, file.key, figmaSource.access_token,
           figmaSource.refresh_token, figmaSource.token_expires_at
         );
@@ -61,8 +61,9 @@ export async function GET(request: Request) {
           label: file.label,
           componentCount: components.length,
           componentNames: components.slice(0, 10).map(c => c.name),
-          tokenCount: tokens.length,
-          tokenSample: tokens.slice(0, 10).map(t => ({ name: t.name, value: t.value, category: t.category })),
+          tokenCount: tokenResult.tokens.length,
+          tokenSource: tokenResult.tokenSource,
+          tokenSample: tokenResult.tokens.slice(0, 10).map(t => ({ name: t.name, value: t.value, category: t.category })),
           signalCount: signals.length,
           signalSample: signals.slice(0, 5),
         });
