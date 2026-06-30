@@ -104,138 +104,118 @@ export default async function OverviewPage({ searchParams }: Props) {
         </div>
       )}
 
-      {!hasRealData ? (
-        <>
-          {/* Empty state — no sources connected */}
-          <div className="rounded-2xl border border-line bg-white p-8 sm:p-12 flex flex-col items-center text-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-[#F3E8FF] flex items-center justify-center mb-5">
-              <svg width="28" height="28" viewBox="0 0 16 16" fill="none">
+      {/* Demo mode banner — shown when no real sources are connected */}
+      {!hasRealData && (
+        <div className="mb-6 rounded-2xl border border-[#E9D5FF] bg-[#FAF5FF] px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-[#F3E8FF] flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <circle cx="4.5" cy="4.5" r="2" stroke="#7C3AED" strokeWidth="1.4" />
                 <circle cx="11.5" cy="11.5" r="2" stroke="#7C3AED" strokeWidth="1.4" />
                 <path d="M6 6L10 10" stroke="#7C3AED" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
             </div>
-            <h2 className="text-[16px] font-semibold tracking-tight mb-2">Connect your sources to get started</h2>
-            <p className="text-[13px] text-gray max-w-[380px] mb-6">
-              Link your Figma and GitHub accounts so Revilo can scan your design system and generate a real report.
-            </p>
-            <a
-              href="/connect"
-              className="inline-flex items-center gap-2 text-[13px] font-medium px-5 py-2.5 rounded-full text-[#1C1C1A]"
-              style={{ background: "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 50%, #DDD6FE 100%)" }}
-            >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <circle cx="4.5" cy="4.5" r="2" stroke="currentColor" strokeWidth="1.4" />
-                <circle cx="11.5" cy="11.5" r="2" stroke="currentColor" strokeWidth="1.4" />
-                <path d="M6 6L10 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-              Connect sources
-            </a>
-          </div>
-
-          {/* Empty summary cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {["Alignment Score", "Adoption Score", "Architecture Score", "Issues Found"].map((label) => (
-              <div key={label} className="rounded-2xl border border-line bg-white p-6 flex items-center gap-4">
-                <div className="w-[72px] h-[72px] rounded-full flex items-center justify-center bg-[#F3F1EC] flex-shrink-0">
-                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" className="text-gray/40">
-                    <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[11.5px] uppercase tracking-wide text-gray mb-1">{label}</div>
-                  <div className="text-[13px] text-gray/60">No data yet</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Empty panels */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {[
-              { title: "Biggest Risks", desc: "Connect your sources to discover risks in your design system." },
-              { title: "Team Drift", desc: "See whether design or engineering is creating more drift." },
-              { title: "Recommended Actions", desc: "Get prioritized fixes once your sources are connected." },
-            ].map((p) => (
-              <div key={p.title} className="rounded-2xl p-6 flex flex-col bg-white border border-line">
-                <div className="text-[13px] font-medium text-[#1C1C1A] mb-4">{p.title}</div>
-                <div className="flex-1 flex items-center justify-center text-[12px] text-gray text-center py-6">
-                  {p.desc}
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Top row: 4 primary summary cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <SummaryCard label="Alignment Score" value={report.alignment.overall} />
-            <SummaryCard label="Adoption Score" value={report.adoption.overall} locked={!isPaid} />
-            <SummaryCard label="Architecture Score" value={report.architecture.overall} locked={!isPaid} />
-            <SummaryStatCard label="Issues Found" value={report.findings.length} helperText={`${report.findings.filter(f => f.severity === "high").length} high severity`} />
-          </div>
-
-          {/* Second row: 3 priority panels */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-            <BiggestRisksPanel risks={risks} isPaid={isPaid} />
-            <TeamDriftPanel design={drift.design} engineering={drift.engineering} isPaid={isPaid} />
-            <RecommendedActionsPanel actions={actions} isPaid={isPaid} />
-          </div>
-
-          {/* Trend chart */}
-          <div className="rounded-2xl border border-line bg-white p-3 sm:p-5 mb-6">
-            <div className="flex items-center justify-between mb-1">
-              <div className="text-[12.5px] font-medium text-[#1C1C1A]">Score trend</div>
-              {!history.isReal && (
-                <span className="text-[10.5px] text-gray/70 hidden sm:inline">Illustrative — scan a few more times to see your real trend</span>
-              )}
+            <div>
+              <p className="text-[13px] font-medium text-[#5B21B6]">This is a sample report</p>
+              <p className="text-[12px] text-[#7C3AED]/80 mt-0.5 leading-relaxed">
+                Connect your Figma and GitHub to scan your actual design system. The scores and findings below are based on a built-in example.
+              </p>
             </div>
-            <p className="text-[11.5px] text-gray mb-4">How alignment{isPaid ? ", adoption, and architecture have" : " has"} moved over recent scans.</p>
-            <TrendChart
-              labels={history.labels}
-              insufficient={history.insufficient}
-              series={
-                isPaid
-                  ? [
-                      { label: "Alignment", color: "#7C3AED", values: history.alignment },
-                      { label: "Adoption", color: "#60A5FA", values: history.adoption },
-                      { label: "Architecture", color: "#34D399", values: history.architecture },
-                    ]
-                  : [{ label: "Alignment", color: "#7C3AED", values: history.alignment }]
-              }
-            />
           </div>
-
-          {/* Third row: 3 category modules */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <CategoryModule
-              title="Components"
-              score={report.alignment.componentAlignment}
-              issueCount={categories.components.length}
-              summary="Component and variant parity between Figma and code."
-              href="/dashboard/alignment"
-              locked={!isPaid}
-            />
-            <CategoryModule
-              title="Tokens"
-              score={report.alignment.tokenAlignment}
-              issueCount={categories.tokens.length}
-              summary="Token naming and value consistency across design and code."
-              href="/dashboard/alignment"
-              locked={!isPaid}
-            />
-            <CategoryModule
-              title="Structure"
-              score={report.architecture.overall}
-              issueCount={categories.structure.length}
-              summary="System architecture, hierarchy, and adoption discipline."
-              href="/dashboard/architecture"
-              locked={!isPaid}
-            />
-          </div>
-        </>
+          <a
+            href="/connect"
+            className="inline-flex items-center gap-2 text-[12.5px] font-medium px-4 py-2 rounded-full text-[#1C1C1A] flex-shrink-0 self-start sm:self-center"
+            style={{ background: "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)" }}
+          >
+            Connect sources
+          </a>
+        </div>
       )}
+
+      {/* Top row: 4 primary summary cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <SummaryCard
+          label="Alignment Score"
+          value={report.alignment.overall}
+          helperText="Figma ↔ code parity"
+        />
+        <SummaryCard
+          label="Adoption Score"
+          value={report.adoption.overall}
+          locked={!isPaid}
+          helperText="Design system usage rate"
+        />
+        <SummaryCard
+          label="Architecture Score"
+          value={report.architecture.overall}
+          locked={!isPaid}
+          helperText="Token & component structure"
+        />
+        <SummaryStatCard
+          label="Issues Found"
+          value={report.findings.length}
+          helperText={`${report.findings.filter(f => f.severity === "high").length} high · ${report.findings.filter(f => f.severity === "medium").length} medium · ${report.findings.filter(f => f.severity === "low").length} low`}
+        />
+      </div>
+
+      {/* Second row: 3 priority panels */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <BiggestRisksPanel risks={risks} isPaid={isPaid || !hasRealData} />
+        <TeamDriftPanel design={drift.design} engineering={drift.engineering} isPaid={isPaid || !hasRealData} />
+        <RecommendedActionsPanel actions={actions} isPaid={isPaid || !hasRealData} />
+      </div>
+
+      {/* Trend chart */}
+      <div className="rounded-2xl border border-line bg-white p-3 sm:p-5 mb-6">
+        <div className="flex items-center justify-between mb-1">
+          <div className="text-[12.5px] font-medium text-[#1C1C1A]">Score trend</div>
+          {!history.isReal && (
+            <span className="text-[10.5px] text-gray/70 hidden sm:inline">Illustrative — scan a few more times to see your real trend</span>
+          )}
+        </div>
+        <p className="text-[11.5px] text-gray mb-4">How alignment{isPaid ? ", adoption, and architecture have" : " has"} moved over recent scans.</p>
+        <TrendChart
+          labels={history.labels}
+          insufficient={history.insufficient}
+          series={
+            isPaid
+              ? [
+                  { label: "Alignment", color: "#7C3AED", values: history.alignment },
+                  { label: "Adoption", color: "#60A5FA", values: history.adoption },
+                  { label: "Architecture", color: "#34D399", values: history.architecture },
+                ]
+              : [{ label: "Alignment", color: "#7C3AED", values: history.alignment }]
+          }
+        />
+      </div>
+
+      {/* Third row: 3 category modules */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <CategoryModule
+          title="Components"
+          score={report.alignment.componentAlignment}
+          issueCount={categories.components.length}
+          summary="How many Figma components exist in code with matching variants and props."
+          href="/dashboard/alignment"
+          locked={isPaid ? false : hasRealData}
+        />
+        <CategoryModule
+          title="Tokens"
+          score={report.alignment.tokenAlignment}
+          issueCount={categories.tokens.length}
+          summary="Whether design tokens in Figma match the values and names used in code."
+          href="/dashboard/alignment"
+          locked={isPaid ? false : hasRealData}
+        />
+        <CategoryModule
+          title="Structure"
+          score={report.architecture.overall}
+          issueCount={categories.structure.length}
+          summary="Whether your token hierarchy (primitives → semantics) is followed consistently."
+          href="/dashboard/architecture"
+          locked={isPaid ? false : hasRealData}
+        />
+      </div>
     </div>
   );
 }
