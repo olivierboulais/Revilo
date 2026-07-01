@@ -64,9 +64,9 @@ function InfoTooltip({ lines }: { lines: string[] }) {
         </svg>
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-2 w-72 bg-[#1C1C1A] text-white rounded-xl px-4 py-3 shadow-xl z-50 text-left">
-          {/* Arrow */}
-          <div className="absolute bottom-full left-3 w-0 h-0 border-l-[6px] border-r-[6px] border-b-[6px] border-l-transparent border-r-transparent border-b-[#1C1C1A]" />
+        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-72 bg-[#1C1C1A] text-white rounded-xl px-4 py-3 shadow-xl z-50 text-left">
+          {/* Arrow pointing left */}
+          <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-[6px] border-b-[6px] border-r-[6px] border-t-transparent border-b-transparent border-r-[#1C1C1A]" />
           <div className="flex flex-col gap-2">
             {lines.map((line, i) => (
               <p key={i} className="text-[11.5px] leading-relaxed opacity-90">{line}</p>
