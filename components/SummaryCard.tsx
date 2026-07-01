@@ -55,24 +55,23 @@ function InfoTooltip({ lines }: { lines: string[] }) {
     <div ref={ref} className="relative inline-flex items-center">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-4 h-4 rounded-full border border-gray/30 flex items-center justify-center text-gray/50 hover:text-gray hover:border-gray/60 transition-colors flex-shrink-0"
+        className="w-[18px] h-[18px] rounded-full bg-[#F3F1EC] hover:bg-[#E8E5DF] flex items-center justify-center text-gray hover:text-[#1C1C1A] transition-colors flex-shrink-0"
         aria-label="Learn how this score is calculated"
       >
-        <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
-          <circle cx="5" cy="5" r="4.5" stroke="currentColor" strokeWidth="1"/>
-          <path d="M5 4.5v3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-          <circle cx="5" cy="3" r="0.6" fill="currentColor"/>
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
+          <path d="M5 4.5v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+          <circle cx="5" cy="3" r="0.75" fill="currentColor"/>
         </svg>
       </button>
       {open && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1C1C1A] text-white rounded-xl px-4 py-3 shadow-lg z-50 text-left">
-          <div className="flex flex-col gap-1.5">
+        <div className="absolute top-full left-0 mt-2 w-72 bg-[#1C1C1A] text-white rounded-xl px-4 py-3 shadow-xl z-50 text-left">
+          {/* Arrow */}
+          <div className="absolute bottom-full left-3 w-0 h-0 border-l-[6px] border-r-[6px] border-b-[6px] border-l-transparent border-r-transparent border-b-[#1C1C1A]" />
+          <div className="flex flex-col gap-2">
             {lines.map((line, i) => (
-              <p key={i} className="text-[11.5px] leading-relaxed">{line}</p>
+              <p key={i} className="text-[11.5px] leading-relaxed opacity-90">{line}</p>
             ))}
           </div>
-          {/* Arrow */}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#1C1C1A]" />
         </div>
       )}
     </div>
@@ -111,7 +110,7 @@ export function SummaryCard({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 mb-1">
           <div className="text-[11.5px] uppercase tracking-wide text-gray">{label}</div>
-          {tooltip && !locked && <InfoTooltip lines={tooltip} />}
+          {tooltip && <InfoTooltip lines={tooltip} />}
         </div>
         {locked ? (
           <div className="text-[13px] text-gray">Unlock to view</div>
