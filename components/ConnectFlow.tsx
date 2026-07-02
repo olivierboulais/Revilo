@@ -47,7 +47,7 @@ function SourceCard({ name, description, icon, status, onConnect, children }: So
   return (
     <div className="rounded-2xl border border-line bg-white p-5">
       <div className="flex items-center gap-4">
-        <div className="w-11 h-11 rounded-xl bg-[#F8F7F4] flex items-center justify-center flex-shrink-0">{icon}</div>
+        <div className="w-11 h-11 rounded-xl bg-surface flex items-center justify-center flex-shrink-0 source-icon-wrap">{icon}</div>
         <div className="flex-1 min-w-0">
           <div className="text-[15px] font-medium">{name}</div>
           <div className="text-[13px] text-gray">{description}</div>

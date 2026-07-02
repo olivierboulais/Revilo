@@ -95,6 +95,10 @@ button {
   border: 1px solid var(--line);
 }
 
+/* Source card icon wrapper — light bg in light mode, dark bg with white icon in dark mode */
+.source-icon-wrap { color: #1c1c1a; }
+.dark .source-icon-wrap { color: #ffffff; }
+
 /* Dark button — foreground bg, background text, inverts correctly in dark mode */
 .btn-dark {
   background-color: var(--foreground);
