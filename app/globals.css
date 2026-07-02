@@ -44,6 +44,8 @@
   --color-good: var(--good);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
+  --color-card: var(--card);
+  --color-surface: var(--surface);
   --font-sans: "Inter", sans-serif;
 }
 
