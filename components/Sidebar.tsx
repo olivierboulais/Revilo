@@ -240,7 +240,7 @@ export function Sidebar({
           {!isCollapsed && <span className="text-[14px] font-semibold tracking-tight">Revilo</span>}
         </div>
 
-        <nav className={`flex-1 flex flex-col gap-0.5 overflow-y-auto overflow-x-hidden pt-2 ${isCollapsed ? "px-2" : "px-3"}`}>
+        <nav className={`flex-1 flex flex-col gap-0.5 overflow-y-auto pt-2 ${isCollapsed ? "px-2 overflow-x-visible" : "px-3 overflow-x-hidden"}`}>
           {navItems.map((item) => {
             const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
             return (
