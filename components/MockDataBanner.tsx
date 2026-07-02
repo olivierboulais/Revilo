@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 interface Props {
   figmaConnected: boolean;
@@ -10,6 +10,9 @@ interface Props {
 
 export function MockDataBanner({ figmaConnected, githubConnected }: Props) {
   const [dismissed, setDismissed] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
   if (dismissed || (figmaConnected && githubConnected)) return null;
 
   const missing = [
@@ -23,9 +26,12 @@ export function MockDataBanner({ figmaConnected, githubConnected }: Props) {
         This report uses <strong>sample data</strong> — {missing} {!figmaConnected && !githubConnected ? "are" : "is"} not connected yet.
       </span>
       <div className="flex items-center gap-3 flex-shrink-0">
-        <Link href="?connect=1" className="font-medium text-[#1E40AF] hover:underline">
+        <button
+          onClick={() => router.push(`${pathname}?connect=1`)}
+          className="font-medium text-[#1E40AF] hover:underline"
+        >
           Connect sources →
-        </Link>
+        </button>
         <button onClick={() => setDismissed(true)} className="text-[#3B82F6] hover:opacity-70" aria-label="Dismiss">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
