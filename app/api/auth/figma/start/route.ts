@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   if (!isFigmaOAuthConfigured()) {
     // Honest failure instead of the old fake-connect behavior: if no real
     // Figma OAuth app exists yet, say so rather than pretending to connect.
-    const url = new URL("/connect", request.url);
+    const url = new URL("/dashboard?connect=1", request.url);
     url.searchParams.set("error", "figma_not_configured");
     return NextResponse.redirect(url);
   }

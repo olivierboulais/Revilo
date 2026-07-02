@@ -91,12 +91,12 @@ export default async function OverviewPage({ searchParams }: Props) {
       )}
       {figma_error && (
         <div className="mb-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[13px] text-[#B91C1C] px-4 py-3">
-          Figma data failed to load: {figma_error}. The report below uses sample Figma data. Try reconnecting in <a href="/connect" className="underline font-medium">Sources</a>.
+          Figma data failed to load: {figma_error}. The report below uses sample Figma data. Try reconnecting in <a href="/dashboard?connect=1" className="underline font-medium">Sources</a>.
         </div>
       )}
       {github_error && (
         <div className="mb-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[13px] text-[#B91C1C] px-4 py-3">
-          GitHub data failed to load: {github_error}. The report below uses sample GitHub data. Try reconnecting in <a href="/connect" className="underline font-medium">Sources</a>.
+          GitHub data failed to load: {github_error}. The report below uses sample GitHub data. Try reconnecting in <a href="/dashboard?connect=1" className="underline font-medium">Sources</a>.
         </div>
       )}
       {upgraded && (

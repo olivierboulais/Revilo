@@ -15,7 +15,7 @@ export function EmptySourcesState({ page }: { page: string }) {
         Connect your Figma and GitHub accounts to see {page} data from your real design system.
       </p>
       <Link
-        href="/connect"
+        href="/dashboard?connect=1"
         className="inline-flex items-center gap-2 text-[13px] font-medium px-5 py-2.5 rounded-full text-[#1C1C1A]"
         style={{ background: "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 50%, #DDD6FE 100%)" }}
       >

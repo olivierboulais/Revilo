@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   }
 
   if (!isGithubOAuthConfigured()) {
-    const url = new URL("/connect", request.url);
+    const url = new URL("/dashboard?connect=1", request.url);
     url.searchParams.set("error", "github_not_configured");
     return NextResponse.redirect(url);
   }
