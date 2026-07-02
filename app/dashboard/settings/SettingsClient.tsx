@@ -55,10 +55,10 @@ function AppearanceSection() {
               className={`flex flex-col items-center gap-2 px-3 py-3.5 rounded-xl border text-[12.5px] font-medium transition-all ${
                 active
                   ? "border-[#7C3AED] bg-[#F3E8FF] text-[#3B1D6E]"
-                  : "border-line hover:bg-black/[0.03] text-[#706F6A]"
+                  : "border-line hover:bg-foreground/[0.04] text-gray"
               }`}
             >
-              <span className={active ? "text-[#7C3AED]" : "text-[#706F6A]"}>{t.icon}</span>
+              <span className={active ? "text-[#7C3AED]" : "text-gray"}>{t.icon}</span>
               {t.label}
             </button>
           );
@@ -259,7 +259,7 @@ export function SettingsClient({ email, workspaceName, tier, emailVerified }: Pr
             </div>
           </div>
           {tier === "free" && (
-            <a href="/upgrade" className="text-[13px] font-medium px-3 py-1.5 rounded-full bg-[#1C1C1A] hover:opacity-80 transition-opacity" style={{ color: "#ffffff" }}>
+            <a href="/upgrade" className="text-[13px] font-medium px-3 py-1.5 rounded-full bg-foreground text-background hover:opacity-80 transition-opacity">
               Upgrade
             </a>
           )}
@@ -270,7 +270,7 @@ export function SettingsClient({ email, workspaceName, tier, emailVerified }: Pr
         <h2 className="text-[14px] font-medium mb-3">Session</h2>
         <div className="flex items-center justify-between">
           <form action="/api/logout" method="POST">
-            <button type="submit" className="text-[13px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors">
+            <button type="submit" className="text-[13px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-foreground/[0.05] transition-colors">
               Log out
             </button>
           </form>
