@@ -6,6 +6,6 @@ export function isGoogleOAuthConfigured(): boolean {
 }
 
 export function getGoogleRedirectUri(requestUrl: string): string {
-  const url = new URL(requestUrl);
-  return `${url.origin}/api/auth/google/callback`;
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? new URL(requestUrl).origin;
+  return `${base}/api/auth/google/callback`;
 }

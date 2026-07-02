@@ -24,6 +24,6 @@ export function isFigmaOAuthConfigured(): boolean {
 }
 
 export function getRedirectUri(requestUrl: string): string {
-  const url = new URL(requestUrl);
-  return `${url.protocol}//${url.host}/api/auth/figma/callback`;
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? new URL(requestUrl).origin;
+  return `${base}/api/auth/figma/callback`;
 }

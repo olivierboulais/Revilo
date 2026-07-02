@@ -14,6 +14,6 @@ export function isGithubOAuthConfigured(): boolean {
 }
 
 export function getGithubRedirectUri(requestUrl: string): string {
-  const url = new URL(requestUrl);
-  return `${url.protocol}//${url.host}/api/auth/github/callback`;
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? new URL(requestUrl).origin;
+  return `${base}/api/auth/github/callback`;
 }
