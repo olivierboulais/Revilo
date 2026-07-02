@@ -11,10 +11,10 @@ export async function GET(request: Request) {
   const state = url.searchParams.get("state");
   const errorParam = url.searchParams.get("error");
 
-  const cookieHeader = request.headers.get("cookie") ?? "";
-  const rawReturn = cookieHeader.match(/(?:^|;\s*)oauth_return_path=([^;]+)/)?.[1];
-  const returnPath = rawReturn ? decodeURIComponent(rawReturn) : "/dashboard";
-  const connectUrl = new URL(returnPath, request.url);
+  const stateParts = (state ?? "").split(":");
+  const csrfToken = stateParts[0];
+  const returnPath = stateParts.slice(1).join(":") || "/dashboard";
+  const connectUrl = new URL(returnPath, new URL(request.url).origin);
   connectUrl.searchParams.set("connect", "1");
 
   if (errorParam) {
@@ -65,6 +65,5 @@ export async function GET(request: Request) {
 
   const response = NextResponse.redirect(connectUrl);
   response.cookies.delete("github_oauth_state");
-  response.cookies.delete("oauth_return_path");
   return response;
 }

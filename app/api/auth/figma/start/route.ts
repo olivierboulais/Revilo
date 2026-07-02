@@ -32,16 +32,13 @@ export async function GET(request: Request) {
 
   const referer = request.headers.get("referer") ?? "";
   const returnPath = referer ? new URL(referer).pathname : "/dashboard";
+  // Encode the return path into the state so we don't need a separate cookie
+  const stateWithReturn = `${state}:${returnPath}`;
+
+  authorizeUrl.searchParams.set("state", stateWithReturn);
 
   const response = NextResponse.redirect(authorizeUrl);
-  response.cookies.set("figma_oauth_state", state, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 10,
-  });
-  response.cookies.set("oauth_return_path", returnPath, {
+  response.cookies.set("figma_oauth_state", stateWithReturn, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

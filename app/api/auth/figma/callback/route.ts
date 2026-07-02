@@ -11,10 +11,11 @@ export async function GET(request: Request) {
   const state = url.searchParams.get("state");
   const errorParam = url.searchParams.get("error");
 
-  const cookieStore = request.headers.get("cookie") ?? "";
-  const rawReturn = cookieStore.match(/(?:^|;\s*)oauth_return_path=([^;]+)/)?.[1];
-  const returnPath = rawReturn ? decodeURIComponent(rawReturn) : "/dashboard";
-  const connectUrl = new URL(returnPath, request.url);
+  // Extract return path encoded in state as "csrfToken:returnPath"
+  const stateParts = (state ?? "").split(":");
+  const csrfToken = stateParts[0];
+  const returnPath = stateParts.slice(1).join(":") || "/dashboard";
+  const connectUrl = new URL(returnPath, new URL(request.url).origin);
   connectUrl.searchParams.set("connect", "1");
 
   // The user rejected the OAuth grant — Figma's docs note no callback
@@ -29,13 +30,11 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/signup", request.url));
   }
 
-  // CSRF check: the state we generated in /start must match what Figma
-  // sent back. A mismatch means this callback didn't originate from a
-  // flow we started.
+  const cookieStore = request.headers.get("cookie") ?? "";
   const stateCookieMatch = cookieStore.match(/figma_oauth_state=([^;]+)/);
   const expectedState = stateCookieMatch?.[1];
 
-  if (!code || !state || !expectedState || state !== expectedState) {
+  if (!code || !csrfToken || !expectedState || expectedState !== `${csrfToken}:${returnPath}`) {
     connectUrl.searchParams.set("error", "figma_state_mismatch");
     return NextResponse.redirect(connectUrl);
   }
@@ -61,6 +60,5 @@ export async function GET(request: Request) {
 
   const response = NextResponse.redirect(connectUrl);
   response.cookies.delete("figma_oauth_state");
-  response.cookies.delete("oauth_return_path");
   return response;
 }
