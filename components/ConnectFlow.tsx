@@ -92,6 +92,8 @@ interface Props {
   githubRepo: string | null;
   error?: string | null;
   errorDetail?: string | null;
+  onBothReady?: () => void;
+  onClose?: () => void;
 }
 
 function parseFigmaFiles(raw: string | null): FigmaFileEntry[] {
@@ -103,7 +105,7 @@ function parseFigmaFiles(raw: string | null): FigmaFileEntry[] {
   return [{ key: trimmed, role: "project", label: "Design System" }];
 }
 
-export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, githubRepo, error, errorDetail }: Props) {
+export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, githubRepo, error, errorDetail, onBothReady, onClose }: Props) {
   const router = useRouter();
   const [figmaFiles, setFigmaFiles] = useState<FigmaFileEntry[]>(() => {
     const parsed = parseFigmaFiles(figmaFileKey);
@@ -125,9 +127,13 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
   useEffect(() => {
     if (bothReady && !autoNavigated.current) {
       autoNavigated.current = true;
-      router.push("/scan");
+      if (onBothReady) {
+        onBothReady();
+      } else {
+        router.push("/scan");
+      }
     }
-  }, [bothReady, router]);
+  }, [bothReady, router, onBothReady]);
 
   function updateFile(index: number, updates: Partial<FigmaFileEntry>) {
     setFigmaFiles(prev => prev.map((f, i) => i === index ? { ...f, ...updates } : f));
@@ -202,7 +208,7 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
           {errorDetail && <p className="text-[11px] mt-1 opacity-70">{errorDetail}</p>}
           {isNotConfiguredError(error) && (
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => onClose ? onClose() : router.push("/dashboard")}
               className="mt-2 text-[12px] font-medium text-[#B91C1C] underline underline-offset-2 hover:text-[#991B1B] transition-colors"
             >
               Continue with sample data instead
@@ -336,7 +342,7 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
         withArrow={false}
         className="justify-center w-full mt-8"
         disabled={!bothReady}
-        onClick={() => router.push("/scan")}
+        onClick={() => onBothReady ? onBothReady() : router.push("/scan")}
       >
         Run scan
       </Button>
@@ -355,7 +361,7 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
       )}
       <div className="text-center mt-4">
         <button
-          onClick={() => router.push("/dashboard")}
+          onClick={() => onClose ? onClose() : router.push("/dashboard")}
           className="text-[12px] text-gray hover:text-[#1C1C1A] transition-colors underline underline-offset-2"
         >
           Skip for now — explore with demo data

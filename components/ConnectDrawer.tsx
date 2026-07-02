@@ -74,6 +74,8 @@ export function ConnectDrawer({ figmaConnected, figmaFileKey, githubConnected, g
             githubRepo={githubRepo}
             error={error}
             errorDetail={errorDetail}
+            onBothReady={() => router.push("/scan")}
+            onClose={close}
           />
         </div>
       </div>
