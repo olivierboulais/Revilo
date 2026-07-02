@@ -299,8 +299,7 @@ export function Sidebar({
             ) : (
               <Link
                 href="/upgrade"
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:scale-[1.01] transition-transform group"
-                style={{ background: "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 50%, #DDD6FE 100%)" }}
+                className="gradient-lilac flex items-center gap-3 rounded-xl px-3 py-2.5 hover:scale-[1.01] transition-transform group"
               >
                 <span className="w-8 h-8 rounded-lg bg-[#1C1C1A] flex items-center justify-center flex-shrink-0">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -308,8 +307,8 @@ export function Sidebar({
                   </svg>
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[12.5px] font-medium text-[#1C1C1A]">Upgrade to Pro</div>
-                  <div className="text-[11px] text-[#1C1C1A]/60">Unlock the full report</div>
+                  <div className="upgrade-text-main text-[12.5px] font-medium">Upgrade to Pro</div>
+                  <div className="upgrade-text-sub text-[11px] text-[#1C1C1A]/60">Unlock the full report</div>
                 </div>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0 text-[#1C1C1A]/30 group-hover:text-[#1C1C1A]/60 transition-colors">
                   <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
