@@ -50,12 +50,13 @@ export async function upsertSource(
   tokenExpiresAt: string | null = null
 ): Promise<void> {
   if (isSupabase()) {
-    await (await sb()).from("sources").upsert({
+    const { error } = await (await sb()).from("sources").upsert({
       id: randomUUID(), user_id: userId, provider, status: "connected",
       access_token: accessToken, refresh_token: refreshToken,
       external_name: externalName, token_expires_at: tokenExpiresAt,
       connected_at: new Date().toISOString(),
     }, { onConflict: "user_id,provider" });
+    if (error) throw new Error(`upsertSource (${provider}): ${error.message} [${error.code}]`);
     return;
   }
   await (await db()).run(
@@ -88,9 +89,10 @@ export async function updateSourceToken(
   tokenExpiresAt: string | null = null
 ): Promise<void> {
   if (isSupabase()) {
-    await (await sb()).from("sources")
+    const { error } = await (await sb()).from("sources")
       .update({ access_token: accessToken, token_expires_at: tokenExpiresAt })
       .eq("user_id", userId).eq("provider", provider);
+    if (error) throw new Error(`updateSourceToken (${provider}): ${error.message}`);
     return;
   }
   await (await db()).run(
@@ -101,8 +103,9 @@ export async function updateSourceToken(
 
 export async function updateFigmaFileKey(userId: string, fileKey: string): Promise<void> {
   if (isSupabase()) {
-    await (await sb()).from("sources")
+    const { error } = await (await sb()).from("sources")
       .update({ figma_file_key: fileKey }).eq("user_id", userId).eq("provider", "figma");
+    if (error) throw new Error(`updateFigmaFileKey: ${error.message}`);
     return;
   }
   await (await db()).run(
@@ -112,8 +115,9 @@ export async function updateFigmaFileKey(userId: string, fileKey: string): Promi
 
 export async function updateGithubRepo(userId: string, repo: string): Promise<void> {
   if (isSupabase()) {
-    await (await sb()).from("sources")
+    const { error } = await (await sb()).from("sources")
       .update({ github_repo: repo }).eq("user_id", userId).eq("provider", "github");
+    if (error) throw new Error(`updateGithubRepo: ${error.message}`);
     return;
   }
   await (await db()).run(
@@ -123,9 +127,10 @@ export async function updateGithubRepo(userId: string, repo: string): Promise<vo
 
 export async function disconnectSource(userId: string, provider: "figma" | "github"): Promise<void> {
   if (isSupabase()) {
-    await (await sb()).from("sources").update({
+    const { error } = await (await sb()).from("sources").update({
       status: "disconnected", access_token: null, refresh_token: null, token_expires_at: null,
     }).eq("user_id", userId).eq("provider", provider);
+    if (error) throw new Error(`disconnectSource (${provider}): ${error.message}`);
     return;
   }
   await (await db()).run(

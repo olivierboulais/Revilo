@@ -82,6 +82,7 @@ export function SourcesClient({ figma: initialFigma, github: initialGithub }: Pr
       });
       if (provider === "figma") setFigma(null);
       else setGithub(null);
+      router.refresh(); // re-sync layout so drawer reflects updated state
     } finally {
       setDisconnecting(null);
     }
