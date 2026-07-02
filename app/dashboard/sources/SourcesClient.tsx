@@ -235,7 +235,7 @@ export function SourcesClient({ figma: initialFigma, github: initialGithub }: Pr
           <p className="text-[12.5px] text-gray">
             Revilo will use mock data for any source that isn&apos;t connected.{" "}
             <button
-              onClick={() => router.push("/dashboard?connect=1")}
+              onClick={() => router.push("?connect=1")}
               className="font-medium text-[#1C1C1A] hover:underline"
             >
               Go to Connect →

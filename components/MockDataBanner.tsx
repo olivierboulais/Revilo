@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useDrawer } from "@/components/DrawerContext";
 
 interface Props {
   figmaConnected: boolean;
@@ -10,8 +10,7 @@ interface Props {
 
 export function MockDataBanner({ figmaConnected, githubConnected }: Props) {
   const [dismissed, setDismissed] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
+  const { open } = useDrawer();
 
   if (dismissed || (figmaConnected && githubConnected)) return null;
 
@@ -27,7 +26,7 @@ export function MockDataBanner({ figmaConnected, githubConnected }: Props) {
       </span>
       <div className="flex items-center gap-3 flex-shrink-0">
         <button
-          onClick={() => router.push(`${pathname}?connect=1`)}
+          onClick={open}
           className="font-medium text-[#1E40AF] hover:underline"
         >
           Connect sources →

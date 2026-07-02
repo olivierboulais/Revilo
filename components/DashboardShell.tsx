@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { ConnectDrawer } from "@/components/ConnectDrawer";
+import { DrawerProvider } from "@/components/DrawerContext";
 
 export function DashboardShell({
   workspaceName,
@@ -29,6 +30,7 @@ export function DashboardShell({
   const [collapsed, setCollapsed] = useState(false);
 
   return (
+    <DrawerProvider>
     <div className="flex min-h-screen bg-[#F8F7F4] p-2 sm:p-4 gap-2 sm:gap-4">
       <button
         onClick={() => setSidebarOpen(true)}
@@ -61,5 +63,6 @@ export function DashboardShell({
         />
       </Suspense>
     </div>
+    </DrawerProvider>
   );
 }

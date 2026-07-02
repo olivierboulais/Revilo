@@ -1,6 +1,9 @@
-import Link from "next/link";
+"use client";
+
+import { useDrawer } from "@/components/DrawerContext";
 
 export function EmptySourcesState({ page }: { page: string }) {
+  const { open } = useDrawer();
   return (
     <div className="rounded-2xl border border-line bg-white p-8 sm:p-12 flex flex-col items-center text-center">
       <div className="w-14 h-14 rounded-2xl bg-[#F3E8FF] flex items-center justify-center mb-4">
@@ -14,13 +17,13 @@ export function EmptySourcesState({ page }: { page: string }) {
       <p className="text-[13px] text-gray max-w-[340px] mb-5">
         Connect your Figma and GitHub accounts to see {page} data from your real design system.
       </p>
-      <Link
-        href="/dashboard?connect=1"
+      <button
+        onClick={open}
         className="inline-flex items-center gap-2 text-[13px] font-medium px-5 py-2.5 rounded-full text-[#1C1C1A]"
         style={{ background: "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 50%, #DDD6FE 100%)" }}
       >
         Connect sources
-      </Link>
+      </button>
     </div>
   );
 }

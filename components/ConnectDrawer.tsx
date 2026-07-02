@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ConnectFlow } from "@/components/ConnectFlow";
+import { useDrawer } from "@/components/DrawerContext";
 
 interface Props {
   figmaConnected: boolean;
@@ -14,19 +15,26 @@ interface Props {
 export function ConnectDrawer({ figmaConnected, figmaFileKey, githubConnected, githubRepo }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const open = searchParams.get("connect") === "1";
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const { isOpen: stateOpen, close: closeState } = useDrawer();
 
+  // Open via URL (?connect=1) for OAuth callbacks, OR via context state for manual open
+  const urlOpen = searchParams.get("connect") === "1";
+  const open = stateOpen || urlOpen;
+
+  const overlayRef = useRef<HTMLDivElement>(null);
   const error = searchParams.get("error") ?? undefined;
   const errorDetail = searchParams.get("detail") ?? undefined;
 
   function close() {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("connect");
-    params.delete("error");
-    params.delete("detail");
-    const qs = params.toString();
-    router.replace(qs ? `?${qs}` : window.location.pathname);
+    closeState();
+    if (urlOpen) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("connect");
+      params.delete("error");
+      params.delete("detail");
+      const qs = params.toString();
+      router.replace(qs ? `?${qs}` : window.location.pathname);
+    }
   }
 
   useEffect(() => {
