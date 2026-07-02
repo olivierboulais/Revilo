@@ -93,6 +93,16 @@ button {
   border: 1px solid var(--line);
 }
 
+/* Active nav item */
+.nav-active {
+  background: linear-gradient(135deg, #EFD9FF 0%, #DCC2FB 100%);
+  color: #3B1D6E;
+}
+.dark .nav-active {
+  background: linear-gradient(135deg, #2d1a4a 0%, #3b1d6e 100%);
+  color: #e8e7e3;
+}
+
 /* Reusable lilac gradient — swaps to a dark purple in dark mode */
 .gradient-lilac {
   background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 50%, #DDD6FE 100%);

@@ -122,16 +122,16 @@ function ProfileMenu({ email, workspaceName, isCollapsed }: { email: string; wor
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center rounded-lg hover:bg-black/[0.04] transition-colors ${
+        className={`flex items-center rounded-lg hover:bg-foreground/[0.05] transition-colors ${
           isCollapsed ? "justify-center py-2 w-full" : "gap-2.5 px-2 py-2 w-full text-left"
         }`}
       >
-        <span className="w-7 h-7 rounded-full bg-lilac flex items-center justify-center text-[11px] font-medium text-[#3B1D6E] flex-shrink-0">
+        <span className="w-7 h-7 rounded-full bg-lilac-mid flex items-center justify-center text-[11px] font-medium text-white flex-shrink-0">
           {email.charAt(0).toUpperCase()}
         </span>
         {!isCollapsed && (
           <>
-            <span className="truncate flex-1 text-[12.5px] font-medium text-[#1C1C1A]">{workspaceName}</span>
+            <span className="truncate flex-1 text-[12.5px] font-medium">{workspaceName}</span>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className={`flex-shrink-0 opacity-40 transition-transform ${open ? "rotate-180" : ""}`}>
               <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -263,14 +263,9 @@ export function Sidebar({
                   href={item.href}
                   className={`flex items-center rounded-xl text-[13px] transition-all ${
                     isCollapsed ? "justify-center w-[44px] h-[40px] mx-auto" : "gap-2.5 px-3 py-2"
-                  } ${isActive ? "font-medium shadow-sm" : "text-[#1C1C1A]/70 hover:bg-black/[0.04]"}`}
-                  style={
-                    isActive
-                      ? { background: "linear-gradient(135deg, #EFD9FF 0%, #DCC2FB 100%)", color: "#3B1D6E" }
-                      : undefined
-                  }
+                  } ${isActive ? "nav-active font-medium shadow-sm" : "text-gray hover:bg-foreground/[0.05]"}`}
                 >
-                  <span className={`flex-shrink-0 ${isActive ? "text-[#7C3AED]" : "text-[#1C1C1A]/50"}`}>{item.icon}</span>
+                  <span className={`flex-shrink-0 ${isActive ? "text-lilac-deep" : "text-gray"}`}>{item.icon}</span>
                   {!isCollapsed && item.label}
                 </Link>
                 {isCollapsed && (
