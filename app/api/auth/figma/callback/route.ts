@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   const stateCookieMatch = cookieStore.match(/figma_oauth_state=([^;]+)/);
   const expectedState = stateCookieMatch?.[1];
 
-  if (!code || !csrfToken || !expectedState || expectedState !== `${csrfToken}:${returnPath}`) {
+  if (!code || !csrfToken || !expectedState || state !== decodeURIComponent(expectedState)) {
     connectUrl.searchParams.set("error", "figma_state_mismatch");
     return NextResponse.redirect(connectUrl);
   }
