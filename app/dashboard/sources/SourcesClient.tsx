@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDrawer } from "@/components/DrawerContext";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -15,7 +16,7 @@ function timeAgo(iso: string): string {
 
 function FigmaIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 38 57" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="22" height="22" viewBox="0 0 38 57" fill="none">
       <path d="M9.5 57C14.747 57 19 52.747 19 47.5V38H9.5C4.253 38 0 42.253 0 47.5S4.253 57 9.5 57Z" fill="#0ACF83"/>
       <path d="M0 28.5C0 23.253 4.253 19 9.5 19H19v19H9.5C4.253 38 0 33.747 0 28.5Z" fill="#A259FF"/>
       <path d="M0 9.5C0 4.253 4.253 0 9.5 0H19v19H9.5C4.253 19 0 14.747 0 9.5Z" fill="#F24E1E"/>
@@ -27,19 +28,29 @@ function FigmaIcon() {
 
 function GithubIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="#1C1C1A">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 0C5.37 0 0 5.5 0 12.3c0 5.43 3.44 10.03 8.21 11.66.6.12.82-.27.82-.6v-2.1c-3.34.74-4.04-1.66-4.04-1.66-.55-1.43-1.33-1.8-1.33-1.8-1.09-.76.08-.75.08-.75 1.2.09 1.84 1.27 1.84 1.27 1.07 1.87 2.8 1.33 3.49 1.02.1-.78.42-1.33.76-1.64-2.67-.31-5.47-1.36-5.47-6.07 0-1.34.46-2.43 1.23-3.29-.12-.31-.53-1.57.12-3.28 0 0 1-.33 3.3 1.26a11.2 11.2 0 0 1 6 0c2.28-1.59 3.29-1.26 3.29-1.26.65 1.71.24 2.97.12 3.28.77.86 1.23 1.95 1.23 3.29 0 4.72-2.8 5.76-5.48 6.06.43.38.81 1.13.81 2.28v3.38c0 .34.22.72.83.6C20.56 22.32 24 17.72 24 12.3 24 5.5 18.63 0 12 0Z" />
     </svg>
   );
 }
 
-interface FigmaFileEntry {
-  key: string;
-  role: string;
-  label: string;
+type FigmaFileRole = "seed" | "primitive" | "semantic" | "component" | "project";
+interface FigmaFileEntry { key: string; role: FigmaFileRole; label: string; }
+
+const ROLE_OPTIONS: { value: FigmaFileRole; label: string }[] = [
+  { value: "project", label: "Project" },
+  { value: "component", label: "Components" },
+  { value: "semantic", label: "Semantic tokens" },
+  { value: "primitive", label: "Primitive tokens" },
+  { value: "seed", label: "Seed variables" },
+];
+
+function extractFileKey(input: string): string {
+  const urlMatch = input.match(/figma\.com\/(?:file|design)\/([a-zA-Z0-9]+)/);
+  return urlMatch ? urlMatch[1] : input.trim();
 }
 
-function parseFigmaFilesForDisplay(raw: string | null): FigmaFileEntry[] {
+function parseFigmaFiles(raw: string | null): FigmaFileEntry[] {
   if (!raw) return [];
   const trimmed = raw.trim();
   if (trimmed.startsWith("[")) {
@@ -48,25 +59,308 @@ function parseFigmaFilesForDisplay(raw: string | null): FigmaFileEntry[] {
   return [{ key: trimmed, role: "project", label: "" }];
 }
 
-interface FigmaInfo {
-  externalName: string | null;
-  fileKey: string | null;
-  connectedAt: string;
+interface FigmaInfo { externalName: string | null; fileKey: string | null; connectedAt: string; }
+interface GithubInfo { externalName: string | null; repo: string | null; connectedAt: string; }
+interface Props { figma: FigmaInfo | null; github: GithubInfo | null; }
+
+function SourceHeader({ icon, name, connected, onConnect, onReconnect }: {
+  icon: React.ReactNode; name: string; connected: boolean;
+  onConnect: () => void; onReconnect: () => void;
+}) {
+  return (
+    <div className="flex items-start justify-between mb-4">
+      <div className="flex items-center gap-3">
+        <span className="w-11 h-11 rounded-xl bg-surface source-icon-wrap flex items-center justify-center flex-shrink-0">{icon}</span>
+        <div>
+          <div className="text-[14px] font-medium">{name}</div>
+          <div className="text-[12px] text-gray flex items-center gap-1.5">
+            <span className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-good" : "bg-gray"}`} />
+            {connected ? "Connected" : "Not connected"}
+          </div>
+        </div>
+      </div>
+      <button
+        onClick={connected ? onReconnect : onConnect}
+        className="text-[12px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-foreground/[0.05] transition-colors flex-shrink-0"
+      >
+        {connected ? "Reconnect" : "Connect"}
+      </button>
+    </div>
+  );
 }
 
-interface GithubInfo {
-  externalName: string | null;
-  repo: string | null;
-  connectedAt: string;
-}
-
-interface Props {
+function FigmaCard({ figma, onDisconnect, disconnecting }: {
   figma: FigmaInfo | null;
+  onDisconnect: () => void;
+  disconnecting: boolean;
+}) {
+  const [files, setFiles] = useState<FigmaFileEntry[]>(parseFigmaFiles(figma?.fileKey ?? null));
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newUrl, setNewUrl] = useState("");
+  const [newRole, setNewRole] = useState<FigmaFileRole>("project");
+  const [newLabel, setNewLabel] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function saveFiles(updated: FigmaFileEntry[]) {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/sources/figma/file-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileKey: JSON.stringify(updated) }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+      setFiles(updated);
+    } catch {
+      setError("Could not save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function addFile() {
+    const key = extractFileKey(newUrl);
+    if (!key) return;
+    const entry: FigmaFileEntry = { key, role: newRole, label: newLabel.trim() };
+    await saveFiles([...files, entry]);
+    setNewUrl(""); setNewRole("project"); setNewLabel("");
+    setShowAddForm(false);
+  }
+
+  async function removeFile(index: number) {
+    await saveFiles(files.filter((_, i) => i !== index));
+  }
+
+  return (
+    <div className="rounded-2xl border border-line bg-card p-5">
+      <SourceHeader
+        icon={<FigmaIcon />}
+        name="Figma"
+        connected={Boolean(figma)}
+        onConnect={() => { window.location.href = "/api/auth/figma/start"; }}
+        onReconnect={() => { window.location.href = "/api/auth/figma/start"; }}
+      />
+
+      {figma ? (
+        <>
+          {/* File list */}
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[12px] text-gray">Figma files</span>
+              {!showAddForm && (
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="text-[12px] font-medium text-lilac-deep hover:underline"
+                >
+                  + Add file
+                </button>
+              )}
+            </div>
+
+            {files.length === 0 && !showAddForm && (
+              <p className="text-[12px] text-gray py-2">No files added yet. Add a Figma file URL or key to start scanning.</p>
+            )}
+
+            {files.length > 0 && (
+              <div className="flex flex-col gap-2 mb-2">
+                {files.map((f, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2.5 rounded-xl bg-surface border border-line group">
+                    <span className="px-1.5 py-0.5 rounded bg-card text-gray font-mono text-[10px] uppercase flex-shrink-0 border border-line">
+                      {f.role}
+                    </span>
+                    <span className="font-mono text-[11.5px] text-gray truncate flex-1">{f.key}</span>
+                    {f.label && <span className="text-[11.5px] text-gray flex-shrink-0">— {f.label}</span>}
+                    <button
+                      onClick={() => removeFile(i)}
+                      disabled={saving}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-gray hover:text-[#B3401F] flex-shrink-0 disabled:opacity-30"
+                      aria-label="Remove file"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {showAddForm && (
+              <div className="rounded-xl border border-line p-3 flex flex-col gap-2 bg-surface mt-2">
+                <input
+                  type="text"
+                  value={newUrl}
+                  onChange={e => setNewUrl(e.target.value)}
+                  placeholder="https://www.figma.com/file/... or file key"
+                  className="w-full text-[12.5px] rounded-lg border border-line px-3 py-2 outline-none focus:border-lilac-deep bg-card"
+                />
+                <div className="flex gap-2">
+                  <select
+                    value={newRole}
+                    onChange={e => setNewRole(e.target.value as FigmaFileRole)}
+                    className="text-[12px] rounded-lg border border-line px-2 py-1.5 outline-none bg-card flex-shrink-0"
+                  >
+                    {ROLE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                  <input
+                    type="text"
+                    value={newLabel}
+                    onChange={e => setNewLabel(e.target.value)}
+                    placeholder="Label (optional)"
+                    className="flex-1 text-[12px] rounded-lg border border-line px-2 py-1.5 outline-none focus:border-lilac-deep bg-card"
+                  />
+                </div>
+                {error && <p className="text-[11.5px] text-[#B3401F]">{error}</p>}
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => { setShowAddForm(false); setError(null); }} className="text-[12px] text-gray hover:text-foreground px-3 py-1.5">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={addFile}
+                    disabled={!newUrl.trim() || saving}
+                    className="btn-dark text-[12px] font-medium px-3 py-1.5 rounded-full disabled:opacity-40"
+                  >
+                    {saving ? "Saving…" : "Save file"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="text-[11.5px] text-gray pt-3 border-t border-line flex items-center justify-between">
+            <span className="text-gray">Connected {timeAgo(figma.connectedAt)}</span>
+            <button onClick={onDisconnect} disabled={disconnecting} className="text-[#B3401F] hover:underline disabled:opacity-50">
+              {disconnecting ? "Removing…" : "Remove source"}
+            </button>
+          </div>
+        </>
+      ) : (
+        <p className="text-[12.5px] text-gray">Connect your Figma account to scan components, variants, and tokens.</p>
+      )}
+    </div>
+  );
+}
+
+function GitHubCard({ github, onDisconnect, disconnecting }: {
   github: GithubInfo | null;
+  onDisconnect: () => void;
+  disconnecting: boolean;
+}) {
+  const [repo, setRepo] = useState(github?.repo ?? "");
+  const [editing, setEditing] = useState(false);
+  const [repoInput, setRepoInput] = useState(github?.repo ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  async function saveRepo() {
+    setSaving(true); setError(null); setSaved(false);
+    try {
+      const res = await fetch("/api/sources/github/repo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repo: repoInput.trim() }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+      setRepo(repoInput.trim());
+      setEditing(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setError("Could not save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl border border-line bg-card p-5">
+      <SourceHeader
+        icon={<GithubIcon />}
+        name="GitHub"
+        connected={Boolean(github)}
+        onConnect={() => { window.location.href = "/api/auth/github/start"; }}
+        onReconnect={() => { window.location.href = "/api/auth/github/start"; }}
+      />
+
+      {github ? (
+        <>
+          <div className="mb-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[12px] text-gray">Repository (owner/repo)</span>
+              {!editing && (
+                <button onClick={() => { setEditing(true); setRepoInput(repo); }} className="text-[12px] font-medium text-lilac-deep hover:underline">
+                  {repo ? "Edit" : "Add repo"}
+                </button>
+              )}
+            </div>
+
+            {!editing ? (
+              repo ? (
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface border border-line">
+                  <span className="font-mono text-[12.5px] flex-1">{repo}</span>
+                  {saved && <span className="text-[11px] text-good">Saved</span>}
+                </div>
+              ) : (
+                <p className="text-[12px] text-gray py-2">No repository set. Add one to start scanning.</p>
+              )
+            ) : (
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={repoInput}
+                  onChange={e => setRepoInput(e.target.value)}
+                  placeholder="owner/repo"
+                  className="w-full text-[12.5px] rounded-xl border border-line px-3 py-2 outline-none focus:border-lilac-deep bg-card font-mono"
+                  autoFocus
+                />
+                {error && <p className="text-[11.5px] text-[#B3401F]">{error}</p>}
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => { setEditing(false); setError(null); }} className="text-[12px] text-gray hover:text-foreground px-3 py-1.5">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveRepo}
+                    disabled={!repoInput.trim() || saving}
+                    className="btn-dark text-[12px] font-medium px-3 py-1.5 rounded-full disabled:opacity-40"
+                  >
+                    {saving ? "Saving…" : "Save"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 text-[12px] mb-3">
+            <div>
+              <div className="text-gray mb-0.5">Account</div>
+              <div className="font-medium">{github.externalName ?? "—"}</div>
+            </div>
+            <div>
+              <div className="text-gray mb-0.5">Connected</div>
+              <div className="font-medium">{timeAgo(github.connectedAt)}</div>
+            </div>
+          </div>
+
+          <div className="text-[11.5px] text-gray pt-3 border-t border-line flex items-center justify-between">
+            <span>{repo ? "Repository saved — ready to scan." : "Set a repository to start scanning."}</span>
+            <button onClick={onDisconnect} disabled={disconnecting} className="text-[#B3401F] hover:underline disabled:opacity-50">
+              {disconnecting ? "Removing…" : "Remove source"}
+            </button>
+          </div>
+        </>
+      ) : (
+        <p className="text-[12.5px] text-gray">Connect your GitHub account to scan component files and extract design tokens.</p>
+      )}
+    </div>
+  );
 }
 
 export function SourcesClient({ figma: initialFigma, github: initialGithub }: Props) {
   const router = useRouter();
+  const { open: openDrawer } = useDrawer();
   const [figma, setFigma] = useState(initialFigma);
   const [github, setGithub] = useState(initialGithub);
   const [disconnecting, setDisconnecting] = useState<"figma" | "github" | null>(null);
@@ -82,7 +376,7 @@ export function SourcesClient({ figma: initialFigma, github: initialGithub }: Pr
       });
       if (provider === "figma") setFigma(null);
       else setGithub(null);
-      router.refresh(); // re-sync layout so drawer reflects updated state
+      router.refresh();
     } finally {
       setDisconnecting(null);
     }
@@ -90,156 +384,15 @@ export function SourcesClient({ figma: initialFigma, github: initialGithub }: Pr
 
   return (
     <div className="flex flex-col gap-4 max-w-[640px]">
-      {/* Figma */}
-      <div className="rounded-2xl border border-line bg-white p-5">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <span className="w-11 h-11 rounded-xl bg-[#F8F7F4] flex items-center justify-center flex-shrink-0">
-              <FigmaIcon />
-            </span>
-            <div>
-              <div className="text-[14px] font-medium">Figma</div>
-              <div className="text-[12px] text-gray flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${figma ? "bg-good" : "bg-gray-300"}`} />
-                {figma ? "Connected" : "Not connected"}
-              </div>
-            </div>
-          </div>
-          {figma ? (
-            <button
-              onClick={() => { window.location.href = "/api/auth/figma/start"; }}
-              className="text-[12px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors"
-            >
-              Reconnect
-            </button>
-          ) : (
-            <button
-              onClick={() => { window.location.href = "/api/auth/figma/start"; }}
-              className="text-[12px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors"
-            >
-              Connect
-            </button>
-          )}
-        </div>
-        {figma && (
-          <>
-            <div className="text-[12.5px] mb-3">
-              <div className="grid grid-cols-2 gap-3 mb-2">
-                <div>
-                  <div className="text-gray mb-0.5">Files</div>
-                  <div className="font-medium">{parseFigmaFilesForDisplay(figma.fileKey).length || "Not set"}</div>
-                </div>
-                <div>
-                  <div className="text-gray mb-0.5">Connected</div>
-                  <div className="font-medium">{timeAgo(figma.connectedAt)}</div>
-                </div>
-              </div>
-              {parseFigmaFilesForDisplay(figma.fileKey).length > 0 && (
-                <div className="flex flex-col gap-1">
-                  {parseFigmaFilesForDisplay(figma.fileKey).map((f, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[11.5px]">
-                      <span className="px-1.5 py-0.5 rounded bg-[#F8F7F4] text-gray font-mono text-[10px] uppercase">{f.role}</span>
-                      <span className="font-mono text-gray truncate">{f.key}</span>
-                      {f.label && <span className="text-gray">— {f.label}</span>}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="text-[11.5px] text-gray pt-3 border-t border-line flex items-center justify-between">
-              <span>
-                {figma.fileKey ? "File key saved — ready to scan." : "Add a file key to start scanning."}
-              </span>
-              <button
-                onClick={() => disconnect("figma")}
-                disabled={disconnecting === "figma"}
-                className="text-[#B3401F] hover:underline disabled:opacity-50"
-              >
-                {disconnecting === "figma" ? "Removing…" : "Remove source"}
-              </button>
-            </div>
-          </>
-        )}
-        {!figma && (
-          <p className="text-[12.5px] text-gray">
-            Connect your Figma account to scan components, variants, and tokens.
-          </p>
-        )}
-      </div>
-
-      {/* GitHub */}
-      <div className="rounded-2xl border border-line bg-white p-5">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <span className="w-11 h-11 rounded-xl bg-[#F8F7F4] flex items-center justify-center flex-shrink-0">
-              <GithubIcon />
-            </span>
-            <div>
-              <div className="text-[14px] font-medium">GitHub</div>
-              <div className="text-[12px] text-gray flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${github ? "bg-good" : "bg-gray-300"}`} />
-                {github ? "Connected" : "Not connected"}
-              </div>
-            </div>
-          </div>
-          {github ? (
-            <button
-              onClick={() => { window.location.href = "/api/auth/github/start"; }}
-              className="text-[12px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors"
-            >
-              Reconnect
-            </button>
-          ) : (
-            <button
-              onClick={() => { window.location.href = "/api/auth/github/start"; }}
-              className="text-[12px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors"
-            >
-              Connect
-            </button>
-          )}
-        </div>
-        {github && (
-          <>
-            <div className="grid grid-cols-2 gap-3 text-[12.5px] mb-3">
-              <div>
-                <div className="text-gray mb-0.5">Repository</div>
-                <div className="font-medium font-mono text-[11.5px]">{github.repo ?? "Not set"}</div>
-              </div>
-              <div>
-                <div className="text-gray mb-0.5">Account</div>
-                <div className="font-medium">{github.externalName ?? "—"}</div>
-              </div>
-            </div>
-            <div className="text-[11.5px] text-gray pt-3 border-t border-line flex items-center justify-between">
-              <span>
-                {github.repo ? "Repository saved — ready to scan." : "Set a repository to start scanning."}
-              </span>
-              <button
-                onClick={() => disconnect("github")}
-                disabled={disconnecting === "github"}
-                className="text-[#B3401F] hover:underline disabled:opacity-50"
-              >
-                {disconnecting === "github" ? "Removing…" : "Remove source"}
-              </button>
-            </div>
-          </>
-        )}
-        {!github && (
-          <p className="text-[12.5px] text-gray">
-            Connect your GitHub account to scan component files and extract design tokens.
-          </p>
-        )}
-      </div>
+      <FigmaCard figma={figma} onDisconnect={() => disconnect("figma")} disconnecting={disconnecting === "figma"} />
+      <GitHubCard github={github} onDisconnect={() => disconnect("github")} disconnecting={disconnecting === "github"} />
 
       {(!figma || !github) && (
-        <div className="rounded-2xl bg-[#F8F7F4] border border-line p-4">
+        <div className="rounded-2xl bg-surface border border-line p-4">
           <p className="text-[12.5px] text-gray">
             Revilo will use mock data for any source that isn&apos;t connected.{" "}
-            <button
-              onClick={() => router.push("?connect=1")}
-              className="font-medium text-[#1C1C1A] hover:underline"
-            >
-              Go to Connect →
+            <button onClick={openDrawer} className="font-medium text-foreground hover:underline">
+              Open connect drawer →
             </button>
           </p>
         </div>
