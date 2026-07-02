@@ -244,22 +244,28 @@ export function Sidebar({
           {navItems.map((item) => {
             const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                title={isCollapsed ? item.label : undefined}
-                className={`flex items-center rounded-xl text-[13px] transition-all ${
-                  isCollapsed ? "justify-center w-[44px] h-[40px] mx-auto" : "gap-2.5 px-3 py-2"
-                } ${isActive ? "font-medium shadow-sm" : "text-[#1C1C1A]/70 hover:bg-black/[0.04]"}`}
-                style={
-                  isActive
-                    ? { background: "linear-gradient(135deg, #EFD9FF 0%, #DCC2FB 100%)", color: "#3B1D6E" }
-                    : undefined
-                }
-              >
-                <span className={`flex-shrink-0 ${isActive ? "text-[#7C3AED]" : "text-[#1C1C1A]/50"}`}>{item.icon}</span>
-                {!isCollapsed && item.label}
-              </Link>
+              <div key={item.href} className={`relative group ${isCollapsed ? "flex justify-center" : ""}`}>
+                <Link
+                  href={item.href}
+                  className={`flex items-center rounded-xl text-[13px] transition-all ${
+                    isCollapsed ? "justify-center w-[44px] h-[40px] mx-auto" : "gap-2.5 px-3 py-2"
+                  } ${isActive ? "font-medium shadow-sm" : "text-[#1C1C1A]/70 hover:bg-black/[0.04]"}`}
+                  style={
+                    isActive
+                      ? { background: "linear-gradient(135deg, #EFD9FF 0%, #DCC2FB 100%)", color: "#3B1D6E" }
+                      : undefined
+                  }
+                >
+                  <span className={`flex-shrink-0 ${isActive ? "text-[#7C3AED]" : "text-[#1C1C1A]/50"}`}>{item.icon}</span>
+                  {!isCollapsed && item.label}
+                </Link>
+                {isCollapsed && (
+                  <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1 rounded-lg bg-[#1C1C1A] text-white text-[11.5px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 shadow-md">
+                    {item.label}
+                    <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-[5px] border-b-[5px] border-r-[5px] border-t-transparent border-b-transparent border-r-[#1C1C1A]" />
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
