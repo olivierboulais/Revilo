@@ -2,24 +2,28 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://revilo.app";
+
 export const metadata: Metadata = {
-  title: "Revilo — Design System Alignment Platform",
+  title: { default: "Revilo — Design System Alignment Platform", template: "%s — Revilo" },
   description: "Scan your Figma library against your codebase to find where your design system has drifted. Fix alignment before it becomes technical debt.",
+  metadataBase: new URL(BASE_URL),
+  alternates: { canonical: BASE_URL },
   openGraph: {
     title: "Revilo — Design System Alignment Platform",
     description: "Scan your Figma library against your codebase to find where your design system has drifted.",
-    url: "https://revilo-three.vercel.app",
+    url: BASE_URL,
     siteName: "Revilo",
     type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Revilo — Design System Alignment Platform" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Revilo — Design System Alignment Platform",
     description: "Scan your Figma library against your codebase to find where your design system has drifted.",
+    images: ["/opengraph-image"],
   },
-  icons: {
-    icon: "/favicon.svg",
-  },
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({
