@@ -18,8 +18,6 @@ function basicAuthHeader(): string {
 // grant — the code expires after that.
 export async function exchangeCodeForToken(code: string, redirectUri: string): Promise<FigmaTokenResponse> {
   const body = new URLSearchParams({
-    client_id: FIGMA_CLIENT_ID!,
-    client_secret: FIGMA_CLIENT_SECRET!,
     redirect_uri: redirectUri,
     code,
     grant_type: "authorization_code",
@@ -27,7 +25,10 @@ export async function exchangeCodeForToken(code: string, redirectUri: string): P
 
   const response = await fetch(FIGMA_TOKEN_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Authorization": basicAuthHeader(),
+    },
     body: body.toString(),
   });
 
