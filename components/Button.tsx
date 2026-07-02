@@ -4,7 +4,7 @@ import Link from "next/link";
 type Variant = "dark" | "outline" | "lilac";
 
 const variantClasses: Record<Variant, string> = {
-  dark: "bg-foreground text-background",
+  dark: "btn-dark",
   outline: "bg-transparent text-foreground border border-line",
   lilac: "bg-lilac text-[#1C1C1A]",
 };

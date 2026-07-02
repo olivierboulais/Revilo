@@ -93,6 +93,12 @@ button {
   border: 1px solid var(--line);
 }
 
+/* Dark button — foreground bg, background text, inverts correctly in dark mode */
+.btn-dark {
+  background-color: var(--foreground);
+  color: var(--background);
+}
+
 /* Active nav item */
 .nav-active {
   background: linear-gradient(135deg, #EFD9FF 0%, #DCC2FB 100%);

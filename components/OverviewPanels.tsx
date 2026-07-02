@@ -1,18 +1,23 @@
+"use client";
+
 import Link from "next/link";
 import { Finding, Recommendation } from "@/lib/types";
 import { SeverityDot } from "@/components/Visuals";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
+import { useDrawer } from "@/components/DrawerContext";
 
 function PanelShell({
   title,
   href,
   hrefLabel,
+  onHrefClick,
   icon,
   children,
 }: {
   title: string;
-  href: string;
+  href?: string;
   hrefLabel: string;
+  onHrefClick?: () => void;
   icon?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -27,12 +32,21 @@ function PanelShell({
         )}
       </div>
       <div className="flex-1 flex flex-col gap-2.5">{children}</div>
-      <Link href={href} className="text-[11.5px] font-medium mt-3.5 flex items-center gap-1 text-lilac-deep">
-        {hrefLabel}
-        <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-          <path d="M1.5 7.5L7.5 1.5M7.5 1.5H3M7.5 1.5V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </Link>
+      {onHrefClick ? (
+        <button onClick={onHrefClick} className="text-[11.5px] font-medium mt-3.5 flex items-center gap-1 text-lilac-deep">
+          {hrefLabel}
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+            <path d="M1.5 7.5L7.5 1.5M7.5 1.5H3M7.5 1.5V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      ) : (
+        <Link href={href!} className="text-[11.5px] font-medium mt-3.5 flex items-center gap-1 text-lilac-deep">
+          {hrefLabel}
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+            <path d="M1.5 7.5L7.5 1.5M7.5 1.5H3M7.5 1.5V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
+      )}
     </div>
   );
 }
@@ -44,10 +58,15 @@ const areaHref: Record<Finding["sourceArea"], string> = {
   architecture: "/dashboard/architecture",
 };
 
+const riskIcon = <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14.5 13H1.5L8 1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M8 6V9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><circle cx="8" cy="11.5" r="0.7" fill="currentColor"/></svg>;
+const teamIcon = <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="1.8" stroke="currentColor" strokeWidth="1.3"/><circle cx="11" cy="6" r="1.4" stroke="currentColor" strokeWidth="1.3"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>;
+const actionsIcon = <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.5 1.5 3.5 3.5 3.5 6c0 1.7.8 2.9 2 3.8v1.7h5V9.8c1.2-.9 2-2.1 2-3.8 0-2.5-2-4.5-4.5-4.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M6 14h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>;
+
 export function BiggestRisksPanel({ risks, isPaid }: { risks: Finding[]; isPaid: boolean }) {
+  const { openUpgrade } = useDrawer();
   if (!isPaid) {
     return (
-      <PanelShell title="Biggest Risks" href="/upgrade" hrefLabel="Unlock to see risks" icon={<><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14.5 13H1.5L8 1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M8 6V9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><circle cx="8" cy="11.5" r="0.7" fill="currentColor"/></svg></>}>
+      <PanelShell title="Biggest Risks" hrefLabel="Unlock to see risks" onHrefClick={openUpgrade} icon={riskIcon}>
         <div className="flex-1 flex items-center justify-center text-[12px] text-gray text-center py-4">
           The top risks across your system are in the full report.
         </div>
@@ -55,7 +74,7 @@ export function BiggestRisksPanel({ risks, isPaid }: { risks: Finding[]; isPaid:
     );
   }
   return (
-    <PanelShell title="Biggest Risks" href="/dashboard/alignment" hrefLabel="View all findings" icon={<><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14.5 13H1.5L8 1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M8 6V9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><circle cx="8" cy="11.5" r="0.7" fill="currentColor"/></svg></>}>
+    <PanelShell title="Biggest Risks" href="/dashboard/alignment" hrefLabel="View all findings" icon={riskIcon}>
       {risks.map((f) => (
         <Link key={f.id} href={areaHref[f.sourceArea]} className="flex items-start gap-2 group">
           <SeverityDot severity={f.severity} />
@@ -70,9 +89,10 @@ export function BiggestRisksPanel({ risks, isPaid }: { risks: Finding[]; isPaid:
 }
 
 export function TeamDriftPanel({ design, engineering, isPaid }: { design: number; engineering: number; isPaid: boolean }) {
+  const { openUpgrade } = useDrawer();
   if (!isPaid) {
     return (
-      <PanelShell title="Team Drift" href="/upgrade" hrefLabel="Unlock team insights" icon={<><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="1.8" stroke="currentColor" strokeWidth="1.3"/><circle cx="11" cy="6" r="1.4" stroke="currentColor" strokeWidth="1.3"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg></>}>
+      <PanelShell title="Team Drift" hrefLabel="Unlock team insights" onHrefClick={openUpgrade} icon={teamIcon}>
         <div className="flex-1 flex items-center justify-center text-[12px] text-gray text-center py-4">
           See whether design or engineering is creating more drift.
         </div>
@@ -81,7 +101,7 @@ export function TeamDriftPanel({ design, engineering, isPaid }: { design: number
   }
   const total = Math.max(design + engineering, 1);
   return (
-    <PanelShell title="Team Drift" href="/dashboard/team-insights" hrefLabel="View team insights" icon={<><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="1.8" stroke="currentColor" strokeWidth="1.3"/><circle cx="11" cy="6" r="1.4" stroke="currentColor" strokeWidth="1.3"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg></>}>
+    <PanelShell title="Team Drift" href="/dashboard/team-insights" hrefLabel="View team insights" icon={teamIcon}>
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between text-[12px]">
           <span className="flex items-center gap-1.5 text-gray"><span className="w-2 h-2 rounded-full bg-lilac-mid" />Design</span>
@@ -108,9 +128,10 @@ export function TeamDriftPanel({ design, engineering, isPaid }: { design: number
 const impactColor: Record<Recommendation["impact"], string> = { high: "#34D399", medium: "#FBBF24", low: "#9CA3AF" };
 
 export function RecommendedActionsPanel({ actions, isPaid }: { actions: Recommendation[]; isPaid: boolean }) {
+  const { openUpgrade } = useDrawer();
   if (!isPaid) {
     return (
-      <PanelShell title="Recommended Actions" href="/upgrade" hrefLabel="Unlock recommendations" icon={<><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.5 1.5 3.5 3.5 3.5 6c0 1.7.8 2.9 2 3.8v1.7h5V9.8c1.2-.9 2-2.1 2-3.8 0-2.5-2-4.5-4.5-4.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M6 14h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg></>}>
+      <PanelShell title="Recommended Actions" hrefLabel="Unlock recommendations" onHrefClick={openUpgrade} icon={actionsIcon}>
         <div className="flex-1 flex items-center justify-center text-[12px] text-gray text-center py-4">
           Prioritized fixes, ranked by impact and effort, are in the full report.
         </div>
@@ -118,7 +139,7 @@ export function RecommendedActionsPanel({ actions, isPaid }: { actions: Recommen
     );
   }
   return (
-    <PanelShell title="Recommended Actions" href="/dashboard/recommendations" hrefLabel="View all recommendations" icon={<><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.5 1.5 3.5 3.5 3.5 6c0 1.7.8 2.9 2 3.8v1.7h5V9.8c1.2-.9 2-2.1 2-3.8 0-2.5-2-4.5-4.5-4.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M6 14h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg></>}>
+    <PanelShell title="Recommended Actions" href="/dashboard/recommendations" hrefLabel="View all recommendations" icon={actionsIcon}>
       {actions.map((r) => (
         <div key={r.id} className="flex items-start gap-2">
           <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: impactColor[r.impact] }} />
@@ -149,6 +170,7 @@ export function CategoryModule({
   href: string;
   locked?: boolean;
 }) {
+  const { openUpgrade } = useDrawer();
   return (
     <div className="rounded-2xl p-6 flex flex-col bg-white border border-line">
       <div className="flex items-center justify-between mb-3">
@@ -167,12 +189,21 @@ export function CategoryModule({
           <div className="text-[11px] text-gray mt-2">{issueCount} issue{issueCount === 1 ? "" : "s"} found</div>
         </>
       )}
-      <Link
-        href={locked ? "/upgrade" : href}
-        className="text-[11.5px] font-medium mt-3 px-3 py-1.5 rounded-full border border-line text-center hover:bg-black/[0.03] transition-colors"
-      >
-        {locked ? "Unlock" : "View details"}
-      </Link>
+      {locked ? (
+        <button
+          onClick={openUpgrade}
+          className="text-[11.5px] font-medium mt-3 px-3 py-1.5 rounded-full border border-line text-center hover:bg-foreground/[0.05] transition-colors"
+        >
+          Unlock
+        </button>
+      ) : (
+        <Link
+          href={href}
+          className="text-[11.5px] font-medium mt-3 px-3 py-1.5 rounded-full border border-line text-center hover:bg-foreground/[0.05] transition-colors"
+        >
+          View details
+        </Link>
+      )}
     </div>
   );
 }

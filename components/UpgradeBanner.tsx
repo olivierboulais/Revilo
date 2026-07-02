@@ -1,6 +1,10 @@
-import { LinkButton } from "@/components/Button";
+"use client";
+
+import { useDrawer } from "@/components/DrawerContext";
+import { Button } from "@/components/Button";
 
 export function UpgradeBanner({ message }: { message: string }) {
+  const { openUpgrade } = useDrawer();
   return (
     <div className="relative rounded-2xl overflow-hidden">
       <div className="blur-[3px] opacity-60 select-none pointer-events-none p-6">
@@ -11,9 +15,9 @@ export function UpgradeBanner({ message }: { message: string }) {
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/60 px-6 text-center">
         <p className="text-[13.5px] text-[#1C1C1A] font-medium max-w-[280px]">{message}</p>
-        <LinkButton href="/upgrade" variant="dark" withArrow={false} className="text-[13px]">
+        <Button onClick={openUpgrade} variant="dark" withArrow={false} className="text-[13px]">
           Unlock full report
-        </LinkButton>
+        </Button>
       </div>
     </div>
   );
