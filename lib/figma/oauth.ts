@@ -17,15 +17,18 @@ function basicAuthHeader(): string {
 // this must happen within 30 seconds of the user completing the OAuth
 // grant — the code expires after that.
 export async function exchangeCodeForToken(code: string, redirectUri: string): Promise<FigmaTokenResponse> {
-  const tokenUrl = new URL(FIGMA_TOKEN_URL);
-  tokenUrl.searchParams.set("client_id", FIGMA_CLIENT_ID!);
-  tokenUrl.searchParams.set("client_secret", FIGMA_CLIENT_SECRET!);
-  tokenUrl.searchParams.set("redirect_uri", redirectUri);
-  tokenUrl.searchParams.set("code", code);
-  tokenUrl.searchParams.set("grant_type", "authorization_code");
+  const body = new URLSearchParams({
+    client_id: FIGMA_CLIENT_ID!,
+    client_secret: FIGMA_CLIENT_SECRET!,
+    redirect_uri: redirectUri,
+    code,
+    grant_type: "authorization_code",
+  });
 
-  const response = await fetch(tokenUrl.toString(), {
+  const response = await fetch(FIGMA_TOKEN_URL, {
     method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body.toString(),
   });
 
   if (!response.ok) {
