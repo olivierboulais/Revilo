@@ -21,8 +21,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
     ? await Promise.all([getSource(user.id, "figma"), getSource(user.id, "github")])
     : [null, null];
 
-  const figmaConnected = figmaSource?.status === "connected" && Boolean(figmaSource.access_token) && Boolean(figmaSource.figma_file_key);
-  const githubConnected = githubSource?.status === "connected" && Boolean(githubSource.access_token) && Boolean(githubSource.github_repo);
+  // OAuth connected = token exists. File key / repo are checked separately in ConnectFlow.
+  const figmaConnected = figmaSource?.status === "connected" && Boolean(figmaSource.access_token);
+  const githubConnected = githubSource?.status === "connected" && Boolean(githubSource.access_token);
 
   let report = await getReport(session.email);
   if (!report) {
