@@ -158,6 +158,18 @@ function ProfileMenu({ email, workspaceName, isCollapsed }: { email: string; wor
             </svg>
             Settings
           </Link>
+          <Link
+            href="/dashboard/help"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 text-[12px] text-[#1C1C1A]/70 hover:bg-black/[0.04] transition-colors"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3" />
+              <path d="M5.5 5.2C5.5 4.4 6.2 3.8 7 3.8s1.5.6 1.5 1.4c0 .7-.4 1.1-1 1.4C7 6.9 6.8 7.2 6.8 7.7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              <circle cx="7" cy="9.5" r=".6" fill="currentColor" />
+            </svg>
+            Help
+          </Link>
           <form action="/api/logout" method="POST">
             <button
               type="submit"
