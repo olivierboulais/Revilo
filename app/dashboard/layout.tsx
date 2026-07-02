@@ -16,7 +16,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const session = await getSession();
   if (!session) redirect("/signup");
 
-  const user = await findUserByEmail(session.email);
+  const [user, cachedReport] = await Promise.all([
+    findUserByEmail(session.email),
+    getReport(session.email),
+  ]);
+
   const [figmaSource, githubSource] = user
     ? await Promise.all([getSource(user.id, "figma"), getSource(user.id, "github")])
     : [null, null];
@@ -25,7 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const figmaConnected = figmaSource?.status === "connected" && Boolean(figmaSource.access_token);
   const githubConnected = githubSource?.status === "connected" && Boolean(githubSource.access_token);
 
-  let report = await getReport(session.email);
+  let report = cachedReport;
   if (!report) {
     report = await runScan(session.workspaceName, session.email);
     await saveReport(session.email, report);
