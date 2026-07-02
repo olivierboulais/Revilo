@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   const state = url.searchParams.get("state");
   const errorParam = url.searchParams.get("error");
 
-  const connectUrl = new URL("/connect", request.url);
+  const connectUrl = new URL("/dashboard", request.url);
+  connectUrl.searchParams.set("connect", "1");
 
   // The user rejected the OAuth grant — Figma's docs note no callback
   // fires in that case, but handle it defensively in case that changes.

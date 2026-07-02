@@ -157,7 +157,7 @@ export default async function OverviewPage({ searchParams }: Props) {
             </div>
           </div>
           <a
-            href="/connect"
+            href="?connect=1"
             className="inline-flex items-center gap-2 text-[12.5px] font-medium px-4 py-2 rounded-full text-[#1C1C1A] flex-shrink-0 self-start sm:self-center"
             style={{ background: "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)" }}
           >

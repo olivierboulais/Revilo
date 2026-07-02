@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   const state = url.searchParams.get("state");
   const errorParam = url.searchParams.get("error");
 
-  const connectUrl = new URL("/connect", request.url);
+  const connectUrl = new URL("/dashboard", request.url);
+  connectUrl.searchParams.set("connect", "1");
 
   if (errorParam) {
     connectUrl.searchParams.set("error", "github_denied");

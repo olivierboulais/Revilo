@@ -1,19 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Sidebar } from "@/components/Sidebar";
+import { ConnectDrawer } from "@/components/ConnectDrawer";
 
 export function DashboardShell({
   workspaceName,
   isPaid,
   email,
   tier,
+  figmaConnected,
+  figmaFileKey,
+  githubConnected,
+  githubRepo,
   children,
 }: {
   workspaceName: string;
   isPaid: boolean;
   email: string;
   tier: string;
+  figmaConnected: boolean;
+  figmaFileKey: string | null;
+  githubConnected: boolean;
+  githubRepo: string | null;
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,6 +51,15 @@ export function DashboardShell({
         onToggleCollapse={() => setCollapsed(!collapsed)}
       />
       {children}
+
+      <Suspense>
+        <ConnectDrawer
+          figmaConnected={figmaConnected}
+          figmaFileKey={figmaFileKey}
+          githubConnected={githubConnected}
+          githubRepo={githubRepo}
+        />
+      </Suspense>
     </div>
   );
 }

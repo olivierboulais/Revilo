@@ -65,7 +65,7 @@ export async function GET(request: Request) {
   const hasConnectedSources =
     figmaSource?.status === "connected" || githubSource?.status === "connected";
 
-  const redirectTo = hasConnectedSources ? "/dashboard" : "/connect";
+  const redirectTo = hasConnectedSources ? "/dashboard" : "/dashboard?connect=1";
   const response = NextResponse.redirect(new URL(redirectTo, request.url));
   response.cookies.delete("google_oauth_state");
   return response;
