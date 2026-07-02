@@ -20,6 +20,11 @@ export function ConnectDrawer({ figmaConnected, figmaFileKey, githubConnected, g
   const error = searchParams.get("error") ?? undefined;
   const errorDetail = searchParams.get("detail") ?? undefined;
 
+  // Refresh server data whenever the drawer opens so connection state is current
+  useEffect(() => {
+    if (open) router.refresh();
+  }, [open]);
+
   function close() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("connect");
