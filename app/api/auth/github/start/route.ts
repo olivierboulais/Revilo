@@ -23,8 +23,18 @@ export async function GET(request: Request) {
   authorizeUrl.searchParams.set("scope", GITHUB_SCOPES);
   authorizeUrl.searchParams.set("state", state);
 
+  const referer = request.headers.get("referer") ?? "";
+  const returnPath = referer ? new URL(referer).pathname : "/dashboard";
+
   const response = NextResponse.redirect(authorizeUrl);
   response.cookies.set("github_oauth_state", state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 10,
+  });
+  response.cookies.set("oauth_return_path", returnPath, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

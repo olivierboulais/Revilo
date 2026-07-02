@@ -30,13 +30,23 @@ export async function GET(request: Request) {
   authorizeUrl.searchParams.set("state", state);
   authorizeUrl.searchParams.set("response_type", "code");
 
+  const referer = request.headers.get("referer") ?? "";
+  const returnPath = referer ? new URL(referer).pathname : "/dashboard";
+
   const response = NextResponse.redirect(authorizeUrl);
   response.cookies.set("figma_oauth_state", state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 10, // 10 minutes is plenty for a user to complete the OAuth screen
+    maxAge: 60 * 10,
+  });
+  response.cookies.set("oauth_return_path", returnPath, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 10,
   });
   return response;
 }

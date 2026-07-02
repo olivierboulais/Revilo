@@ -11,7 +11,9 @@ export async function GET(request: Request) {
   const state = url.searchParams.get("state");
   const errorParam = url.searchParams.get("error");
 
-  const connectUrl = new URL("/dashboard", request.url);
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const returnPath = cookieHeader.match(/oauth_return_path=([^;]+)/)?.[1] ?? "/dashboard";
+  const connectUrl = new URL(returnPath, request.url);
   connectUrl.searchParams.set("connect", "1");
 
   if (errorParam) {
@@ -62,5 +64,6 @@ export async function GET(request: Request) {
 
   const response = NextResponse.redirect(connectUrl);
   response.cookies.delete("github_oauth_state");
+  response.cookies.delete("oauth_return_path");
   return response;
 }

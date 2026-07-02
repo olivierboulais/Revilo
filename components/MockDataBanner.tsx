@@ -23,7 +23,7 @@ export function MockDataBanner({ figmaConnected, githubConnected }: Props) {
         This report uses <strong>sample data</strong> — {missing} {!figmaConnected && !githubConnected ? "are" : "is"} not connected yet.
       </span>
       <div className="flex items-center gap-3 flex-shrink-0">
-        <Link href="/dashboard?connect=1" className="font-medium text-[#1E40AF] hover:underline">
+        <Link href="?connect=1" className="font-medium text-[#1E40AF] hover:underline">
           Connect sources →
         </Link>
         <button onClick={() => setDismissed(true)} className="text-[#3B82F6] hover:opacity-70" aria-label="Dismiss">
