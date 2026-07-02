@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useDrawer } from "@/components/DrawerContext";
 
 interface NavItem {
   href: string;
@@ -207,6 +208,7 @@ export function Sidebar({
   onToggleCollapse?: () => void;
 }) {
   const pathname = usePathname();
+  const { openUpgrade } = useDrawer();
 
   const isCollapsed = Boolean(collapsed) && !mobileOpen;
 
@@ -286,20 +288,19 @@ export function Sidebar({
           {/* Upgrade */}
           {tier !== "pro" && tier !== "monitoring" && (
             isCollapsed ? (
-              <Link
-                href="/upgrade"
+              <button
+                onClick={openUpgrade}
                 title="Upgrade to Pro"
-                className="flex items-center justify-center w-[44px] h-[44px] mx-auto rounded-xl hover:scale-[1.02] transition-transform"
-                style={{ background: "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 50%, #DDD6FE 100%)" }}
+                className="gradient-lilac flex items-center justify-center w-[44px] h-[44px] mx-auto rounded-xl hover:scale-[1.02] transition-transform"
               >
                 <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
                   <path d="M7 2l1.8 3.6 4 .6-2.9 2.8.7 4L7 11.2 3.4 13l.7-4L1.2 6.2l4-.6L7 2Z" fill="#7C3AED" />
                 </svg>
-              </Link>
+              </button>
             ) : (
-              <Link
-                href="/upgrade"
-                className="gradient-lilac flex items-center gap-3 rounded-xl px-3 py-2.5 hover:scale-[1.01] transition-transform group"
+              <button
+                onClick={openUpgrade}
+                className="gradient-lilac flex items-center gap-3 rounded-xl px-3 py-2.5 hover:scale-[1.01] transition-transform group w-full text-left"
               >
                 <span className="w-8 h-8 rounded-lg bg-[#1C1C1A] flex items-center justify-center flex-shrink-0">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -313,7 +314,7 @@ export function Sidebar({
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0 text-[#1C1C1A]/30 group-hover:text-[#1C1C1A]/60 transition-colors">
                   <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-              </Link>
+              </button>
             )
           )}
 

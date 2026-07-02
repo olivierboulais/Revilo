@@ -9,7 +9,7 @@ interface LogoProps {
   className?: string;
 }
 
-export function Logo({ color = "#1C1C1A", width = 88, height = 27, className }: LogoProps) {
+export function Logo({ color = "currentColor", width = 88, height = 27, className }: LogoProps) {
   const uid = useId().replace(/:/g, "");
   const m0 = `ns0-${uid}`;
   const m1 = `ns1-${uid}`;

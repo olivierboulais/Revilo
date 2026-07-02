@@ -4,8 +4,8 @@ import Link from "next/link";
 type Variant = "dark" | "outline" | "lilac";
 
 const variantClasses: Record<Variant, string> = {
-  dark: "bg-[#1C1C1A] text-white",
-  outline: "bg-transparent text-[#1C1C1A] border border-line",
+  dark: "bg-foreground text-background",
+  outline: "bg-transparent text-foreground border border-line",
   lilac: "bg-lilac text-[#1C1C1A]",
 };
 
@@ -40,9 +40,8 @@ export function Button({
   ...rest
 }: CommonProps & ButtonHTMLAttributes<HTMLButtonElement>) {
   const base = withArrow ? baseWithArrow : baseNoArrow;
-  const mergedStyle = variant === "dark" ? { color: "#ffffff", ...style } : style;
   return (
-    <button className={`${base} ${variantClasses[variant]} ${className}`} style={mergedStyle} {...rest}>
+    <button className={`${base} ${variantClasses[variant]} ${className}`} style={style} {...rest}>
       {children}
       {withArrow && <Arrow />}
     </button>
@@ -59,9 +58,8 @@ export function LinkButton({
   ...rest
 }: CommonProps & AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
   const base = withArrow ? baseWithArrow : baseNoArrow;
-  const mergedStyle = variant === "dark" ? { color: "#ffffff", ...style } : style;
   return (
-    <Link href={href} className={`${base} ${variantClasses[variant]} ${className}`} style={mergedStyle} {...rest}>
+    <Link href={href} className={`${base} ${variantClasses[variant]} ${className}`} style={style} {...rest}>
       {children}
       {withArrow && <Arrow />}
     </Link>
