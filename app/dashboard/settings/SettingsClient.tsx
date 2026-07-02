@@ -4,6 +4,69 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { changeWorkspaceNameAction, changePasswordAction } from "./actions";
 import { Button } from "@/components/Button";
+import { useTheme } from "@/components/ThemeProvider";
+
+type Theme = "light" | "dark" | "system";
+
+const THEMES: { value: Theme; label: string; icon: React.ReactNode }[] = [
+  {
+    value: "light",
+    label: "Light",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.4" />
+        <path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.5 3.5l1 1M11.5 11.5l1 1M11.5 3.5l-1 1M3.5 11.5l1-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    value: "dark",
+    label: "Dark",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M13 8.5A5.5 5.5 0 0 1 6.5 3c0-.3 0-.6.05-.9A5.5 5.5 0 1 0 13.9 9.45c-.3.05-.6.05-.9.05z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    value: "system",
+    label: "System",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="1.5" y="2.5" width="13" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+        <path d="M5.5 13.5h5M8 11.5v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
+
+function AppearanceSection() {
+  const { theme, setTheme } = useTheme();
+  return (
+    <div className="rounded-2xl border border-line bg-white p-5">
+      <h2 className="text-[14px] font-medium mb-4">Appearance</h2>
+      <div className="grid grid-cols-3 gap-2">
+        {THEMES.map((t) => {
+          const active = theme === t.value;
+          return (
+            <button
+              key={t.value}
+              onClick={() => setTheme(t.value)}
+              className={`flex flex-col items-center gap-2 px-3 py-3.5 rounded-xl border text-[12.5px] font-medium transition-all ${
+                active
+                  ? "border-[#7C3AED] bg-[#F3E8FF] text-[#3B1D6E]"
+                  : "border-line hover:bg-black/[0.03] text-[#706F6A]"
+              }`}
+            >
+              <span className={active ? "text-[#7C3AED]" : "text-[#706F6A]"}>{t.icon}</span>
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -184,6 +247,8 @@ export function SettingsClient({ email, workspaceName, tier, emailVerified }: Pr
           submitLabel="Update password"
         />
       </FormSection>
+
+      <AppearanceSection />
 
       <FormSection title="Plan">
         <div className="flex items-center justify-between">
