@@ -12,7 +12,8 @@ export async function GET(request: Request) {
   const errorParam = url.searchParams.get("error");
 
   const cookieHeader = request.headers.get("cookie") ?? "";
-  const returnPath = cookieHeader.match(/oauth_return_path=([^;]+)/)?.[1] ?? "/dashboard";
+  const rawReturn = cookieHeader.match(/(?:^|;\s*)oauth_return_path=([^;]+)/)?.[1];
+  const returnPath = rawReturn ? decodeURIComponent(rawReturn) : "/dashboard";
   const connectUrl = new URL(returnPath, request.url);
   connectUrl.searchParams.set("connect", "1");
 
