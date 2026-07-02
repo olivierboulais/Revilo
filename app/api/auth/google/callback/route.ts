@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, getGoogleRedirectUri } from "@/lib/google/config";
 import { findUserByEmail, createUser } from "@/lib/db/users";
 import { createSessionForUser } from "@/lib/auth/session";
+import { getSource } from "@/lib/db/sources";
 import { randomBytes } from "crypto";
 
 export async function GET(request: Request) {
@@ -57,7 +58,15 @@ export async function GET(request: Request) {
 
   await createSessionForUser(user.id);
 
-  const response = NextResponse.redirect(new URL("/connect", request.url));
+  const [figmaSource, githubSource] = await Promise.all([
+    getSource(user.id, "figma"),
+    getSource(user.id, "github"),
+  ]);
+  const hasConnectedSources =
+    figmaSource?.status === "connected" || githubSource?.status === "connected";
+
+  const redirectTo = hasConnectedSources ? "/dashboard" : "/connect";
+  const response = NextResponse.redirect(new URL(redirectTo, request.url));
   response.cookies.delete("google_oauth_state");
   return response;
 }
