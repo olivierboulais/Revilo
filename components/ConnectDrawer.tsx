@@ -16,11 +16,13 @@ export function ConnectDrawer({ figmaConnected, figmaFileKey, githubConnected, g
   const router = useRouter();
   const open = searchParams.get("connect") === "1";
   const overlayRef = useRef<HTMLDivElement>(null);
+  const refreshed = useRef(false);
 
   const error = searchParams.get("error") ?? undefined;
   const errorDetail = searchParams.get("detail") ?? undefined;
 
   function close() {
+    refreshed.current = false;
     const params = new URLSearchParams(searchParams.toString());
     params.delete("connect");
     params.delete("error");
@@ -29,8 +31,14 @@ export function ConnectDrawer({ figmaConnected, figmaFileKey, githubConnected, g
     router.replace(qs ? `?${qs}` : window.location.pathname);
   }
 
+  // Re-fetch server data each time the drawer opens so the connected status
+  // reflects what was just saved by the OAuth callback.
   useEffect(() => {
     if (!open) return;
+    if (!refreshed.current) {
+      refreshed.current = true;
+      router.refresh();
+    }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") close();
     }
