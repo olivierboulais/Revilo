@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getSession } from "@/lib/auth/session";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = { title: "Dashboard — Revilo" };
 import { getReport, saveReport } from "@/lib/store";
@@ -38,6 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const isPaid = session.tier !== "free";
 
   return (
+    <ThemeProvider>
     <DashboardShell
       workspaceName={session.workspaceName}
       isPaid={isPaid}
@@ -55,5 +57,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="flex-1 overflow-y-auto">{children}</div>
       </div>
     </DashboardShell>
+    </ThemeProvider>
   );
 }
