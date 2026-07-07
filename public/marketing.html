@@ -163,16 +163,27 @@ h1 em{font-style:normal;color:var(--lilac-deep)}
   .wrap{padding:0 24px}
   .problem,.cap-inner,.sample-inner,.ai-inner,.pricing-inner,.about-inner,.footer-inner,.final-cta{padding-left:24px;padding-right:24px}
 }
+/* ── HAMBURGER MENU ── */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;background:none;border:none;cursor:pointer;padding:4px;flex-shrink:0}
+.nav-hamburger span{display:block;height:1.5px;width:20px;background:var(--ink);border-radius:2px;transition:transform .25s,opacity .2s}
+.nav-mobile-menu{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);flex-direction:column;padding:24px 24px 40px}
+.nav-mobile-menu.open{display:flex}
+.nav-mobile-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}
+.nav-mobile-close{width:36px;height:36px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-mobile-links{display:flex;flex-direction:column;gap:0;flex:1}
+.nav-mobile-links a{font-size:28px;font-weight:300;letter-spacing:-.02em;color:var(--ink);padding:16px 0;border-bottom:1px solid var(--line);transition:color .15s}
+.nav-mobile-links a:hover{color:var(--lilac-deep)}
+.nav-mobile-cta{margin-top:40px}
+.nav-mobile-cta a{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--ink);color:#fff;border-radius:999px;padding:14px 24px;font-size:15px;font-weight:500}
+.nav-mobile-cta a .arr{width:28px;height:28px;border-radius:50%;background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center}
 @media(max-width:640px){
   .nav{top:14px;width:calc(100% - 16px)}
-  .nav-inner{justify-content:flex-start;gap:10px}
-  .nav-pill{gap:10px;padding:8px 8px 8px 14px}
+  .nav-inner{justify-content:space-between}
+  .nav-pill{gap:10px;padding:8px 8px 8px 14px;flex:1}
   .nav-logo svg{width:60px;height:auto;display:block}
-  .nav-links{gap:0}
-  .nav-links a{font-size:12px;padding:8px 7px;letter-spacing:0}
-  .nav-cta{gap:0;padding:6px;flex-shrink:0}
-  .nav-cta .cta-label{display:none}
-  .nav-cta .arr{width:30px;height:30px}
+  .nav-links{display:none}
+  .nav-cta{display:none}
+  .nav-hamburger{display:flex}
   .nav-indicator{display:none}
   .hero-left{padding:84px 20px 40px}
   h1{font-size:clamp(28px,9vw,36px)}
@@ -468,8 +479,30 @@ footer{background:var(--ink);color:#fff;padding:60px 0 36px}
     <a href="#pricing" class="nav-cta"><span class="cta-label">Run Free Scan</span>
       <span class="arr"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     </a>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<!-- MOBILE MENU -->
+<div class="nav-mobile-menu" id="nav-mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation">
+  <div class="nav-mobile-top">
+    <a href="/" aria-label="Revilo home"><svg width="72" height="22" viewBox="0 0 169 52" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="mm0" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="23" height="52"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0H22.1756V51.696H0V0Z" fill="white"/></mask><g mask="url(#mm0)"><path fill-rule="evenodd" clip-rule="evenodd" d="M21.456 21.5995V8.85651C21.456 2.95251 18.816 -0.000488281 13.536 -0.000488281H0V51.6965H6.912V33.9985V30.8165V24.9125V23.0415V6.26351H11.448C13.512 6.26351 14.544 7.51251 14.544 10.0075V20.3905V21.1675V24.9125H11.448H9.819L11.602 33.1785L15.624 51.6965H22.176L17.352 30.1675C20.088 28.9685 21.456 26.1125 21.456 21.5995Z" fill="#1C1C1A"/></g><mask id="mm1" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="34" y="0" width="18" height="52"><path fill-rule="evenodd" clip-rule="evenodd" d="M34.4141 0.000244141H51.5501V51.696H34.4141V0.000244141Z" fill="white"/></mask><g mask="url(#mm1)"><path fill-rule="evenodd" clip-rule="evenodd" d="M34.4141 51.6962H51.5501V45.4312H41.3261V28.2232H50.3981V21.9602H41.3261V6.26324H51.5501V0.000244141H34.4141V51.6962Z" fill="#1C1C1A"/></g><mask id="mm2" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="61" y="0" width="26" height="52"><path fill-rule="evenodd" clip-rule="evenodd" d="M61.1953 0H86.1073V51.6959H61.1953V0Z" fill="white"/></mask><g mask="url(#mm2)"><path fill-rule="evenodd" clip-rule="evenodd" d="M73.6513 39.456L68.0353 0H61.1953L69.5473 51.696H77.7553L86.1073 0H79.2673L73.6513 39.456Z" fill="#1C1C1A"/></g><mask id="mm3" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="169" height="52"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 51.696H168.262V0H0V51.696Z" fill="white"/></mask><g mask="url(#mm3)"><path fill-rule="evenodd" clip-rule="evenodd" d="M97.2734 51.696H104.185V0H97.2734V51.696Z" fill="#1C1C1A"/><path fill-rule="evenodd" clip-rule="evenodd" d="M124.771 0H117.859V51.696H134.275V45.432H124.771V0Z" fill="#1C1C1A"/><path fill-rule="evenodd" clip-rule="evenodd" d="M161.348 42.412C161.348 44.422 160.438 45.432 158.608 45.432H155.078C153.018 45.432 151.989 44.422 151.989 42.412V9.29195C151.989 7.27195 152.998 6.26195 155.008 6.26195H158.248C160.308 6.26195 161.348 7.27195 161.348 9.29195V42.412ZM159.978 0.00195312H153.358C147.838 0.00195312 145.078 2.95195 145.078 8.85095V42.912C145.078 48.771 147.858 51.691 153.428 51.691H159.909C165.478 51.691 168.258 48.771 168.258 42.912V8.85095C168.258 2.95195 165.498 0.00195312 159.978 0.00195312Z" fill="#1C1C1A"/></g></svg></a>
+    <button class="nav-mobile-close" id="nav-mobile-close" aria-label="Close menu">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M1 1l16 16M17 1L1 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <nav class="nav-mobile-links">
+    <a href="#capabilities" id="mm-scanner">Scanner</a>
+    <a href="#sample-report" id="mm-report">Sample Report</a>
+    <a href="#pricing" id="mm-pricing">Pricing</a>
+    <a href="#about" id="mm-about">About</a>
+  </nav>
+  <div class="nav-mobile-cta">
+    <a href="#pricing">Run Free Scan <span class="arr"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+  </div>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -878,6 +911,20 @@ footer{background:var(--ink);color:#fff;padding:60px 0 36px}
 // Scroll reveal
 const io = new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.1});
 document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+// Hamburger menu
+(function(){
+  var btn = document.getElementById('nav-hamburger');
+  var menu = document.getElementById('nav-mobile-menu');
+  var close = document.getElementById('nav-mobile-close');
+  if(!btn || !menu) return;
+  function openMenu(){ menu.classList.add('open'); document.body.style.overflow='hidden'; }
+  function closeMenu(){ menu.classList.remove('open'); document.body.style.overflow=''; }
+  btn.addEventListener('click', openMenu);
+  close.addEventListener('click', closeMenu);
+  menu.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenu(); });
+})();
 
 // Nav pill: glass on scroll
 (function(){
