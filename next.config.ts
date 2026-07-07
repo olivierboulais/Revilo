@@ -2,9 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@react-pdf/renderer", "canvas"],
-  async redirects() {
-    return [{ source: "/", destination: "/marketing.html", permanent: false }];
-  },
   async headers() {
     return [
       {
