@@ -142,8 +142,8 @@ export default function HelpPage() {
         <p className="text-[13px] font-medium mb-0.5">Still need help?</p>
         <p className="text-[12.5px] text-gray">
           Email us at{" "}
-          <a href="mailto:support@revilo.app" className="text-[#3B1D6E] hover:underline font-medium">
-            support@revilo.app
+          <a href="mailto:support@revilo.design" className="text-[#3B1D6E] hover:underline font-medium">
+            support@revilo.design
           </a>{" "}
           and we'll get back to you within one business day.
         </p>

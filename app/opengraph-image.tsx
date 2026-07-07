@@ -66,7 +66,7 @@ export default function OGImage() {
 
         {/* Brand */}
         <div style={{ position: "absolute", bottom: 56, right: 96, fontSize: 18, fontWeight: 700, color: "#1C1C1A", letterSpacing: "-0.02em" }}>
-          revilo.app
+          revilo.design
         </div>
       </div>
     ),

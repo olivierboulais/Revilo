@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const base = process.env.NEXT_PUBLIC_BASE_URL ?? "https://revilo.app";
+const base = process.env.NEXT_PUBLIC_BASE_URL ?? "https://revilo.design";
 
 export default function robots(): MetadataRoute.Robots {
   return {
