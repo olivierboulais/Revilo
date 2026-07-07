@@ -1,11 +1,7 @@
-import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/session";
+import { readFileSync } from "fs";
+import { join } from "path";
 
-export async function GET(request: Request) {
-  const session = await getSession();
-  if (session) {
-    return NextResponse.redirect(new URL("/dashboard", request.url), { status: 307 });
-  }
-  // public/marketing.html is served as a static CDN asset at /marketing.html
-  return NextResponse.redirect(new URL("/marketing.html", request.url), { status: 307 });
+export function GET() {
+  const html = readFileSync(join(process.cwd(), "public/marketing.html"), "utf-8");
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
