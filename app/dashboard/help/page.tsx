@@ -116,7 +116,7 @@ export default function HelpPage() {
                   key={item.q}
                   className="group rounded-xl border border-line bg-white overflow-hidden"
                 >
-                  <summary className="flex items-center justify-between gap-4 px-4 py-3.5 cursor-pointer list-none select-none hover:bg-black/[0.02] transition-colors">
+                  <summary className="flex items-center justify-between gap-4 px-4 py-3.5 cursor-pointer list-none select-none hover:bg-foreground/[0.03] transition-colors">
                     <span className="text-[13.5px] font-medium">{item.q}</span>
                     <svg
                       width="14"

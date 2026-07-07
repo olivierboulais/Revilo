@@ -151,7 +151,7 @@ function ProfileMenu({ email, workspaceName, isCollapsed }: { email: string; wor
           <Link
             href="/dashboard/settings"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 text-[12px] text-[#1C1C1A]/70 hover:bg-black/[0.04] transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-[12px] text-[#1C1C1A]/70 hover:bg-foreground/[0.05] transition-colors"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <circle cx="7" cy="7" r="1.8" stroke="currentColor" strokeWidth="1.3" />
@@ -162,7 +162,7 @@ function ProfileMenu({ email, workspaceName, isCollapsed }: { email: string; wor
           <Link
             href="/dashboard/help"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 text-[12px] text-[#1C1C1A]/70 hover:bg-black/[0.04] transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-[12px] text-[#1C1C1A]/70 hover:bg-foreground/[0.05] transition-colors"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3" />
@@ -174,7 +174,7 @@ function ProfileMenu({ email, workspaceName, isCollapsed }: { email: string; wor
           <form action="/api/logout" method="POST">
             <button
               type="submit"
-              className="flex items-center gap-2 px-3 py-2 text-[12px] text-[#1C1C1A]/70 hover:bg-black/[0.04] transition-colors w-full text-left"
+              className="flex items-center gap-2 px-3 py-2 text-[12px] text-[#1C1C1A]/70 hover:bg-foreground/[0.05] transition-colors w-full text-left"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M5 1.5h-1.5a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5H5M9 10l3-3-3-3M12 7H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -236,7 +236,7 @@ export function Sidebar({
         {/* Collapse/Expand floating button on right edge */}
         <button
           onClick={onToggleCollapse}
-          className="hidden lg:flex items-center justify-center w-[24px] h-[24px] rounded-full border border-line bg-white hover:bg-black/[0.03] transition-colors absolute top-[26px] -right-[12px] z-10 shadow-sm"
+          className="hidden lg:flex items-center justify-center w-[24px] h-[24px] rounded-full border border-line bg-white hover:bg-foreground/[0.05] transition-colors absolute top-[26px] -right-[12px] z-10 shadow-sm"
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">

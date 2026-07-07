@@ -204,7 +204,7 @@ function DeleteAccountSection() {
         </button>
         <button
           onClick={() => { setOpen(false); setPassword(""); setError(null); }}
-          className="text-[13px] font-medium px-4 py-2 rounded-full border border-line hover:bg-black/[0.03] transition-colors"
+          className="text-[13px] font-medium px-4 py-2 rounded-full border border-line hover:bg-foreground/[0.05] transition-colors"
         >
           Cancel
         </button>

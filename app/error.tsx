@@ -27,7 +27,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           </button>
           <a
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-[14px] font-medium px-5 py-2.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors"
+            className="inline-flex items-center gap-2 text-[14px] font-medium px-5 py-2.5 rounded-full border border-line hover:bg-foreground/[0.05] transition-colors"
           >
             Dashboard
           </a>

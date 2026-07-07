@@ -79,7 +79,7 @@ export function ConnectDrawer({ figmaConnected, figmaFileKey, githubConnected, g
           </div>
           <button
             onClick={close}
-            className="w-8 h-8 rounded-full hover:bg-black/[0.06] flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full hover:bg-foreground/[0.07] flex items-center justify-center transition-colors"
             aria-label="Close"
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">

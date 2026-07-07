@@ -68,7 +68,7 @@ export default async function OverviewPage({ searchParams }: Props) {
               <a
                 href="/api/report/pdf"
                 download
-                className="flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-black/[0.03] transition-colors"
+                className="flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-full border border-line hover:bg-foreground/[0.05] transition-colors"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <path d="M6 1v7M3 6l3 3 3-3M1 10h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
