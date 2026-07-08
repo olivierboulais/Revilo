@@ -191,7 +191,15 @@ export function ScanDrawer({
     }
   }, [open]);
 
-  // No auto-navigate — pill lets user reopen the drawer first
+  // Auto-navigate 2s after success when drawer is closed (pill just confirms then goes away)
+  useEffect(() => {
+    if (open || phase !== "success") return;
+    const timer = setTimeout(() => {
+      router.push(scanDest);
+      router.refresh();
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [open, phase, scanDest, router]);
 
   // Kick off scan
   useEffect(() => {
@@ -273,78 +281,75 @@ export function ScanDrawer({
     <>
       <div className={`fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px] transition-opacity duration-200 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`} />
 
-      {/* Floating pill — visible whenever drawer is closed but scan has activity */}
-      {!open && phase !== "scanning" || (!open && phase === "scanning" && closedMidScan.current) ? (
-        !open && (
-          <button
-            onClick={() => { closedMidScan.current = false; onOpen?.(); }}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border bg-surface pl-4 pr-3 py-3 transition-all hover:scale-[1.02] active:scale-[.98]"
-            style={{
-              animation: "fadeUp .3s ease both",
-              borderColor: phase === "success" ? "#6EE7B7" : phase === "error" ? "#FCA5A5" : "rgba(28,28,26,.1)",
-            }}
-          >
-            {phase === "scanning" && (
-              <>
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 animate-spin" style={{ animationDuration: "1.4s" }}>
-                  <path d="M3 8a5 5 0 0 1 8.66-2.5" stroke="#C084FC" strokeWidth="2.2" strokeLinecap="round"/>
-                  <path d="M13 8a5 5 0 0 1-8.66 2.5" stroke="#C084FC" strokeWidth="2.2" strokeLinecap="round"/>
+      {/* Floating pill — only when drawer is closed mid-scan or finished in background */}
+      {!open && (phase === "scanning" || phase === "error") && (
+        <button
+          onClick={() => { closedMidScan.current = false; onOpen?.(); }}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border bg-surface pl-4 pr-3 py-3 transition-all hover:scale-[1.02] active:scale-[.98]"
+          style={{
+            animation: "fadeUp .3s ease both",
+            borderColor: phase === "error" ? "#FCA5A5" : "rgba(28,28,26,.1)",
+          }}
+        >
+          {phase === "scanning" && (
+            <>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 animate-spin" style={{ animationDuration: "1.4s" }}>
+                <path d="M3 8a5 5 0 0 1 8.66-2.5" stroke="#C084FC" strokeWidth="2.2" strokeLinecap="round"/>
+                <path d="M13 8a5 5 0 0 1-8.66 2.5" stroke="#C084FC" strokeWidth="2.2" strokeLinecap="round"/>
+              </svg>
+              <div className="flex flex-col items-start leading-none gap-[3px]">
+                <span className="text-[11px] font-medium text-foreground whitespace-nowrap">{currentStepLabel}</span>
+                <span className="text-[10px] text-gray">{stepIndex}/{SCAN_PROGRESS_SEQUENCE.length} steps</span>
+              </div>
+              <div className="relative flex-shrink-0 w-7 h-7">
+                <svg width="28" height="28" viewBox="0 0 28 28" className="-rotate-90">
+                  <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(28,28,26,.08)" strokeWidth="2.5"/>
+                  <circle cx="14" cy="14" r="11" fill="none" stroke="#C084FC" strokeWidth="2.5" strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 11}`}
+                    strokeDashoffset={`${2 * Math.PI * 11 * (1 - progress / 100)}`}
+                    style={{ transition: "stroke-dashoffset .7s ease" }}
+                  />
                 </svg>
-                <div className="flex flex-col items-start leading-none gap-[3px]">
-                  <span className="text-[11px] font-medium text-foreground whitespace-nowrap">{currentStepLabel}</span>
-                  <span className="text-[10px] text-gray">{stepIndex}/{SCAN_PROGRESS_SEQUENCE.length} steps</span>
-                </div>
-                <div className="relative flex-shrink-0 w-7 h-7">
-                  <svg width="28" height="28" viewBox="0 0 28 28" className="-rotate-90">
-                    <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(28,28,26,.08)" strokeWidth="2.5"/>
-                    <circle cx="14" cy="14" r="11" fill="none" stroke="#C084FC" strokeWidth="2.5" strokeLinecap="round"
-                      strokeDasharray={`${2 * Math.PI * 11}`}
-                      strokeDashoffset={`${2 * Math.PI * 11 * (1 - progress / 100)}`}
-                      style={{ transition: "stroke-dashoffset .7s ease" }}
-                    />
-                  </svg>
-                </div>
-              </>
-            )}
+              </div>
+            </>
+          )}
 
-            {phase === "success" && (
-              <>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                  <circle cx="12" cy="12" r="12" fill="#34D399"/>
-                  <path d="M7 12l3.5 3.5L17 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          {phase === "error" && (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                <circle cx="12" cy="12" r="12" fill="#EF4444"/>
+                <path d="M8 8l8 8M16 8l-8 8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <div className="flex flex-col items-start leading-none gap-[3px]">
+                <span className="text-[11px] font-medium text-foreground whitespace-nowrap">Scan failed</span>
+                <span className="text-[10px] text-gray">Tap to retry</span>
+              </div>
+              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#EF4444] flex items-center justify-center">
+                <svg width="10" height="10" viewBox="0 0 13 13" fill="none">
+                  <path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <div className="flex flex-col items-start leading-none gap-[3px]">
-                  <span className="text-[11px] font-medium text-foreground whitespace-nowrap">Scan complete</span>
-                  <span className="text-[10px] text-gray">Tap to view report</span>
-                </div>
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#34D399] flex items-center justify-center">
-                  <svg width="10" height="10" viewBox="0 0 13 13" fill="none">
-                    <path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </span>
-              </>
-            )}
+              </span>
+            </>
+          )}
+        </button>
+      )}
 
-            {phase === "error" && (
-              <>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                  <circle cx="12" cy="12" r="12" fill="#EF4444"/>
-                  <path d="M8 8l8 8M16 8l-8 8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                <div className="flex flex-col items-start leading-none gap-[3px]">
-                  <span className="text-[11px] font-medium text-foreground whitespace-nowrap">Scan failed</span>
-                  <span className="text-[10px] text-gray">Tap to retry</span>
-                </div>
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#EF4444] flex items-center justify-center">
-                  <svg width="10" height="10" viewBox="0 0 13 13" fill="none">
-                    <path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </span>
-              </>
-            )}
-          </button>
-        )
-      ) : null}
+      {/* Non-interactive success toast — auto-navigates after 2s */}
+      {!open && phase === "success" && (
+        <div
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border bg-surface pl-4 pr-5 py-3 pointer-events-none"
+          style={{ animation: "fadeUp .3s ease both", borderColor: "#6EE7B7" }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+            <circle cx="12" cy="12" r="12" fill="#34D399"/>
+            <path d="M7 12l3.5 3.5L17 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <div className="flex flex-col items-start leading-none gap-[3px]">
+            <span className="text-[11px] font-medium text-foreground whitespace-nowrap">Scan complete</span>
+            <span className="text-[10px] text-gray">Taking you to your report…</span>
+          </div>
+        </div>
+      )}
 
       <div className={`fixed top-0 right-0 h-full z-50 w-full max-w-[520px] bg-surface shadow-2xl flex flex-col transition-transform duration-300 ease-out ${open ? "translate-x-0" : "translate-x-full"}`}>
         {/* Header */}
