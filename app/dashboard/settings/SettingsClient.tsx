@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { changeWorkspaceNameAction, changePasswordAction } from "./actions";
 import { Button } from "@/components/Button";
+import { PasswordInput } from "@/components/PasswordInput";
 import { useTheme } from "@/components/ThemeProvider";
 
 type Theme = "light" | "dark" | "system";
@@ -105,14 +106,18 @@ function InlineForm({
       {fields.map((f) => (
         <div key={f.name}>
           <label htmlFor={f.name} className="text-[12.5px] text-gray block mb-1.5">{f.label}</label>
-          <input
-            id={f.name}
-            name={f.name}
-            type={f.type ?? "text"}
-            defaultValue={f.defaultValue}
-            placeholder={f.placeholder}
-            className="w-full text-[14px] rounded-xl border border-line px-4 py-2.5 outline-none focus:border-[#1C1C1A] bg-white"
-          />
+          {f.type === "password" ? (
+            <PasswordInput id={f.name} name={f.name} placeholder={f.placeholder} />
+          ) : (
+            <input
+              id={f.name}
+              name={f.name}
+              type={f.type ?? "text"}
+              defaultValue={f.defaultValue}
+              placeholder={f.placeholder}
+              className="w-full text-[14px] rounded-xl border border-line px-4 py-2.5 outline-none focus:border-[#1C1C1A] bg-white"
+            />
+          )}
         </div>
       ))}
       {result?.error && (

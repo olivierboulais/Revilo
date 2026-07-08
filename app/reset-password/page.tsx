@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/Button";
+import { PasswordInput } from "@/components/PasswordInput";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -69,26 +70,11 @@ function ResetPasswordForm() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div>
           <label className="text-[12.5px] text-gray block mb-1.5">New password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoFocus
-            minLength={8}
-            className="w-full text-[14px] rounded-xl border border-line px-4 py-2.5 outline-none focus:border-[#1C1C1A] bg-white"
-          />
+          <PasswordInput name="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required autoFocus minLength={8} />
         </div>
         <div>
           <label className="text-[12.5px] text-gray block mb-1.5">Confirm password</label>
-          <input
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            required
-            minLength={8}
-            className="w-full text-[14px] rounded-xl border border-line px-4 py-2.5 outline-none focus:border-[#1C1C1A] bg-white"
-          />
+          <PasswordInput name="confirm-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={8} />
         </div>
         <Button type="submit" variant="dark" withArrow={false} className="justify-center w-full mt-1" disabled={loading}>
           {loading ? "Saving…" : "Set new password"}

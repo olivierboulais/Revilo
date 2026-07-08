@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signupAction } from "./actions";
 import { Button } from "@/components/Button";
+import { PasswordInput } from "@/components/PasswordInput";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 function GoogleIcon() {
@@ -84,15 +85,7 @@ export function SignupForm({ tier }: { tier: string | null }) {
           <label htmlFor="password" className="block text-[12px] font-medium text-gray mb-1.5">
             Password
           </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            minLength={8}
-            placeholder="At least 8 characters"
-            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] outline-none focus:border-lilac-mid transition-colors"
-          />
+          <PasswordInput id="password" name="password" required placeholder="At least 8 characters" />
         </div>
         {error && <p className="text-[12.5px] text-[#B3401F] -mt-1">{error}</p>}
         <Button type="submit" variant="dark" className="justify-center mt-1 w-full" disabled={isSubmitting} withArrow={false}>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { loginAction } from "./actions";
 import { Button } from "@/components/Button";
+import { PasswordInput } from "@/components/PasswordInput";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 function GoogleIcon() {
@@ -76,14 +77,7 @@ export function LoginForm() {
               Forgot password?
             </Link>
           </div>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            placeholder="Your password"
-            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] outline-none focus:border-lilac-mid transition-colors"
-          />
+          <PasswordInput id="password" name="password" required placeholder="Your password" />
         </div>
         {error && <p className="text-[12.5px] text-[#B3401F] -mt-1">{error}</p>}
         <Button type="submit" variant="dark" className="justify-center mt-1 w-full" disabled={isSubmitting} withArrow={false}>
