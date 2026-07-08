@@ -55,6 +55,8 @@ button{font-family:inherit}
 .nav-cta:hover{transform:scale(1.03)}
 .nav-cta .arr{width:28px;height:28px;border-radius:50%;background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .nav-cta .arr svg{display:block}
+.nav-cta-sm{padding:7px 7px 7px 14px;font-size:12px;gap:7px}
+.nav-cta-sm .arr{width:22px;height:22px}
 .nav-auth{display:flex;align-items:center;gap:8px}
 .nav-login{font-size:13px;font-weight:500;color:rgba(28,28,26,.6);padding:8px 14px;border-radius:999px;transition:color .18s}
 .nav-login:hover{color:var(--ink)}
@@ -535,10 +537,10 @@ footer{background:var(--ink);color:#fff;padding:60px 0 36px}
       <a href="#sample-report">Sample Report</a>
       <a href="#pricing">Pricing</a>
       <a href="#about">About</a>
-      <a href="#pricing" class="nav-cta" style="margin-left:8px"><span class="cta-label">Run Free Scan</span>
-        <span class="arr"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      </a>
     </div>
+    <a href="#pricing" class="nav-cta nav-cta-sm"><span class="cta-label">Run Free Scan</span>
+      <span class="arr"><svg width="10" height="10" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </a>
     <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
       <span></span><span></span><span></span>
     </button>
