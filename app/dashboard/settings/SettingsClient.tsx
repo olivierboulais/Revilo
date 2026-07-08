@@ -9,33 +9,61 @@ import { useTheme } from "@/components/ThemeProvider";
 
 type Theme = "light" | "dark" | "system";
 
-const THEMES: { value: Theme; label: string; icon: React.ReactNode }[] = [
+type ThemeOption = {
+  value: Theme;
+  label: string;
+  // Explicit colors so the button always previews the theme correctly,
+  // regardless of what mode is currently active.
+  bg: string;
+  border: string;
+  activeBorder: string;
+  iconColor: string;
+  textColor: string;
+  icon: (color: string) => React.ReactNode;
+};
+
+const THEMES: ThemeOption[] = [
   {
     value: "light",
     label: "Light",
-    icon: (
+    bg: "#FFFFFF",
+    border: "rgba(28,28,26,.12)",
+    activeBorder: "#7C3AED",
+    iconColor: "#1C1C1A",
+    textColor: "#1C1C1A",
+    icon: (c) => (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.4" />
-        <path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.5 3.5l1 1M11.5 11.5l1 1M11.5 3.5l-1 1M3.5 11.5l1-1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        <circle cx="8" cy="8" r="3" stroke={c} strokeWidth="1.4" />
+        <path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.5 3.5l1 1M11.5 11.5l1 1M11.5 3.5l-1 1M3.5 11.5l1-1" stroke={c} strokeWidth="1.4" strokeLinecap="round" />
       </svg>
     ),
   },
   {
     value: "dark",
     label: "Dark",
-    icon: (
+    bg: "#1C1C1A",
+    border: "rgba(255,255,255,.12)",
+    activeBorder: "#7C3AED",
+    iconColor: "#FFFFFF",
+    textColor: "#FFFFFF",
+    icon: (c) => (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M13 8.5A5.5 5.5 0 0 1 6.5 3c0-.3 0-.6.05-.9A5.5 5.5 0 1 0 13.9 9.45c-.3.05-.6.05-.9.05z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+        <path d="M13 8.5A5.5 5.5 0 0 1 6.5 3c0-.3 0-.6.05-.9A5.5 5.5 0 1 0 13.9 9.45c-.3.05-.6.05-.9.05z" stroke={c} strokeWidth="1.4" strokeLinejoin="round" />
       </svg>
     ),
   },
   {
     value: "system",
     label: "System",
-    icon: (
+    bg: "linear-gradient(135deg,#FFFFFF 50%,#1C1C1A 50%)",
+    border: "rgba(28,28,26,.12)",
+    activeBorder: "#7C3AED",
+    iconColor: "#706F6A",
+    textColor: "#1C1C1A",
+    icon: (c) => (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <rect x="1.5" y="2.5" width="13" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-        <path d="M5.5 13.5h5M8 11.5v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        <rect x="1.5" y="2.5" width="13" height="9" rx="1.5" stroke={c} strokeWidth="1.4" />
+        <path d="M5.5 13.5h5M8 11.5v2" stroke={c} strokeWidth="1.4" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -44,7 +72,7 @@ const THEMES: { value: Theme; label: string; icon: React.ReactNode }[] = [
 function AppearanceSection() {
   const { theme, setTheme } = useTheme();
   return (
-    <div className="rounded-2xl border border-line bg-white p-5">
+    <div className="rounded-2xl border border-line bg-card p-5">
       <h2 className="text-[14px] font-medium mb-4">Appearance</h2>
       <div className="grid grid-cols-3 gap-2">
         {THEMES.map((t) => {
@@ -53,13 +81,15 @@ function AppearanceSection() {
             <button
               key={t.value}
               onClick={() => setTheme(t.value)}
-              className={`flex flex-col items-center gap-2 px-3 py-3.5 rounded-xl border text-[12.5px] font-medium transition-all ${
-                active
-                  ? "border-[#7C3AED] bg-[#F3E8FF] text-[#3B1D6E]"
-                  : "border-line hover:bg-foreground/[0.04] text-gray"
-              }`}
+              className="flex flex-col items-center gap-2 px-3 py-3.5 rounded-xl border text-[12.5px] font-medium transition-all hover:opacity-90"
+              style={{
+                background: t.bg,
+                borderColor: active ? t.activeBorder : t.border,
+                boxShadow: active ? `0 0 0 1px ${t.activeBorder}` : undefined,
+                color: t.textColor,
+              }}
             >
-              <span className={active ? "text-[#7C3AED]" : "text-gray"}>{t.icon}</span>
+              {t.icon(t.iconColor)}
               {t.label}
             </button>
           );
