@@ -114,7 +114,7 @@ export default function UpgradePage() {
             priceSuffix=" per report"
             features={["Full report, all findings", "Recommendations", "Variant-level detail", "PDF export"]}
             tier="pro"
-            variant="dark"
+            variant="outline"
             onSelect={handleSelect}
             loading={loading === "pro"}
           />
@@ -126,7 +126,7 @@ export default function UpgradePage() {
             priceSuffix="/mo"
             features={["Everything in Pro Report", "Automatic re-scans", "Score trend over time", "Drift alerts"]}
             tier="monitoring"
-            variant="outline"
+            variant="dark"
             onSelect={handleSelect}
             loading={loading === "monitoring"}
           />
