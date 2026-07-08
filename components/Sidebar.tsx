@@ -221,7 +221,7 @@ export function Sidebar({
       )}
       <aside
         className={`flex-shrink-0 flex flex-col rounded-[28px] transition-all duration-200 relative
-          fixed top-4 left-4 z-50 lg:sticky lg:top-4 lg:z-auto lg:translate-x-0
+          fixed top-4 left-4 z-50 lg:sticky lg:top-4 lg:z-10 lg:translate-x-0
           ${mobileOpen ? "translate-x-0 w-[220px]" : isCollapsed ? "w-[68px]" : "w-[220px]"}
           ${!mobileOpen ? "-translate-x-[260px] lg:translate-x-0" : ""}`}
         style={{
