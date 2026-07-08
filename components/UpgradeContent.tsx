@@ -45,7 +45,7 @@ function PlanCard({
         onClick={() => onSelect(tier)}
         disabled={loading}
       >
-        {loading ? "Redirecting…" : featured ? "Unlock Full Report" : "Start Monitoring"}
+        {loading ? "Redirecting…" : tier === "monitoring" ? "Start Monitoring" : "Unlock Full Report"}
       </Button>
     </div>
   );
@@ -98,18 +98,6 @@ export function UpgradeContent({ onClose }: { onClose?: () => void }) {
 
       <div className="flex flex-col gap-3">
         <PlanCard
-          label="One-time"
-          name="Pro Report"
-          description="The full scan, unlocked once. No subscription required."
-          price="$199"
-          priceSuffix=" per report"
-          features={["Full report, all findings", "Recommendations", "Variant-level detail", "PDF export"]}
-          tier="pro"
-          featured
-          onSelect={handleSelect}
-          loading={loading === "pro"}
-        />
-        <PlanCard
           label="Subscription"
           name="Monthly Monitoring"
           description="Re-scan on a cadence and track whether your system is improving."
@@ -117,8 +105,20 @@ export function UpgradeContent({ onClose }: { onClose?: () => void }) {
           priceSuffix="/mo"
           features={["Everything in Pro Report", "Automatic re-scans", "Score trend over time", "Drift alerts"]}
           tier="monitoring"
+          featured
           onSelect={handleSelect}
           loading={loading === "monitoring"}
+        />
+        <PlanCard
+          label="One-time"
+          name="Pro Report"
+          description="The full scan, unlocked once. No subscription required."
+          price="$199"
+          priceSuffix=" per report"
+          features={["Full report, all findings", "Recommendations", "Variant-level detail", "PDF export"]}
+          tier="pro"
+          onSelect={handleSelect}
+          loading={loading === "pro"}
         />
       </div>
 
