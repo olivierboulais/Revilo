@@ -122,18 +122,7 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
   const githubReady = githubConnected && repoSaved;
   const bothReady = figmaReady && githubReady;
 
-  // Auto-proceed to scan once both sources are saved for the first time
-  const autoNavigated = useRef(false);
-  useEffect(() => {
-    if (bothReady && !autoNavigated.current) {
-      autoNavigated.current = true;
-      if (onBothReady) {
-        onBothReady();
-      } else {
-        router.push("/scan");
-      }
-    }
-  }, [bothReady, router, onBothReady]);
+
 
   function updateFile(index: number, updates: Partial<FigmaFileEntry>) {
     setFigmaFiles(prev => prev.map((f, i) => i === index ? { ...f, ...updates } : f));
