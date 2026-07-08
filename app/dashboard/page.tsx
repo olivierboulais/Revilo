@@ -38,11 +38,6 @@ export default async function OverviewPage({ searchParams }: Props) {
 
   let report = await getReport(session.email);
 
-  // If sources are connected but the cached report used mock data, send the
-  // user through the scan flow so they get real data immediately.
-  if (hasRealSources && (!report || report.usedMockData)) {
-    redirect("/scan");
-  }
 
   if (!report) {
     report = await runScan(session.workspaceName, session.email);

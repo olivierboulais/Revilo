@@ -30,12 +30,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const figmaConnected = figmaSource?.status === "connected" && Boolean(figmaSource.access_token);
   const githubConnected = githubSource?.status === "connected" && Boolean(githubSource.access_token);
 
+  const hasRealSources =
+    (figmaSource?.status === "connected" && Boolean(figmaSource.figma_file_key)) ||
+    (githubSource?.status === "connected" && Boolean(githubSource.github_repo));
+
   let report = cachedReport;
   if (!report) {
     report = await runScan(session.workspaceName, session.email);
     await saveReport(session.email, report);
   }
 
+  const autoScan = hasRealSources && (!report || report.usedMockData);
   const isPaid = session.tier !== "free";
 
   return (
@@ -49,6 +54,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       figmaFileKey={figmaSource?.figma_file_key ?? null}
       githubConnected={githubConnected}
       githubRepo={githubSource?.github_repo ?? null}
+      autoScan={autoScan}
     >
       <div className="flex-1 min-w-0 flex flex-col gap-4">
         <TopBar workspaceName={session.workspaceName} scannedAt={report.scannedAt} />

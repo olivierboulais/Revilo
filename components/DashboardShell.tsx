@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, createContext, useContext } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { ConnectDrawer } from "@/components/ConnectDrawer";
 import { DrawerProvider } from "@/components/DrawerContext";
+import { ScanDrawer } from "@/components/ScanDrawer";
+
+const ScanContext = createContext<{ openScan: () => void }>({ openScan: () => {} });
+export function useScan() { return useContext(ScanContext); }
 
 export function DashboardShell({
   workspaceName,
@@ -14,6 +18,7 @@ export function DashboardShell({
   figmaFileKey,
   githubConnected,
   githubRepo,
+  autoScan,
   children,
 }: {
   workspaceName: string;
@@ -24,12 +29,15 @@ export function DashboardShell({
   figmaFileKey: string | null;
   githubConnected: boolean;
   githubRepo: string | null;
+  autoScan?: boolean;
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [scanOpen, setScanOpen] = useState(autoScan ?? false);
 
   return (
+    <ScanContext.Provider value={{ openScan: () => setScanOpen(true) }}>
     <DrawerProvider>
     <div className="flex min-h-screen bg-[#F8F7F4] p-2 sm:p-4 gap-2 sm:gap-4">
       <button
@@ -60,9 +68,17 @@ export function DashboardShell({
           figmaFileKey={figmaFileKey}
           githubConnected={githubConnected}
           githubRepo={githubRepo}
+          onStartScan={() => setScanOpen(true)}
         />
       </Suspense>
+
+      <ScanDrawer
+        workspaceName={workspaceName}
+        open={scanOpen}
+        onClose={() => setScanOpen(false)}
+      />
     </div>
     </DrawerProvider>
+    </ScanContext.Provider>
   );
 }

@@ -11,9 +11,10 @@ interface Props {
   figmaFileKey: string | null;
   githubConnected: boolean;
   githubRepo: string | null;
+  onStartScan?: () => void;
 }
 
-export function ConnectDrawer({ figmaConnected, figmaFileKey, githubConnected, githubRepo }: Props) {
+export function ConnectDrawer({ figmaConnected, figmaFileKey, githubConnected, githubRepo, onStartScan }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { isOpen: stateOpen, tab, setTab, close: closeState } = useDrawer();
@@ -98,7 +99,7 @@ export function ConnectDrawer({ figmaConnected, figmaFileKey, githubConnected, g
               githubRepo={githubRepo}
               error={error}
               errorDetail={errorDetail}
-              onBothReady={() => router.push("/scan")}
+              onBothReady={() => { close(); onStartScan?.(); }}
               onClose={close}
             />
           ) : (

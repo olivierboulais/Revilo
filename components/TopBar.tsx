@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useScan } from "@/components/DashboardShell";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -14,22 +14,8 @@ function timeAgo(iso: string): string {
 }
 
 export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; scannedAt: string }) {
-  const router = useRouter();
-  const [lastScannedAt, setLastScannedAt] = useState(scannedAt);
-  const [scanning, setScanning] = useState(false);
-
-  async function rescan() {
-    setScanning(true);
-    try {
-      const res = await fetch("/api/scan", { method: "POST" });
-      if (res.ok) {
-        setLastScannedAt(new Date().toISOString());
-        router.refresh();
-      }
-    } finally {
-      setScanning(false);
-    }
-  }
+  const { openScan } = useScan();
+  const [lastScannedAt] = useState(scannedAt);
 
   return (
     <header
@@ -50,17 +36,16 @@ export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; sc
         </span>
       </div>
       <button
-        onClick={rescan}
-        disabled={scanning}
-        className="gradient-lilac flex items-center gap-2 text-[13px] font-medium px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-colors disabled:opacity-50"
+        onClick={openScan}
+        className="gradient-lilac flex items-center gap-2 text-[13px] font-medium px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-colors"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={scanning ? "animate-spin" : undefined}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M3.5 8a4.5 4.5 0 0 1 7.6-3.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           <path d="M12.5 8a4.5 4.5 0 0 1-7.6 3.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           <path d="M11.5 2.5L11.1 5.2 8.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M4.5 13.5l.4-2.7 2.6.7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <span className="hidden sm:inline">{scanning ? "Scanning…" : "Re-scan"}</span>
+        <span className="hidden sm:inline">Re-scan</span>
       </button>
     </header>
   );
