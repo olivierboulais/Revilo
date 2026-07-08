@@ -55,6 +55,15 @@ button{font-family:inherit}
 .nav-cta:hover{transform:scale(1.03)}
 .nav-cta .arr{width:28px;height:28px;border-radius:50%;background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .nav-cta .arr svg{display:block}
+.nav-auth{display:flex;align-items:center;gap:8px}
+.nav-login{font-size:13px;font-weight:500;color:rgba(28,28,26,.6);padding:8px 14px;border-radius:999px;transition:color .18s}
+.nav-login:hover{color:var(--ink)}
+.nav-signup{font-size:13px;font-weight:500;color:var(--ink);padding:8px 16px;border-radius:999px;border:1.5px solid var(--ink);transition:background .18s,color .18s}
+.nav-signup:hover{background:var(--ink);color:#fff}
+.nav-pill.dark-nav .nav-login{color:rgba(255,255,255,.7)!important}
+.nav-pill.dark-nav .nav-login:hover{color:#fff!important}
+.nav-pill.dark-nav .nav-signup{color:#fff!important;border-color:rgba(255,255,255,.5)!important}
+.nav-pill.dark-nav .nav-signup:hover{background:#fff!important;color:var(--ink)!important}
 .nav-pill{display:flex;align-items:center;gap:28px;padding:10px 16px 10px 22px;border-radius:999px;border:1px solid transparent;background:transparent;transition:background .35s ease,border-color .35s ease,backdrop-filter .35s ease,box-shadow .35s ease}
 .nav-pill.glass{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.6);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);box-shadow:0 4px 20px rgba(0,0,0,.08)}
 .nav-pill.dark-nav{background:rgba(8,6,16,.78)!important;border-color:rgba(255,255,255,.2)!important;backdrop-filter:blur(24px)!important;-webkit-backdrop-filter:blur(24px)!important;box-shadow:none!important}
@@ -199,6 +208,7 @@ h1 em{font-style:normal;color:var(--lilac-deep)}
   .nav-logo svg{width:60px;height:auto;display:block}
   .nav-links{display:none}
   .nav-cta{display:none}
+  .nav-auth{display:none}
   .nav-hamburger{display:flex}
   .nav-indicator{display:none}
   .hero-left{padding:84px 20px 40px}
@@ -530,9 +540,10 @@ footer{background:var(--ink);color:#fff;padding:60px 0 36px}
       <span></span><span></span><span></span>
     </button>
     </div>
-    <a href="#pricing" class="nav-cta"><span class="cta-label">Run Free Scan</span>
-      <span class="arr"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-    </a>
+    <div class="nav-auth">
+      <a href="/login" class="nav-login">Log in</a>
+      <a href="/signup" class="nav-signup">Create account</a>
+    </div>
   </div>
 </header>
 
@@ -551,7 +562,8 @@ footer{background:var(--ink);color:#fff;padding:60px 0 36px}
     <a href="#about" id="mm-about">About<span class="ml-arr"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
   </nav>
   <div class="nav-mobile-cta">
-    <a href="#pricing">Run Free Scan <span class="arr"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+    <a href="/signup">Create account <span class="arr"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+    <a href="/login" style="color:rgba(255,255,255,.6);font-size:14px;font-weight:500;margin-top:12px;display:inline-block">Log in</a>
   </div>
 </div>
 
