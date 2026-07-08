@@ -26,11 +26,11 @@ const THEMES: ThemeOption[] = [
   {
     value: "light",
     label: "Light",
-    bg: "#FFFFFF",
-    border: "rgba(28,28,26,.12)",
+    bg: "transparent",
+    border: "rgba(128,128,128,.2)",
     activeBorder: "#7C3AED",
-    iconColor: "#1C1C1A",
-    textColor: "#1C1C1A",
+    iconColor: "currentColor",
+    textColor: "inherit",
     icon: (c) => (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <circle cx="8" cy="8" r="3" stroke={c} strokeWidth="1.4" />
@@ -41,11 +41,11 @@ const THEMES: ThemeOption[] = [
   {
     value: "dark",
     label: "Dark",
-    bg: "#1C1C1A",
-    border: "rgba(255,255,255,.12)",
+    bg: "transparent",
+    border: "rgba(128,128,128,.2)",
     activeBorder: "#7C3AED",
-    iconColor: "#FFFFFF",
-    textColor: "#FFFFFF",
+    iconColor: "currentColor",
+    textColor: "inherit",
     icon: (c) => (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <path d="M13 8.5A5.5 5.5 0 0 1 6.5 3c0-.3 0-.6.05-.9A5.5 5.5 0 1 0 13.9 9.45c-.3.05-.6.05-.9.05z" stroke={c} strokeWidth="1.4" strokeLinejoin="round" />
@@ -56,9 +56,9 @@ const THEMES: ThemeOption[] = [
     value: "system",
     label: "System",
     bg: "transparent",
-    border: "rgba(128,128,128,.25)",
+    border: "rgba(128,128,128,.2)",
     activeBorder: "#7C3AED",
-    iconColor: "#706F6A",
+    iconColor: "currentColor",
     textColor: "inherit",
     icon: (c) => (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
