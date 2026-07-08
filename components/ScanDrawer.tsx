@@ -282,9 +282,12 @@ export function ScanDrawer({
               </p>
               <button
                 onClick={handleViewReport}
-                className="mt-2 px-6 py-3 rounded-xl text-[13.5px] font-medium bg-foreground text-background hover:opacity-90 transition-opacity"
+                className="mt-2 btn-dark inline-flex items-center gap-[9px] rounded-full pl-[18px] pr-2 py-[9px] text-[13px] font-medium hover:scale-[1.02] transition-transform"
               >
-                View report →
+                View report
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/15">
+                  <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </span>
               </button>
             </div>
           )}
@@ -298,13 +301,16 @@ export function ScanDrawer({
               <div className="flex gap-3 mt-2">
                 <button
                   onClick={handleRetry}
-                  className="px-6 py-3 rounded-xl text-[13.5px] font-medium bg-foreground text-background hover:opacity-90 transition-opacity"
+                  className="btn-dark inline-flex items-center gap-[9px] rounded-full pl-[18px] pr-2 py-[9px] text-[13px] font-medium hover:scale-[1.02] transition-transform"
                 >
                   Try again
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/15">
+                    <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </span>
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-6 py-3 rounded-xl text-[13.5px] font-medium border border-line hover:bg-foreground/[0.05] transition-colors"
+                  className="inline-flex items-center rounded-full px-[18px] py-[11px] text-[13px] font-medium border border-line hover:bg-foreground/[0.05] transition-colors"
                 >
                   Dismiss
                 </button>
@@ -320,30 +326,31 @@ export function ScanDrawer({
                 <p className="text-[13px] text-gray mt-6 text-center">Analysing your design system…</p>
               </div>
 
-              <div className="flex flex-col gap-4 mt-2">
-                {SCAN_PROGRESS_SEQUENCE.map((step, i) => {
-                  const isDone = i < stepIndex;
-                  const isActive = i === stepIndex;
-                  return (
-                    <div key={step.state} className="flex items-center gap-4">
-                      <span
-                        className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
-                        style={{ background: isDone ? "#34D399" : isActive ? "#C084FC" : "rgba(28,28,26,.07)" }}
-                      >
-                        {isDone ? (
-                          <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
-                            <path d="M1.5 5L4 7.5L8.5 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        ) : isActive ? (
-                          <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                        ) : null}
-                      </span>
-                      <span className={`text-[14px] transition-colors ${isDone ? "text-foreground" : isActive ? "text-foreground font-medium" : "text-gray"}`}>
-                        {step.label}
-                      </span>
+              {/* Step track */}
+              <div className="mt-2 flex flex-col gap-3">
+                {/* Step name */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] text-gray" style={{ animation: "fadeUp .3s ease both" }} key={stepIndex}>
+                    {SCAN_PROGRESS_SEQUENCE[Math.min(stepIndex, SCAN_PROGRESS_SEQUENCE.length - 1)]?.label}
+                  </span>
+                  <span className="text-[11px] text-gray tabular-nums">
+                    {Math.min(stepIndex, SCAN_PROGRESS_SEQUENCE.length)}/{SCAN_PROGRESS_SEQUENCE.length}
+                  </span>
+                </div>
+                {/* Segmented track */}
+                <div className="flex gap-1">
+                  {SCAN_PROGRESS_SEQUENCE.map((step, i) => (
+                    <div key={step.state} className="flex-1 h-[3px] rounded-full overflow-hidden" style={{ background: "rgba(28,28,26,.08)" }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: i < stepIndex ? "100%" : i === stepIndex ? "60%" : "0%",
+                          background: i < stepIndex ? "#34D399" : "#C084FC",
+                        }}
+                      />
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             </>
           )}
