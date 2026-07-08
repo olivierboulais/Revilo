@@ -36,6 +36,7 @@ export async function GET(request: Request) {
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 10,
+    domain: process.env.NODE_ENV === "production" ? ".revilo.design" : undefined,
   });
   return response;
 }
