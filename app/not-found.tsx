@@ -15,7 +15,8 @@ export default function NotFound() {
         </p>
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 bg-[#1C1C1A] text-white text-[14px] font-medium px-5 py-2.5 rounded-full hover:opacity-80 transition-opacity"
+          className="inline-flex items-center gap-2 bg-[#1C1C1A] text-[14px] font-medium px-5 py-2.5 rounded-full hover:opacity-80 transition-opacity"
+          style={{ color: "#ffffff" }}
         >
           Go to dashboard
         </Link>
