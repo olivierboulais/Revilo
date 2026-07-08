@@ -135,6 +135,11 @@ button {
 .dark [class*="text-[#92400E]"] { color: #fcd34d !important; }
 .dark [class*="text-[#B45309]"] { color: #f59e0b !important; }
 
+/* Verified / success badge in dark mode */
+.dark [class*="bg-[#F0FDF4]"] { background-color: #052e16 !important; }
+.dark [class*="border-[#BBF7D0]"] { border-color: #14532d !important; }
+.dark [class*="text-good"] { color: #4ade80 !important; }
+
 /* Sample report / info banner in dark mode */
 .dark [class*="bg-[#F3E8FF]"] { background-color: #2d1a4a !important; }
 .dark [class*="bg-[#EDE9FE]"] { background-color: #2d1a4a !important; }
