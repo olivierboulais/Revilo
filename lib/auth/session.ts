@@ -53,25 +53,29 @@ function verifyToken(signed: string): string | null {
 // readable and forgeable by anyone with browser dev tools. This is the
 // standard server-side session pattern.
 export async function getSession(): Promise<MockUser | null> {
-  const store = await cookies();
-  const signed = store.get(SESSION_COOKIE)?.value;
-  if (!signed) return null;
+  try {
+    const store = await cookies();
+    const signed = store.get(SESSION_COOKIE)?.value;
+    if (!signed) return null;
 
-  const token = verifyToken(signed);
-  if (!token) return null;
+    const token = verifyToken(signed);
+    if (!token) return null;
 
-  const session = await findSessionByToken(token);
-  if (!session) return null;
+    const session = await findSessionByToken(token);
+    if (!session) return null;
 
-  const user = await findUserById(session.user_id);
-  if (!user) return null;
+    const user = await findUserById(session.user_id);
+    if (!user) return null;
 
-  return {
-    email: user.email,
-    workspaceName: user.workspace_name,
-    tier: user.tier,
-    emailVerified: Boolean(user.email_verified_at),
-  };
+    return {
+      email: user.email,
+      workspaceName: user.workspace_name,
+      tier: user.tier,
+      emailVerified: Boolean(user.email_verified_at),
+    };
+  } catch {
+    return null;
+  }
 }
 
 // Creates a real session row and sets only the opaque token in the cookie.

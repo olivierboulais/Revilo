@@ -66,8 +66,9 @@ export default function UpgradePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tier }),
       });
-      const data = await res.json();
-      if (data.url) {
+      const text = await res.text();
+      const data: Record<string, unknown> = text ? JSON.parse(text) : {};
+      if (typeof data.url === "string") {
         window.location.href = data.url;
       } else if (data.error === "Stripe is not configured") {
         // Dev fallback: directly upgrade without payment
@@ -78,7 +79,7 @@ export default function UpgradePage() {
         });
         router.push("/dashboard");
       } else {
-        throw new Error(data.error ?? "Unknown error");
+        throw new Error(typeof data.error === "string" ? data.error : "Unknown error");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
