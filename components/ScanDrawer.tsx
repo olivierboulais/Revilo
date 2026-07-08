@@ -384,8 +384,8 @@ export function ScanDrawer({
                 className="mt-2 btn-dark inline-flex items-center gap-[9px] rounded-full pl-[18px] pr-2 py-[9px] text-[13px] font-medium hover:scale-[1.02] transition-transform"
               >
                 View report
-                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white">
-                  <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="#1C1C1A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-background text-foreground">
+                  <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </span>
               </button>
             </div>
@@ -446,23 +446,21 @@ export function ScanDrawer({
                             <circle cx="12" cy="12" r="4" fill="#C084FC" className="animate-pulse"/>
                           </svg>
                         ) : (
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-                            <circle cx="12" cy="12" r="11" stroke="rgba(28,28,26,.15)" strokeWidth="1.5" strokeDasharray="4 3"/>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="flex-shrink-0 text-foreground/20">
+                            <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 3"/>
                           </svg>
                         )}
 
                         {/* Label */}
                         <span
-                          className="flex-1 text-[14px] transition-colors duration-300"
-                          style={{
-                            color: isDone ? "rgba(28,28,26,.35)" : isActive ? "#1C1C1A" : "rgba(28,28,26,.3)",
-                            fontWeight: isActive ? 500 : 400,
-                          }}
+                          className={`flex-1 text-[14px] transition-colors duration-300 ${
+                            isDone ? "text-foreground/35" : isActive ? "text-foreground font-medium" : "text-foreground/30"
+                          }`}
                         >
                           {step.label}
                         </span>
                       </div>
-                      {!isLast && <div style={{ height: 1, background: "rgba(28,28,26,.06)", marginLeft: 40 }} />}
+                      {!isLast && <div className="border-t border-foreground/[0.06]" style={{ marginLeft: 40 }} />}
                     </div>
                   );
                 })}
