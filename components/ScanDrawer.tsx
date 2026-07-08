@@ -326,31 +326,54 @@ export function ScanDrawer({
                 <p className="text-[13px] text-gray mt-6 text-center">Analysing your design system…</p>
               </div>
 
-              {/* Step track */}
-              <div className="mt-2 flex flex-col gap-3">
-                {/* Step name */}
-                <div className="flex items-center justify-between">
-                  <span className="text-[12px] text-gray" style={{ animation: "fadeUp .3s ease both" }} key={stepIndex}>
-                    {SCAN_PROGRESS_SEQUENCE[Math.min(stepIndex, SCAN_PROGRESS_SEQUENCE.length - 1)]?.label}
-                  </span>
-                  <span className="text-[11px] text-gray tabular-nums">
-                    {Math.min(stepIndex, SCAN_PROGRESS_SEQUENCE.length)}/{SCAN_PROGRESS_SEQUENCE.length}
-                  </span>
-                </div>
-                {/* Segmented track */}
-                <div className="flex gap-1">
-                  {SCAN_PROGRESS_SEQUENCE.map((step, i) => (
-                    <div key={step.state} className="flex-1 h-[3px] rounded-full overflow-hidden" style={{ background: "rgba(28,28,26,.08)" }}>
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: i < stepIndex ? "100%" : i === stepIndex ? "60%" : "0%",
-                          background: i < stepIndex ? "#34D399" : "#C084FC",
-                        }}
-                      />
+              {/* Vertical step timeline */}
+              <div className="mt-4 flex flex-col">
+                {SCAN_PROGRESS_SEQUENCE.map((step, i) => {
+                  const isDone = i < stepIndex;
+                  const isActive = i === stepIndex;
+                  const isLast = i === SCAN_PROGRESS_SEQUENCE.length - 1;
+                  return (
+                    <div key={step.state} className="flex gap-4">
+                      {/* Left: dot + connector */}
+                      <div className="flex flex-col items-center" style={{ width: 20 }}>
+                        <div
+                          className="flex-shrink-0 flex items-center justify-center rounded-full transition-all duration-300"
+                          style={{
+                            width: 20, height: 20, marginTop: 2,
+                            background: isDone ? "#34D399" : isActive ? "#C084FC" : "rgba(28,28,26,.08)",
+                          }}
+                        >
+                          {isDone ? (
+                            <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
+                              <path d="M1.5 5L4 7.5L8.5 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          ) : isActive ? (
+                            <span className="w-[6px] h-[6px] rounded-full bg-white animate-pulse" />
+                          ) : null}
+                        </div>
+                        {!isLast && (
+                          <div
+                            className="flex-1 w-px mt-1 mb-1 rounded-full transition-all duration-500"
+                            style={{ background: isDone ? "#34D399" : "rgba(28,28,26,.08)", minHeight: 20 }}
+                          />
+                        )}
+                      </div>
+
+                      {/* Right: label */}
+                      <div className="pb-4">
+                        <span
+                          className="text-[13.5px] leading-[22px] transition-colors duration-300"
+                          style={{
+                            color: isDone ? "rgba(28,28,26,.35)" : isActive ? "#1C1C1A" : "rgba(28,28,26,.35)",
+                            fontWeight: isActive ? 500 : 400,
+                          }}
+                        >
+                          {step.label}
+                        </span>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
             </>
           )}
