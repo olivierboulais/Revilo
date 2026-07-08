@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getSession } from "@/lib/auth/session";
 import { findUserByEmail } from "@/lib/db/users";
 import { upsertSource } from "@/lib/db/sources";
@@ -27,9 +28,8 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/signup", request.url));
   }
 
-  const cookieStore = request.headers.get("cookie") ?? "";
-  const stateCookieMatch = cookieStore.match(/github_oauth_state=([^;]+)/);
-  const expectedState = stateCookieMatch?.[1];
+  const cookieJar = await cookies();
+  const expectedState = cookieJar.get("github_oauth_state")?.value;
 
   if (!code || !state || !expectedState || state !== expectedState) {
     connectUrl.searchParams.set("error", "github_state_mismatch");
