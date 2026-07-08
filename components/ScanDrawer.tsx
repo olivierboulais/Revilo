@@ -16,6 +16,7 @@ const KEYFRAMES = `
   @keyframes shake  { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
   @keyframes sparkle { 0%{transform:scale(0) translate(0,0);opacity:1} 100%{transform:scale(1) translate(var(--tx),var(--ty));opacity:0} }
   @keyframes errorPulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.0)} 50%{box-shadow:0 0 0 10px rgba(239,68,68,.08)} }
+  @keyframes toastLife { 0%{opacity:0;transform:translateY(8px)} 10%{opacity:1;transform:translateY(0)} 80%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(4px)} }
 `;
 
 // ─── Card shapes shared across states ────────────────────────────────────────
@@ -339,11 +340,11 @@ export function ScanDrawer({
         </button>
       )}
 
-      {/* Non-interactive success toast — auto-navigates after 2s */}
+      {/* Non-interactive success toast — fades out after 2.5s, navigates after 2s */}
       {!open && phase === "success" && (
         <div
           className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border bg-surface pl-4 pr-5 py-3 pointer-events-none"
-          style={{ animation: "fadeUp .3s ease both", borderColor: "#6EE7B7" }}
+          style={{ animation: "toastLife 2.8s ease forwards", borderColor: "#6EE7B7" }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
             <circle cx="12" cy="12" r="12" fill="#34D399"/>
