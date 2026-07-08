@@ -649,21 +649,29 @@ footer{background:var(--ink);color:#fff;padding:60px 0 36px}
       <input type="range" min="1" max="100" value="12" class="dc-range" id="dc-range">
       <div class="dc-ticks"><span>1</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
     </div>
+    <div class="dc-slider-row" style="margin-top:20px">
+      <div class="dc-label-row">
+        <span class="dc-label">Hours lost per designer per week to drift</span>
+        <span class="dc-val" id="dc-hrs-val">3</span>
+      </div>
+      <input type="range" min="1" max="20" value="3" class="dc-range" id="dc-range-hrs">
+      <div class="dc-ticks"><span>1 hr</span><span>5</span><span>10</span><span>15</span><span>20 hrs</span></div>
+    </div>
     <div class="dc-outputs">
       <div class="dc-out">
-        <div class="dc-out-val" id="dc-hours">4,992</div>
-        <div class="dc-out-key">Hours lost / year <span class="dc-tip" data-tip="Based on 8 hrs/week lost per designer to system friction — finding specs, fixing mismatches, reconciling Figma vs. code."><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="currentColor"/><rect x="6.2" y="6" width="1.6" height="4.5" rx=".8" fill="white"/><circle cx="7" cy="4" r=".9" fill="white"/></svg></span></div>
+        <div class="dc-out-val" id="dc-hours">1,872</div>
+        <div class="dc-out-key">Hours lost / year</div>
       </div>
       <div class="dc-out dc-out-mid">
-        <div class="dc-out-val" id="dc-cost">$624,000</div>
-        <div class="dc-out-key">Wasted annually <span class="dc-tip" data-tip="Hours lost × $125/hr blended designer rate. Source: industry surveys on design system maintenance overhead."><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="currentColor"/><rect x="6.2" y="6" width="1.6" height="4.5" rx=".8" fill="white"/><circle cx="7" cy="4" r=".9" fill="white"/></svg></span></div>
+        <div class="dc-out-val" id="dc-cost">$234,000</div>
+        <div class="dc-out-key">Wasted annually <span class="dc-tip" data-tip="Hours lost × $125/hr blended designer salary rate."><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="currentColor"/><rect x="6.2" y="6" width="1.6" height="4.5" rx=".8" fill="white"/><circle cx="7" cy="4" r=".9" fill="white"/></svg></span></div>
       </div>
       <div class="dc-out dc-out-highlight">
-        <div class="dc-out-val" id="dc-revilo">0.03%</div>
+        <div class="dc-out-val" id="dc-revilo">0.09%</div>
         <div class="dc-out-key">Revilo vs. the problem <span class="dc-tip" data-tip="$199 one-time cost of a Revilo scan as a percentage of your team's annual drift loss."><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="currentColor"/><rect x="6.2" y="6" width="1.6" height="4.5" rx=".8" fill="white"/><circle cx="7" cy="4" r=".9" fill="white"/></svg></span></div>
       </div>
     </div>
-    <div class="dc-punchline">You're losing <strong id="dc-p-cost">$624,000</strong>/yr to drift. Revilo costs <strong>$199</strong>.</div>
+    <div class="dc-punchline">You're losing <strong id="dc-p-cost">$234,000</strong>/yr to drift. Revilo costs <strong>$199</strong>.</div>
   </div>
 </section>
 
@@ -1145,29 +1153,38 @@ document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 
 // Drift calculator
 (function(){
-  var range = document.getElementById('dc-range');
-  if(!range) return;
-  var elCount = document.getElementById('dc-count');
-  var elHours = document.getElementById('dc-hours');
-  var elCost  = document.getElementById('dc-cost');
-  var elPct   = document.getElementById('dc-revilo');
-  var elPCost = document.getElementById('dc-p-cost');
+  var range    = document.getElementById('dc-range');
+  var rangeHrs = document.getElementById('dc-range-hrs');
+  if(!range || !rangeHrs) return;
+  var elCount  = document.getElementById('dc-count');
+  var elHrsVal = document.getElementById('dc-hrs-val');
+  var elHours  = document.getElementById('dc-hours');
+  var elCost   = document.getElementById('dc-cost');
+  var elPct    = document.getElementById('dc-revilo');
+  var elPCost  = document.getElementById('dc-p-cost');
   function fmt(n){ return n >= 1000000 ? '$' + (n/1000000).toFixed(2) + 'M' : '$' + n.toLocaleString(); }
+  function setFill(input, min, max){
+    var pct = ((input.value - min) / (max - min)) * 100;
+    input.style.background = 'linear-gradient(to right, var(--ink) ' + pct + '%, var(--line) ' + pct + '%)';
+  }
   function update(){
-    var d = parseInt(range.value, 10);
-    var hrsPerYear = d * 8 * 52;
+    var d   = parseInt(range.value, 10);
+    var hrs = parseInt(rangeHrs.value, 10);
+    var hrsPerYear = d * hrs * 52;
     var annualCost = Math.round(hrsPerYear * 125);
-    var pct = (199 / annualCost * 100).toFixed(2);
+    var pct = annualCost > 0 ? (199 / annualCost * 100).toFixed(2) : '—';
     var costStr = fmt(annualCost);
-    elCount.textContent = d;
-    elHours.textContent = hrsPerYear.toLocaleString();
-    elCost.textContent  = costStr;
-    elPct.textContent   = pct + '%';
-    elPCost.textContent = costStr;
-    var pctFill = ((d - 1) / 99) * 100;
-    range.style.background = 'linear-gradient(to right, var(--ink) ' + pctFill + '%, var(--line) ' + pctFill + '%)';
+    elCount.textContent  = d;
+    elHrsVal.textContent = hrs;
+    elHours.textContent  = hrsPerYear.toLocaleString();
+    elCost.textContent   = costStr;
+    elPct.textContent    = pct + '%';
+    elPCost.textContent  = costStr;
+    setFill(range,    1, 100);
+    setFill(rangeHrs, 1, 20);
   }
   range.addEventListener('input', update);
+  rangeHrs.addEventListener('input', update);
   update();
 })();
 </script>
