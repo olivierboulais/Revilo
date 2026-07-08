@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, getGoogleRedirectUri } from "@/lib/google/config";
 import { findUserByEmail, createUser } from "@/lib/db/users";
 import { createSessionForUser } from "@/lib/auth/session";
@@ -9,8 +10,8 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
-  const cookieHeader = request.headers.get("cookie") ?? "";
-  const storedState = cookieHeader.match(/google_oauth_state=([^;]+)/)?.[1];
+  const cookieJar = await cookies();
+  const storedState = cookieJar.get("google_oauth_state")?.value;
 
   if (!code || !state || state !== storedState) {
     return NextResponse.redirect(new URL("/login?error=invalid_state", request.url));
