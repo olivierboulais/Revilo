@@ -18,7 +18,12 @@ import { saveScanForUser, getLatestScanForUser } from "@/lib/db/scans";
 
 const hasKV = Boolean(process.env.KV_REST_API_URL);
 
-const reportsByEmail = new Map<string, ScanReport>();
+// Survive Next.js hot-module replacement in dev — without this, the Map is
+// re-created on every file save, making getReport always return null and
+// triggering an unwanted auto-scan on every dashboard refresh.
+const g = global as typeof global & { _reportsByEmail?: Map<string, ScanReport> };
+if (!g._reportsByEmail) g._reportsByEmail = new Map<string, ScanReport>();
+const reportsByEmail = g._reportsByEmail;
 
 function keyFor(email: string): string {
   return `report:${email}`;
