@@ -28,9 +28,8 @@ const PILL_BTN = (href: string, label: string) => `
 <table cellpadding="0" cellspacing="0">
   <tr>
     <td style="background:#1C1C1A;border-radius:999px">
-      <a href="${href}" style="display:inline-flex;align-items:center;gap:10px;padding:11px 10px 11px 20px;text-decoration:none;font-size:13.5px;font-weight:500;color:#ffffff;white-space:nowrap;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Helvetica,Arial,sans-serif">
+      <a href="${href}" style="display:inline-block;padding:12px 24px;text-decoration:none;font-size:13.5px;font-weight:500;color:#ffffff;white-space:nowrap;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Helvetica,Arial,sans-serif">
         ${label}
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#ffffff;color:#1C1C1A;font-size:14px;font-weight:600;flex-shrink:0">↗</span>
       </a>
     </td>
   </tr>
