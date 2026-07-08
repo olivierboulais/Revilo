@@ -8,6 +8,7 @@ import { runScan } from "@/lib/run-scan";
 import { findUserByEmail } from "@/lib/db/users";
 import { getSource } from "@/lib/db/sources";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { TopBar } from "@/components/TopBar";
 import { VerificationBanner } from "@/components/VerificationBanner";
 import { MockDataBanner } from "@/components/MockDataBanner";
@@ -45,6 +46,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <ThemeProvider>
+    <Suspense>
     <DashboardShell
       workspaceName={session.workspaceName}
       isPaid={isPaid}
@@ -63,6 +65,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="flex-1 overflow-y-auto">{children}</div>
       </div>
     </DashboardShell>
+    </Suspense>
     </ThemeProvider>
   );
 }

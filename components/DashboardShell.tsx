@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense, createContext, useContext } from "react";
+import { useSearchParams } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
 import { ConnectDrawer } from "@/components/ConnectDrawer";
 import { DrawerProvider } from "@/components/DrawerContext";
@@ -32,9 +33,11 @@ export function DashboardShell({
   autoScan?: boolean;
   children: React.ReactNode;
 }) {
+  const searchParams = useSearchParams();
+  const connectDrawerOpen = searchParams.get("connect") === "1";
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [scanOpen, setScanOpen] = useState(autoScan ?? false);
+  const [scanOpen, setScanOpen] = useState((autoScan ?? false) && !connectDrawerOpen);
 
   return (
     <ScanContext.Provider value={{ openScan: () => setScanOpen(true) }}>
