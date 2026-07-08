@@ -68,40 +68,41 @@ function shell(wordmarkHtml: string, heroHtml: string, bodyHtml: string, footerH
 // Hero: Figma card ↔ synced beam ↔ GitHub card
 
 const VERIFY_HERO = `
-<div style="background:radial-gradient(ellipse 80% 90% at 15% 10%,#EFD9FF 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 85% 90%,#A78BFA33 0%,transparent 55%),#DBC8FF;padding:48px 32px">
+<div style="background:radial-gradient(ellipse 80% 90% at 15% 10%,#EFD9FF 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 85% 90%,#A78BFA33 0%,transparent 55%),#DBC8FF;padding:48px 24px">
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
       <!-- Figma card -->
-      <td align="center" valign="middle" width="33%">
-        <div style="background:#fff;border-radius:16px;padding:20px 16px;display:inline-block;box-shadow:0 8px 28px rgba(124,58,237,.16);text-align:center">
-          <svg width="34" height="50" viewBox="0 0 34 50" fill="none" style="display:block;margin:0 auto 10px">
+      <td align="center" valign="middle" width="42%">
+        <div style="background:#fff;border-radius:20px;padding:28px 24px;box-shadow:0 8px 28px rgba(124,58,237,.16);text-align:center">
+          <svg width="44" height="64" viewBox="0 0 34 50" fill="none" style="display:block;margin:0 auto 12px">
             <rect x="0" y="0" width="17" height="17" rx="8.5" fill="#FF7262"/>
             <rect x="17" y="0" width="17" height="17" rx="8.5" fill="#FF7262"/>
             <rect x="0" y="17" width="17" height="17" rx="8.5" fill="#A259FF"/>
             <rect x="17" y="17" width="17" height="17" rx="8.5" fill="#1ABCFE"/>
             <rect x="0" y="34" width="17" height="17" rx="8.5" fill="#0ACF83"/>
           </svg>
-          <div style="font-size:9.5px;font-weight:700;letter-spacing:.09em;color:#B4B2A9;font-family:-apple-system,BlinkMacSystemFont,sans-serif">FIGMA</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:#B4B2A9;font-family:-apple-system,BlinkMacSystemFont,sans-serif">FIGMA</div>
         </div>
       </td>
 
       <!-- Beam connector -->
-      <td align="center" valign="middle" width="34%">
-        <svg width="120" height="44" viewBox="0 0 120 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto">
-          <line x1="8" y1="22" x2="112" y2="22" stroke="#C084FC" stroke-width="2" stroke-dasharray="5 4" stroke-opacity="0.6"/>
-          <circle cx="60" cy="22" r="14" fill="#7C3AED"/>
-          <polyline points="53,22 58,27.5 67,16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <td align="center" valign="middle" width="16%">
+        <svg width="64" height="44" viewBox="0 0 64 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto">
+          <line x1="0" y1="22" x2="20" y2="22" stroke="#C084FC" stroke-width="2" stroke-dasharray="4 3" stroke-opacity="0.6"/>
+          <circle cx="32" cy="22" r="14" fill="#7C3AED"/>
+          <polyline points="25,22 30,27.5 39,16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="44" y1="22" x2="64" y2="22" stroke="#C084FC" stroke-width="2" stroke-dasharray="4 3" stroke-opacity="0.6"/>
         </svg>
         <div style="font-size:9px;font-weight:700;letter-spacing:.1em;color:#7C3AED;text-align:center;margin-top:6px;font-family:-apple-system,BlinkMacSystemFont,sans-serif">SYNCED</div>
       </td>
 
       <!-- GitHub card -->
-      <td align="center" valign="middle" width="33%">
-        <div style="background:#1C1C1A;border-radius:16px;padding:20px 16px;display:inline-block;box-shadow:0 8px 28px rgba(0,0,0,.2);text-align:center">
-          <svg width="36" height="36" viewBox="0 0 98 96" fill="none" style="display:block;margin:0 auto 10px">
+      <td align="center" valign="middle" width="42%">
+        <div style="background:#1C1C1A;border-radius:20px;padding:28px 24px;box-shadow:0 8px 28px rgba(0,0,0,.2);text-align:center">
+          <svg width="48" height="48" viewBox="0 0 98 96" fill="none" style="display:block;margin:0 auto 12px">
             <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="white" opacity=".85"/>
           </svg>
-          <div style="font-size:9.5px;font-weight:700;letter-spacing:.09em;color:rgba(255,255,255,.4);font-family:-apple-system,BlinkMacSystemFont,sans-serif">GITHUB</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:rgba(255,255,255,.4);font-family:-apple-system,BlinkMacSystemFont,sans-serif">GITHUB</div>
         </div>
       </td>
     </tr>
