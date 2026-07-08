@@ -201,7 +201,9 @@ h1 em{font-style:normal;color:var(--lilac-deep)}
 .nav-mobile-menu.open .nav-mobile-links a:nth-child(4){opacity:1;transform:none;transition-delay:.36s}
 .nav-mobile-cta{margin-top:40px;opacity:0;transform:translateY(16px);transition:opacity .4s ease .44s,transform .4s ease .44s}
 .nav-mobile-menu.open .nav-mobile-cta{opacity:1;transform:none}
-.nav-mobile-cta a{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:var(--ink);border-radius:999px;padding:16px 28px;font-size:15px;font-weight:500}
+.nav-mobile-cta a:first-child{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:var(--ink);border-radius:999px;padding:16px 28px;font-size:15px;font-weight:500}
+.nav-mobile-cta a:last-child{display:block;background:transparent;color:rgba(255,255,255,.6);font-size:14px;font-weight:500;margin-top:12px;text-align:center;padding:8px 0}
+.nav-mobile-cta a:last-child:hover{color:#fff}
 .nav-mobile-cta a .arr{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 @media(max-width:900px){
   .nav-links{display:none}
@@ -209,6 +211,7 @@ h1 em{font-style:normal;color:var(--lilac-deep)}
   .nav-auth{display:none}
   .nav-hamburger{display:flex}
   .nav-indicator{display:none}
+  .nav-pill{flex:1;justify-content:space-between}
 }
 @media(max-width:640px){
   .nav{top:14px;width:calc(100% - 16px)}
@@ -570,7 +573,7 @@ footer{background:var(--ink);color:#fff;padding:60px 0 36px}
   </nav>
   <div class="nav-mobile-cta">
     <a href="/signup">Create account <span class="arr"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M1.5 11.5L11.5 1.5M11.5 1.5H3.5M11.5 1.5V9.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
-    <a href="/login" style="color:rgba(255,255,255,.6);font-size:14px;font-weight:500;margin-top:12px;display:inline-block">Log in</a>
+    <a href="/login">Log in</a>
   </div>
 </div>
 
