@@ -55,12 +55,13 @@ function InfoTooltip({ lines }: { lines: string[] }) {
     <div ref={ref} className="relative inline-flex items-center">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-[18px] h-[18px] rounded-full bg-[#F3F1EC] hover:bg-[#E8E5DF] flex items-center justify-center text-gray hover:text-[#1C1C1A] transition-colors flex-shrink-0"
+        className="w-[18px] h-[18px] rounded-full flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-75"
+        style={{ background: "#706F6A" }}
         aria-label="Learn how this score is calculated"
       >
         <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
-          <path d="M5 4.5v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-          <circle cx="5" cy="3" r="0.75" fill="currentColor"/>
+          <path d="M5 4.5v3" stroke="white" strokeWidth="1.4" strokeLinecap="round"/>
+          <circle cx="5" cy="3" r="0.75" fill="white"/>
         </svg>
       </button>
       {open && (
