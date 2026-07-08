@@ -326,86 +326,44 @@ export function ScanDrawer({
                 <p className="text-[13px] text-gray mt-6 text-center">Analysing your design system…</p>
               </div>
 
-              {/* Stage-flow step cards */}
+              {/* Step checklist */}
               <div className="mt-4 flex flex-col">
                 {SCAN_PROGRESS_SEQUENCE.map((step, i) => {
-                  const isDone    = i < stepIndex;
-                  const isActive  = i === stepIndex;
-                  const isPending = i > stepIndex;
-                  const isLast    = i === SCAN_PROGRESS_SEQUENCE.length - 1;
-
-                  const accentColor = isDone ? "#34D399" : isActive ? "#C084FC" : "rgba(28,28,26,.12)";
-                  const badgeStyle  = isDone
-                    ? { background: "#ECFDF5", color: "#059669" }
-                    : isActive
-                    ? { background: "#F3E8FF", color: "#7C3AED" }
-                    : { background: "rgba(28,28,26,.06)", color: "rgba(28,28,26,.35)" };
-                  const badgeLabel  = isDone ? "DONE" : isActive ? "ACTIVE" : "PENDING";
-
+                  const isDone   = i < stepIndex;
+                  const isActive = i === stepIndex;
+                  const isLast   = i === SCAN_PROGRESS_SEQUENCE.length - 1;
                   return (
                     <div key={step.state}>
-                      {/* Card */}
-                      <div
-                        className="flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-300"
-                        style={{
-                          background: isActive ? "#F9F5FF" : isDone ? "transparent" : "transparent",
-                          border: `1px solid ${isActive ? "#E9D5FF" : isDone ? "rgba(28,28,26,.07)" : "rgba(28,28,26,.07)"}`,
-                          borderLeft: `3px solid ${accentColor}`,
-                          opacity: isPending ? 0.5 : 1,
-                        }}
-                      >
-                        {/* Icon */}
-                        <div
-                          className="flex-shrink-0 flex items-center justify-center rounded-lg"
-                          style={{ width: 32, height: 32, background: isDone ? "#ECFDF5" : isActive ? "#EDE9FE" : "rgba(28,28,26,.05)" }}
-                        >
-                          {isDone ? (
-                            <svg width="13" height="13" viewBox="0 0 10 10" fill="none">
-                              <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#34D399" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          ) : isActive ? (
-                            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" className="animate-spin" style={{ animationDuration: "1.4s" }}>
-                              <path d="M3 8a5 5 0 0 1 8.66-2.5" stroke="#C084FC" strokeWidth="2" strokeLinecap="round"/>
-                              <path d="M13 8a5 5 0 0 1-8.66 2.5" stroke="#C084FC" strokeWidth="2" strokeLinecap="round"/>
-                            </svg>
-                          ) : (
-                            <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
-                              <circle cx="5" cy="5" r="3.5" stroke="rgba(28,28,26,.2)" strokeWidth="1.5"/>
-                            </svg>
-                          )}
-                        </div>
+                      <div className="flex items-center gap-4 py-3">
+                        {/* Circle indicator */}
+                        {isDone ? (
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                            <circle cx="12" cy="12" r="12" fill="#34D399"/>
+                            <path d="M7 12l3.5 3.5L17 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        ) : isActive ? (
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                            <circle cx="12" cy="12" r="11" stroke="#C084FC" strokeWidth="1.5" strokeDasharray="4 3"/>
+                            <circle cx="12" cy="12" r="4" fill="#C084FC" className="animate-pulse"/>
+                          </svg>
+                        ) : (
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                            <circle cx="12" cy="12" r="11" stroke="rgba(28,28,26,.15)" strokeWidth="1.5" strokeDasharray="4 3"/>
+                          </svg>
+                        )}
 
                         {/* Label */}
                         <span
-                          className="flex-1 text-[13px] transition-colors duration-300"
+                          className="flex-1 text-[14px] transition-colors duration-300"
                           style={{
-                            color: isDone ? "rgba(28,28,26,.4)" : isActive ? "#1C1C1A" : "rgba(28,28,26,.4)",
+                            color: isDone ? "rgba(28,28,26,.35)" : isActive ? "#1C1C1A" : "rgba(28,28,26,.3)",
                             fontWeight: isActive ? 500 : 400,
-                            textDecoration: isDone ? "line-through" : "none",
                           }}
                         >
                           {step.label}
                         </span>
-
-                        {/* Badge */}
-                        <span
-                          className="flex-shrink-0 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full"
-                          style={badgeStyle}
-                        >
-                          {badgeLabel}
-                        </span>
                       </div>
-
-                      {/* Connector between cards */}
-                      {!isLast && (
-                        <div className="flex items-center gap-2 px-4 py-[5px]">
-                          <div className="flex-1 border-t border-dashed" style={{ borderColor: isDone ? "#34D39940" : "rgba(28,28,26,.08)" }} />
-                          <span className="text-[10px] tracking-wider" style={{ color: "rgba(28,28,26,.2)" }}>
-                            {`0${i + 1} → 0${i + 2}`}
-                          </span>
-                          <div className="flex-1 border-t border-dashed" style={{ borderColor: "rgba(28,28,26,.08)" }} />
-                        </div>
-                      )}
+                      {!isLast && <div style={{ height: 1, background: "rgba(28,28,26,.06)", marginLeft: 40 }} />}
                     </div>
                   );
                 })}
