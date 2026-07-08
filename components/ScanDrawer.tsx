@@ -177,10 +177,14 @@ export function ScanDrawer({
   const [scanDest, setScanDest] = useState("/dashboard");
   const hasStarted = useRef(false);
   const closedMidScan = useRef(false);
+  // Only true after the user explicitly closes the drawer mid-scan.
+  // Prevents the pill from appearing on page load (when phase starts as "scanning").
+  const [showPill, setShowPill] = useState(false);
 
   // Reset only when opening fresh (not when closed mid-scan)
   useEffect(() => {
     if (open) {
+      setShowPill(false);
       if (!closedMidScan.current) {
         hasStarted.current = false;
         setStepIndex(0);
@@ -252,7 +256,10 @@ export function ScanDrawer({
   }, [open, phase]);
 
   function handleClose() {
-    if (phase === "scanning") closedMidScan.current = true;
+    if (phase === "scanning") {
+      closedMidScan.current = true;
+      setShowPill(true);
+    }
     onClose();
   }
 
@@ -265,6 +272,7 @@ export function ScanDrawer({
   function handleRetry() {
     hasStarted.current = false;
     closedMidScan.current = false;
+    setShowPill(false);
     setStepIndex(0);
     setPhase("scanning");
     setScanError(null);
@@ -285,8 +293,8 @@ export function ScanDrawer({
     <>
       <div className={`fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px] transition-opacity duration-200 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`} />
 
-      {/* Floating pill — only when drawer is closed mid-scan or finished in background */}
-      {!open && (phase === "scanning" || phase === "error") && (
+      {/* Floating pill — only when user explicitly closed the drawer mid-scan */}
+      {!open && showPill && (phase === "scanning" || phase === "error") && (
         <button
           onClick={() => { closedMidScan.current = false; onOpen?.(); }}
           className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border bg-surface pl-4 pr-3 py-3 transition-all hover:scale-[1.02] active:scale-[.98]"
@@ -340,8 +348,8 @@ export function ScanDrawer({
         </button>
       )}
 
-      {/* Non-interactive success toast — fades out after 2.5s, navigates after 2s */}
-      {!open && phase === "success" && (
+      {/* Non-interactive success toast — only when scan finished in the background */}
+      {!open && showPill && phase === "success" && (
         <div
           className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border bg-surface pl-4 pr-5 py-3 pointer-events-none"
           style={{ animation: "toastLife 2.8s ease forwards", borderColor: "#6EE7B7" }}
