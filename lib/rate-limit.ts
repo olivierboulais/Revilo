@@ -31,7 +31,10 @@ async function checkRateLimitKv(key: string, limit: number, windowMs: number): P
   const redisKey = `rl:${key}`;
   const windowSec = Math.ceil(windowMs / 1000);
 
-  const [[, count]] = await kv.pipeline().incr(redisKey).expire(redisKey, windowSec, "NX").exec() as [[null, number]];
+  const count = await kv.incr(redisKey);
+  if (count === 1) {
+    await kv.expire(redisKey, windowSec);
+  }
 
   const allowed = count <= limit;
   return { allowed, remaining: Math.max(0, limit - count), resetAt: now + windowMs };
