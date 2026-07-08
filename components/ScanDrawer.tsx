@@ -270,9 +270,48 @@ export function ScanDrawer({
     phase === "error"   ? "Scan failed" :
     `Scanning ${workspaceName}…`;
 
+  const currentStepLabel = SCAN_PROGRESS_SEQUENCE[Math.min(stepIndex, SCAN_PROGRESS_SEQUENCE.length - 1)]?.label ?? "Scanning…";
+  const progress = Math.min((stepIndex / SCAN_PROGRESS_SEQUENCE.length) * 100, 100);
+
   return (
     <>
       <div className={`fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px] transition-opacity duration-200 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`} />
+
+      {/* Floating background-scan pill */}
+      {!open && phase === "scanning" && (
+        <button
+          onClick={() => { closedMidScan.current = false; onClose(); }}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border border-line bg-surface pl-4 pr-3 py-3 transition-all hover:scale-[1.02] active:scale-[.98]"
+          style={{ animation: "fadeUp .3s ease both" }}
+        >
+          {/* Spinner */}
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="flex-shrink-0 animate-spin" style={{ animationDuration: "1.4s" }}>
+            <path d="M3 8a5 5 0 0 1 8.66-2.5" stroke="#C084FC" strokeWidth="2.2" strokeLinecap="round"/>
+            <path d="M13 8a5 5 0 0 1-8.66 2.5" stroke="#C084FC" strokeWidth="2.2" strokeLinecap="round"/>
+          </svg>
+
+          {/* Text */}
+          <div className="flex flex-col items-start leading-none gap-[3px]">
+            <span className="text-[11px] font-medium text-foreground whitespace-nowrap">{currentStepLabel}</span>
+            <span className="text-[10px] text-gray">{stepIndex}/{SCAN_PROGRESS_SEQUENCE.length} steps</span>
+          </div>
+
+          {/* Mini progress arc ring */}
+          <div className="relative flex-shrink-0 w-7 h-7">
+            <svg width="28" height="28" viewBox="0 0 28 28" className="-rotate-90">
+              <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(28,28,26,.08)" strokeWidth="2.5"/>
+              <circle
+                cx="14" cy="14" r="11" fill="none"
+                stroke="#C084FC" strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 11}`}
+                strokeDashoffset={`${2 * Math.PI * 11 * (1 - progress / 100)}`}
+                style={{ transition: "stroke-dashoffset .7s ease" }}
+              />
+            </svg>
+          </div>
+        </button>
+      )}
 
       <div className={`fixed top-0 right-0 h-full z-50 w-full max-w-[520px] bg-surface shadow-2xl flex flex-col transition-transform duration-300 ease-out ${open ? "translate-x-0" : "translate-x-full"}`}>
         {/* Header */}
