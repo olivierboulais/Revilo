@@ -237,7 +237,7 @@ h1 em{font-style:normal;color:var(--lilac-deep)}
 
 /* ── DRIFT CALCULATOR ── */
 .drift-calc{margin-top:56px;padding:36px 40px;background:#fff;border-radius:24px;border:1px solid var(--line)}
-.dc-tip{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(28,28,26,.15);font-size:13px;color:var(--ink);cursor:default;position:relative;vertical-align:middle;margin-left:8px;font-style:normal;font-weight:500}
+.dc-tip{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:none;color:var(--gray);cursor:default;position:relative;vertical-align:middle;margin-left:6px;font-style:normal}
 .dc-tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:11px;line-height:1.5;padding:8px 12px;border-radius:10px;white-space:normal;width:220px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10;font-style:normal;font-weight:400}
 .dc-tip:hover::after{opacity:1}
 .dc-slider-row{margin-bottom:32px}
@@ -652,15 +652,15 @@ footer{background:var(--ink);color:#fff;padding:60px 0 36px}
     <div class="dc-outputs">
       <div class="dc-out">
         <div class="dc-out-val" id="dc-hours">4,992</div>
-        <div class="dc-out-key">Hours lost / year <span class="dc-tip" data-tip="Based on 8 hrs/week lost per designer to system friction — finding specs, fixing mismatches, reconciling Figma vs. code.">ⓘ</span></div>
+        <div class="dc-out-key">Hours lost / year <span class="dc-tip" data-tip="Based on 8 hrs/week lost per designer to system friction — finding specs, fixing mismatches, reconciling Figma vs. code."><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="currentColor"/><rect x="6.2" y="6" width="1.6" height="4.5" rx=".8" fill="white"/><circle cx="7" cy="4" r=".9" fill="white"/></svg></span></div>
       </div>
       <div class="dc-out dc-out-mid">
         <div class="dc-out-val" id="dc-cost">$624,000</div>
-        <div class="dc-out-key">Wasted annually <span class="dc-tip" data-tip="Hours lost × $125/hr blended designer rate. Source: industry surveys on design system maintenance overhead.">ⓘ</span></div>
+        <div class="dc-out-key">Wasted annually <span class="dc-tip" data-tip="Hours lost × $125/hr blended designer rate. Source: industry surveys on design system maintenance overhead."><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="currentColor"/><rect x="6.2" y="6" width="1.6" height="4.5" rx=".8" fill="white"/><circle cx="7" cy="4" r=".9" fill="white"/></svg></span></div>
       </div>
       <div class="dc-out dc-out-highlight">
         <div class="dc-out-val" id="dc-revilo">0.03%</div>
-        <div class="dc-out-key">Revilo vs. the problem <span class="dc-tip" data-tip="$199 one-time cost of a Revilo scan as a percentage of your team's annual drift loss.">ⓘ</span></div>
+        <div class="dc-out-key">Revilo vs. the problem <span class="dc-tip" data-tip="$199 one-time cost of a Revilo scan as a percentage of your team's annual drift loss."><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="currentColor"/><rect x="6.2" y="6" width="1.6" height="4.5" rx=".8" fill="white"/><circle cx="7" cy="4" r=".9" fill="white"/></svg></span></div>
       </div>
     </div>
     <div class="dc-punchline">You're losing <strong id="dc-p-cost">$624,000</strong>/yr to drift. Revilo costs <strong>$199</strong>.</div>
