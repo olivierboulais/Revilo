@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://revilo.design";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://revilo.design";
 
 export const metadata: Metadata = {
   title: { default: "Revilo — Design System Alignment Platform", template: "%s — Revilo" },
