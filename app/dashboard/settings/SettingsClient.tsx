@@ -55,11 +55,11 @@ const THEMES: ThemeOption[] = [
   {
     value: "system",
     label: "System",
-    bg: "linear-gradient(135deg,#FFFFFF 50%,#1C1C1A 50%)",
-    border: "rgba(28,28,26,.12)",
+    bg: "transparent",
+    border: "rgba(128,128,128,.25)",
     activeBorder: "#7C3AED",
     iconColor: "#706F6A",
-    textColor: "#1C1C1A",
+    textColor: "inherit",
     icon: (c) => (
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <rect x="1.5" y="2.5" width="13" height="9" rx="1.5" stroke={c} strokeWidth="1.4" />
