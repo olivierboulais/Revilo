@@ -173,21 +173,35 @@ export function ScanDrawer({
   const [scanError, setScanError] = useState<string | null>(null);
   const [scanDest, setScanDest] = useState("/dashboard");
   const hasStarted = useRef(false);
+  const closedMidScan = useRef(false);
 
-  // Reset on close
+  // Reset only when opening fresh (not when closed mid-scan)
   useEffect(() => {
-    if (!open) {
-      hasStarted.current = false;
-      setStepIndex(0);
-      setPhase("scanning");
-      setScanError(null);
-      setScanDest("/dashboard");
+    if (open) {
+      if (!closedMidScan.current) {
+        hasStarted.current = false;
+        setStepIndex(0);
+        setPhase("scanning");
+        setScanError(null);
+        setScanDest("/dashboard");
+      }
+      closedMidScan.current = false;
     }
   }, [open]);
 
+  // Auto-navigate when scan finishes in the background
+  useEffect(() => {
+    if (!open && phase === "success") {
+      router.push(scanDest);
+      router.refresh();
+    }
+  }, [open, phase, scanDest, router]);
+
   // Kick off scan
   useEffect(() => {
-    if (!open || hasStarted.current) return;
+    if (hasStarted.current) return;
+    if (!open && !closedMidScan.current) return;
+    if (!open && closedMidScan.current) return; // already kicked off before close
     hasStarted.current = true;
 
     fetch("/api/scan", { method: "POST" })
@@ -205,7 +219,6 @@ export function ScanDrawer({
         if (data.dataSource?.figma === "error") params.set("figma_error", data.dataSource.figmaError || "unknown");
         if (data.dataSource?.github === "error") params.set("github_error", data.dataSource.githubError || "unknown");
         setScanDest(`/dashboard${params.toString() ? "?" + params.toString() : ""}`);
-        // Wait for step animation to finish, then show success
         const stepsLeft = (SCAN_PROGRESS_SEQUENCE.length - stepIndex) * STEP_DURATION_MS;
         setTimeout(() => setPhase("success"), Math.max(stepsLeft, 0));
       })
@@ -216,21 +229,27 @@ export function ScanDrawer({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // Step ticker
+  // Step ticker — keep running even if drawer is closed mid-scan
   useEffect(() => {
-    if (!open || phase !== "scanning") return;
+    if (phase !== "scanning") return;
     if (stepIndex >= SCAN_PROGRESS_SEQUENCE.length) return;
     const timer = setTimeout(() => setStepIndex((i) => i + 1), STEP_DURATION_MS);
     return () => clearTimeout(timer);
-  }, [open, stepIndex, phase]);
+  }, [stepIndex, phase]);
 
-  // Esc to close when not scanning
+  // Esc to close
   useEffect(() => {
     if (!open) return;
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape" && phase !== "scanning") onClose(); }
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") handleClose(); }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, phase, onClose]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, phase]);
+
+  function handleClose() {
+    if (phase === "scanning") closedMidScan.current = true;
+    onClose();
+  }
 
   function handleViewReport() {
     router.push(scanDest);
@@ -240,6 +259,7 @@ export function ScanDrawer({
 
   function handleRetry() {
     hasStarted.current = false;
+    closedMidScan.current = false;
     setStepIndex(0);
     setPhase("scanning");
     setScanError(null);
@@ -248,9 +268,7 @@ export function ScanDrawer({
   const headerLabel =
     phase === "success" ? "Scan complete!" :
     phase === "error"   ? "Scan failed" :
-    `Scanning ${workspaceName}`;
-
-  const canClose = phase !== "scanning";
+    `Scanning ${workspaceName}…`;
 
   return (
     <>
@@ -260,13 +278,11 @@ export function ScanDrawer({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-line flex-shrink-0">
           <span className="text-[13.5px] font-medium">{headerLabel}</span>
-          {canClose && (
-            <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-foreground/[0.07] flex items-center justify-center transition-colors" aria-label="Close">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
-          )}
+          <button onClick={handleClose} className="w-8 h-8 rounded-full hover:bg-foreground/[0.07] flex items-center justify-center transition-colors" aria-label="Close">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
         </div>
 
         {/* Content */}
