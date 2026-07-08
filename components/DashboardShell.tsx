@@ -74,6 +74,7 @@ export function DashboardShell({
         workspaceName={workspaceName}
         open={scanOpen}
         onClose={() => setScanOpen(false)}
+        onOpen={() => setScanOpen(true)}
       />
     </div>
     </DrawerProvider>
