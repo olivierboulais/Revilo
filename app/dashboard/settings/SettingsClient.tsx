@@ -81,7 +81,7 @@ function AppearanceSection() {
             <button
               key={t.value}
               onClick={() => setTheme(t.value)}
-              className="flex flex-col items-center gap-2 px-3 py-3.5 rounded-xl border text-[12.5px] font-medium transition-all hover:opacity-90"
+              className="relative flex flex-col items-center gap-2 px-3 py-3.5 rounded-xl border text-[12.5px] font-medium transition-all hover:opacity-90"
               style={{
                 background: t.bg,
                 borderColor: active ? t.activeBorder : t.border,
@@ -89,6 +89,13 @@ function AppearanceSection() {
                 color: t.textColor,
               }}
             >
+              {active && (
+                <span className="absolute top-2 right-2 w-[18px] h-[18px] rounded-full flex items-center justify-center" style={{ background: "#7C3AED" }}>
+                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                    <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+              )}
               {t.icon(t.iconColor)}
               {t.label}
             </button>
