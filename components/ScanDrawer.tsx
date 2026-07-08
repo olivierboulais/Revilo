@@ -274,7 +274,10 @@ export function ScanDrawer({
     phase === "error"   ? "Scan failed" :
     `Scanning ${workspaceName}…`;
 
-  const currentStepLabel = SCAN_PROGRESS_SEQUENCE[Math.min(stepIndex, SCAN_PROGRESS_SEQUENCE.length - 1)]?.label ?? "Scanning…";
+  const allStepsDone = stepIndex >= SCAN_PROGRESS_SEQUENCE.length;
+  const currentStepLabel = allStepsDone
+    ? "Wrapping up…"
+    : (SCAN_PROGRESS_SEQUENCE[stepIndex]?.label ?? "Scanning…");
   const progress = Math.min((stepIndex / SCAN_PROGRESS_SEQUENCE.length) * 100, 100);
 
   return (
@@ -299,7 +302,9 @@ export function ScanDrawer({
               </svg>
               <div className="flex flex-col items-start leading-none gap-[3px]">
                 <span className="text-[11px] font-medium text-foreground whitespace-nowrap">{currentStepLabel}</span>
-                <span className="text-[10px] text-gray">{stepIndex}/{SCAN_PROGRESS_SEQUENCE.length} steps</span>
+                <span className="text-[10px] text-gray">
+                  {allStepsDone ? "Almost there…" : `${stepIndex}/${SCAN_PROGRESS_SEQUENCE.length} steps`}
+                </span>
               </div>
               <div className="relative flex-shrink-0 w-7 h-7">
                 <svg width="28" height="28" viewBox="0 0 28 28" className="-rotate-90">
