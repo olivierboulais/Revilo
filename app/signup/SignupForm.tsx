@@ -32,7 +32,8 @@ export function SignupForm({ tier }: { tier: string | null }) {
       }
     } catch (err) {
       if (isRedirectError(err)) throw err;
-      setError("Something went wrong. Please try again.");
+      const msg = err instanceof Error ? err.message : null;
+      setError(msg && msg.length < 200 ? msg : "Something went wrong. Please try again.");
       setIsSubmitting(false);
     }
   }
