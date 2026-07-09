@@ -37,7 +37,7 @@ export function DashboardShell({
   return (
     <ScanContext.Provider value={{ openScan: () => setScanOpen(true) }}>
     <DrawerProvider>
-    <div className="flex min-h-screen bg-[#F8F7F4] p-2 sm:p-4 gap-2 sm:gap-4">
+    <div className="flex min-h-screen bg-[#F8F7F4] p-2 pb-20 sm:p-4 sm:pb-4 gap-2 sm:gap-4">
       <button
         onClick={() => setSidebarOpen(true)}
         className="fixed bottom-4 left-4 z-30 lg:hidden w-12 h-12 rounded-full bg-[#1C1C1A] text-white flex items-center justify-center shadow-lg"

@@ -56,7 +56,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <TopBar workspaceName={session.workspaceName} scannedAt={report.scannedAt} />
         {!session.emailVerified && <VerificationBanner email={session.email} />}
         <MockDataBanner figmaConnected={figmaConnected} githubConnected={githubConnected} />
-        <div className="flex-1 overflow-y-auto">{children}</div>
+        <div className="flex-1">{children}</div>
       </div>
     </DashboardShell>
     </Suspense>
