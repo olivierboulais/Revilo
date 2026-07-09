@@ -297,7 +297,7 @@ export function ScanDrawer({
       {!open && showPill && (phase === "scanning" || phase === "error") && (
         <button
           onClick={() => { closedMidScan.current = false; onOpen?.(); }}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border bg-surface pl-4 pr-3 py-3 transition-all hover:scale-[1.02] active:scale-[.98]"
+          className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border bg-surface pl-4 pr-3 py-3 transition-all hover:scale-[1.02] active:scale-[.98]"
           style={{
             animation: "fadeUp .3s ease both",
             borderColor: phase === "error" ? "#FCA5A5" : "rgba(28,28,26,.1)",
@@ -351,7 +351,7 @@ export function ScanDrawer({
       {/* Non-interactive success toast — only when scan finished in the background */}
       {!open && showPill && phase === "success" && (
         <div
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border bg-surface pl-4 pr-5 py-3 pointer-events-none"
+          className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-50 flex items-center gap-3 rounded-full shadow-lg border bg-surface pl-4 pr-5 py-3 pointer-events-none"
           style={{ animation: "toastLife 2.8s ease forwards", borderColor: "#6EE7B7" }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
