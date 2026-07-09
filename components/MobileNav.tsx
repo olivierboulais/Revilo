@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import { useDrawer } from "@/components/DrawerContext";
 
 function TabIcon({ d }: { d: string | string[] }) {
   const paths = Array.isArray(d) ? d : [d];
@@ -106,10 +107,11 @@ const MORE_ITEMS = [
   },
 ];
 
-export function MobileNav() {
+export function MobileNav({ isPaid }: { isPaid: boolean }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const { openUpgrade } = useDrawer();
 
   const moreActive = MORE_ITEMS.some((item) => pathname.startsWith(item.href));
 
@@ -141,6 +143,28 @@ export function MobileNav() {
         }`}
         style={{ background: "var(--surface)", backdropFilter: "blur(20px)" }}
       >
+        {/* Upgrade banner — free users only */}
+        {!isPaid && (
+          <div className="px-3 pt-3 pb-1">
+            <button
+              onClick={() => { setMoreOpen(false); openUpgrade(); }}
+              className="gradient-lilac w-full flex items-center gap-3 rounded-xl px-3 py-2.5 hover:scale-[1.01] transition-transform text-left"
+            >
+              <span className="w-8 h-8 rounded-lg bg-[#1C1C1A] flex items-center justify-center flex-shrink-0">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 2l1.8 3.6 4 .6-2.9 2.8.7 4L7 11.2 3.4 13l.7-4L1.2 6.2l4-.6L7 2Z" fill="#C084FC" />
+                </svg>
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="text-[12.5px] font-medium">Upgrade to Pro</div>
+                <div className="text-[11px] text-[#1C1C1A]/60">Unlock the full report</div>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0 text-[#1C1C1A]/30">
+                <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
+        )}
         <div className="p-2 grid grid-cols-4 gap-1">
           {MORE_ITEMS.map((item) => {
             const active = pathname.startsWith(item.href);

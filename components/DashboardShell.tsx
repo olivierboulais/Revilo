@@ -47,7 +47,7 @@ export function DashboardShell({
         onToggleCollapse={() => setCollapsed(!collapsed)}
       />
       {children}
-      <MobileNav />
+      <MobileNav isPaid={isPaid} />
 
       <Suspense>
         <ConnectDrawer
