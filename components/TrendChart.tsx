@@ -83,6 +83,10 @@ export function TrendChart({
   const plotW = Math.max(width - padLeft - padRight, 1);
   const plotH = height - padTop - padBottom;
 
+  // Skip x-axis labels that would overlap. Each label needs ~48px of space.
+  const slotW = labels.length > 1 ? plotW / (labels.length - 1) : plotW;
+  const labelStep = Math.max(1, Math.ceil(48 / slotW));
+
   const xFor = (i: number) => padLeft + (labels.length > 1 ? (i / (labels.length - 1)) * plotW : plotW / 2);
   const yFor = (v: number) => padTop + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
 
@@ -142,18 +146,23 @@ export function TrendChart({
             ) : null
           )
         )}
-        {labels.map((l, i) => (
-          <text
-            key={l}
-            x={xFor(i)}
-            y={height - 8}
-            fontSize="11"
-            fill="#A8A6A0"
-            textAnchor={i === 0 ? "start" : i === labels.length - 1 ? "end" : "middle"}
-          >
-            {l}
-          </text>
-        ))}
+        {labels.map((l, i) => {
+          const isFirst = i === 0;
+          const isLast = i === labels.length - 1;
+          if (!isFirst && !isLast && i % labelStep !== 0) return null;
+          return (
+            <text
+              key={l}
+              x={xFor(i)}
+              y={height - 8}
+              fontSize="11"
+              fill="#A8A6A0"
+              textAnchor={isFirst ? "start" : isLast ? "end" : "middle"}
+            >
+              {l}
+            </text>
+          );
+        })}
       </svg>
     </div>
   );
