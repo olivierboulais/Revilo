@@ -8,34 +8,50 @@ Repo: github.com/olivierboulais/Revilo (main branch)
 
 ## Environment Variables (Vercel)
 
-| Variable | Where to get it | Status |
+| Variable | Status | Notes |
 |---|---|---|
-| `DATABASE_URL` | Supabase → Project → Settings → Database → Connection string | ⚠️ Not set — ephemeral SQLite, signups don't persist across deploys |
-| `SESSION_SECRET` | Any random 32-char string | Set |
-| `RESEND_API_KEY` | resend.com | ⚠️ Not set — emails log to console only |
-| `FROM_EMAIL` | e.g. `Revilo <noreply@revilo.design>` | ⚠️ Not set |
-| `FIGMA_CLIENT_ID` | figma.com/developers/apps | ⚠️ Not set |
-| `FIGMA_CLIENT_SECRET` | figma.com/developers/apps | ⚠️ Not set |
-| `GITHUB_CLIENT_ID` | github.com/settings/developers | ⚠️ Not set |
-| `GITHUB_CLIENT_SECRET` | github.com/settings/developers | ⚠️ Not set |
-| `ANTHROPIC_API_KEY` | console.anthropic.com | ⚠️ Not set — uses template recommendations |
-| `STRIPE_SECRET_KEY` | Stripe → Developers → API Keys → live secret | ✅ Set (live) |
-| `STRIPE_PUBLISHABLE_KEY` | Stripe → Developers → API Keys → live publishable | ✅ Set |
-| `STRIPE_WEBHOOK_SECRET` | Stripe → Developers → Webhooks → revilo-production → Signing secret | ✅ Set |
-| `STRIPE_PRO_PRICE_ID` | `price_1TquscCNet93AuXhwSWHZv8d` | ✅ Set |
-| `STRIPE_MONITORING_PRICE_ID` | `price_1Tqut9CNet93AuXhNIuU3AJ7` | ✅ Set |
-| `NEXT_PUBLIC_BASE_URL` | `https://revilo.design` | Set |
+| `DATABASE_URL` | ✅ Set | Supabase Postgres — `db.ujffieojxtclwgflkxhb.supabase.co` |
+| `SESSION_SECRET` | ✅ Set | |
+| `RESEND_API_KEY` | ✅ Set | "Revilo" key, Full access |
+| `FROM_EMAIL` | ✅ Set | `noreply@revilo.design` |
+| `FIGMA_CLIENT_ID` | ✅ Set | |
+| `FIGMA_CLIENT_SECRET` | ✅ Set | |
+| `GITHUB_CLIENT_ID` | ✅ Set | |
+| `GITHUB_CLIENT_SECRET` | ✅ Set | |
+| `ANTHROPIC_API_KEY` | ⚠️ Not confirmed | Needed for real AI recommendations |
+| `STRIPE_SECRET_KEY` | ✅ Set (live) | |
+| `STRIPE_PUBLISHABLE_KEY` | ✅ Set | |
+| `STRIPE_WEBHOOK_SECRET` | ✅ Set | |
+| `STRIPE_PRO_PRICE_ID` | ✅ `price_1TquscCNet93AuXhwSWHZv8d` | |
+| `STRIPE_MONITORING_PRICE_ID` | ✅ `price_1Tqut9CNet93AuXhNIuU3AJ7` | |
+| `NEXT_PUBLIC_BASE_URL` | ✅ `https://revilo.design` | |
 
-OAuth redirect URIs to register:
-- Figma: `https://revilo.design/api/auth/figma/callback`
-- GitHub: `https://revilo.design/api/auth/github/callback`
+---
+
+## OAuth Redirect URIs
+
+| Provider | Callback URL | Status |
+|---|---|---|
+| GitHub | `https://revilo.design/api/auth/github/callback` | ✅ Already set |
+| Figma | `https://revilo.design/api/auth/figma/callback` | ⚠️ Needs confirming |
+
+---
+
+## Supabase Database
+
+- Project: olivierboulais's Project (`ujffieojxtclwgflkxhb`)
+- Region: West US (Oregon)
+- Tables created: `users`, `sessions`, `verification_tokens`, `sources`, `scans`
+- Indexes: `idx_scans_user_scanned`, `idx_sessions_token`
+- Tested: signup + login working on production ✅
+- Email verification email arriving from `noreply@revilo.design` ✅
 
 ---
 
 ## Stripe
 
-- Live secret key configured
-- Webhook: `https://revilo.design/api/stripe/webhook` — Active, 0% error rate
+- Live secret key configured ✅
+- Webhook: `https://revilo.design/api/stripe/webhook` — Active ✅
 - Events: `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed`, `customer.subscription.updated`, `charge.refunded`
 - Products (live): Pro Report ($199 one-time), Monthly Monitoring ($99.99/mo)
 
@@ -43,41 +59,34 @@ OAuth redirect URIs to register:
 
 ## What's Built
 
-- Signup / Login / Google OAuth / Forgot password / Reset password
-- Email verification (Resend-backed, logs to console without API key)
+- Signup / Login / Forgot password / Reset password / Email verification
 - Dashboard: Overview, Alignment, Adoption, Architecture, Team Insights, Recommendations
 - Figma + GitHub OAuth connect flow with real API data
-- Scan pipeline: uses real Figma/GitHub data when connected, mock data otherwise
+- Scan pipeline: real data when connected, mock data otherwise
 - AI recommendations via Claude (falls back to templates without API key)
 - PDF export (Pro users)
 - Stripe billing: Checkout → webhook → tier upgrade
 - Scheduled re-scans + drift alerts (Monitoring tier)
-- Settings: workspace name, password, appearance (light/dark/system), delete account
-- Help page (FAQ)
+- Settings: workspace name, password, appearance (light/dark/auto), delete account
+- Help page
 - Marketing site: `public/marketing.html`
+- Mobile: bottom tab bar nav, responsive docs, tooltip fixes, chart label fix
 
 ---
 
-## Bugs Fixed This Session
+## Debug / Dev Endpoints (REMOVED)
 
-- **Verified badge dark mode** — added CSS overrides in `globals.css`
-- **Sidebar hamburger at ≤900px** — added media query in `marketing.html`
-- **Hamburger right-aligned** — `flex:1; justify-content:space-between` on `.nav-pill`
-- **Mobile menu Log in invisible** — scoped CTA styles to `:first-child`/`:last-child`
-- **Theme picker active state** — purple checkmark badge on active button
-- **Theme buttons neutral** — all three buttons use `transparent` bg + `currentColor`
-- **Email buttons had circle+arrow** — removed from `lib/email.ts` and `lib/drift/alert.ts`
-- **Verification email hero squished** — widened Figma/GitHub cards to `42%/16%/42%`
-- **Upgrade page JSON crash** — `getSession()` now catches DB errors; checkout route wrapped in try/catch
-- **Sidebar tooltip behind content** — changed `lg:z-auto` to `lg:z-10` on sidebar `aside`
-- **Stripe price ID mismatch** — live key needs `price_1Tqusc...` / `price_1Tqut9...`, not sandbox prices
+All removed before launch:
+- ~~`/api/debug`~~ — Supabase connection info
+- ~~`/api/debug/scan`~~ — scan internals  
+- ~~`/api/debug/stripe`~~ — price IDs
+- ~~`/api/dev/upgrade`~~ — dev tier shortcut
+- ~~`/api/dev/test-emails`~~ — dev email sender
 
 ---
 
-## Known Limitations
+## Remaining Before Full Launch
 
-- No `DATABASE_URL` → ephemeral SQLite → signups reset on every Vercel deploy
-- Without `RESEND_API_KEY`, no emails are sent in production
-- Without Figma/GitHub OAuth apps, connect flow shows error
-- Figma usage signals (detached instances) not yet implemented — returns `[]`
-- Debug endpoints at `/api/debug/stripe` and `/api/debug/scan` should be removed before public launch
+- [ ] Confirm `ANTHROPIC_API_KEY` is set in Vercel (real AI recommendations)
+- [ ] Confirm Figma OAuth callback URL is set to `https://revilo.design/api/auth/figma/callback`
+- [ ] End-to-end test: connect Figma + GitHub → run scan → get real report
