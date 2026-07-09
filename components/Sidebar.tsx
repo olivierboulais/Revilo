@@ -193,8 +193,6 @@ export function Sidebar({
   isPaid,
   email,
   tier,
-  mobileOpen,
-  onMobileClose,
   collapsed,
   onToggleCollapse,
 }: {
@@ -202,28 +200,22 @@ export function Sidebar({
   isPaid: boolean;
   email: string;
   tier: string;
-  mobileOpen?: boolean;
-  onMobileClose?: () => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }) {
   const pathname = usePathname();
   const { openUpgrade } = useDrawer();
 
-  const isCollapsed = Boolean(collapsed) && !mobileOpen;
+  const isCollapsed = Boolean(collapsed);
 
   const tierLabel = tier === "monitoring" ? "Monitoring" : tier === "pro" ? "Pro" : "Free";
 
   return (
     <>
-      {mobileOpen && (
-        <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={onMobileClose} />
-      )}
       <aside
-        className={`flex-shrink-0 flex flex-col rounded-[28px] transition-all duration-200
-          fixed top-4 left-4 z-50 lg:sticky lg:top-4 lg:z-10 lg:translate-x-0
-          ${mobileOpen ? "translate-x-0 w-[220px]" : isCollapsed ? "w-[68px]" : "w-[220px]"}
-          ${!mobileOpen ? "-translate-x-[260px] lg:translate-x-0" : ""}`}
+        className={`hidden lg:flex flex-shrink-0 flex-col rounded-[28px] transition-all duration-200
+          lg:sticky lg:top-4 lg:z-10
+          ${isCollapsed ? "w-[68px]" : "w-[220px]"}`}
         style={{
           height: "calc(100vh - 2rem)",
           background: "var(--glass)",
