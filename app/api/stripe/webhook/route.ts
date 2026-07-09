@@ -22,6 +22,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  try {
   // Handle successful payment or subscription activation
   if (
     event.type === "checkout.session.completed" ||
@@ -90,6 +91,10 @@ export async function POST(request: Request) {
       const user = await findUserByEmail(email);
       if (user) await updateUserTier(user.id, "free");
     }
+  }
+
+  } catch (err) {
+    console.error("Stripe webhook handler error:", err);
   }
 
   return NextResponse.json({ received: true });
