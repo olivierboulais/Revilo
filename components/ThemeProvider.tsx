@@ -25,24 +25,34 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
+
+    function isDaytime() {
+      const h = new Date().getHours();
+      return h >= 7 && h < 19; // light 7am–7pm, dark outside that
+    }
+
     function apply(t: Theme) {
       if (t === "dark") {
         root.classList.add("dark");
       } else if (t === "light") {
         root.classList.remove("dark");
       } else {
-        // system
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        root.classList.toggle("dark", prefersDark);
+        root.classList.toggle("dark", !isDaytime());
       }
     }
+
     apply(theme);
 
     if (theme === "system") {
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
-      const handler = (e: MediaQueryListEvent) => root.classList.toggle("dark", e.matches);
-      mq.addEventListener("change", handler);
-      return () => mq.removeEventListener("change", handler);
+      // Re-check at the top of every minute so the switch happens on time
+      const tick = () => root.classList.toggle("dark", !isDaytime());
+      const msUntilNextMinute = (60 - new Date().getSeconds()) * 1000;
+      let interval: ReturnType<typeof setInterval>;
+      const timeout = setTimeout(() => {
+        tick();
+        interval = setInterval(tick, 60_000);
+      }, msUntilNextMinute);
+      return () => { clearTimeout(timeout); clearInterval(interval); };
     }
   }, [theme]);
 

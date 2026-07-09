@@ -54,7 +54,7 @@ const THEMES: ThemeOption[] = [
   },
   {
     value: "system",
-    label: "System",
+    label: "Auto",
     bg: "transparent",
     border: "rgba(128,128,128,.2)",
     activeBorder: "#7C3AED",
@@ -102,6 +102,9 @@ function AppearanceSection() {
           );
         })}
       </div>
+      {theme === "system" && (
+        <p className="text-[11px] text-gray mt-3">Auto switches to dark at 7 pm and back to light at 7 am, based on your local time.</p>
+      )}
     </div>
   );
 }
