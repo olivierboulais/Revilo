@@ -39,6 +39,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: checkoutSession.url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Include which price IDs the server resolved, so misconfiguration is obvious
+    const debugPrices = {
+      pro: STRIPE_PRO_PRICE_ID ?? "(not set)",
+      monitoring: STRIPE_MONITORING_PRICE_ID ?? "(not set)",
+    };
+    return NextResponse.json({ error: message, debug: debugPrices }, { status: 500 });
   }
 }
