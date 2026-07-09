@@ -83,9 +83,15 @@ export function TrendChart({
   const plotW = Math.max(width - padLeft - padRight, 1);
   const plotH = height - padTop - padBottom;
 
-  // Skip x-axis labels that would overlap. Each label needs ~48px of space.
-  const slotW = labels.length > 1 ? plotW / (labels.length - 1) : plotW;
-  const labelStep = Math.max(1, Math.ceil(48 / slotW));
+  // Pick evenly-distributed label indices so spacing is always uniform.
+  // Using 72px per label ensures text never overlaps regardless of content.
+  const maxLabelCount = Math.max(2, Math.floor(plotW / 72));
+  const visibleCount = Math.min(maxLabelCount, labels.length);
+  const visibleLabelIndices = new Set<number>(
+    Array.from({ length: visibleCount }, (_, k) =>
+      Math.round((k * (labels.length - 1)) / Math.max(visibleCount - 1, 1))
+    )
+  );
 
   const xFor = (i: number) => padLeft + (labels.length > 1 ? (i / (labels.length - 1)) * plotW : plotW / 2);
   const yFor = (v: number) => padTop + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
@@ -147,12 +153,12 @@ export function TrendChart({
           )
         )}
         {labels.map((l, i) => {
+          if (!visibleLabelIndices.has(i)) return null;
           const isFirst = i === 0;
           const isLast = i === labels.length - 1;
-          if (!isFirst && !isLast && i % labelStep !== 0) return null;
           return (
             <text
-              key={l}
+              key={`${l}-${i}`}
               x={xFor(i)}
               y={height - 8}
               fontSize="11"
