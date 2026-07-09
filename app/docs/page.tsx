@@ -72,7 +72,16 @@ const NAV_ITEMS = [
 export default function DocsPage() {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: "#F8F7F4", minHeight: "100vh", color: "#1C1C1A", WebkitFontSmoothing: "antialiased" }}>
-      <style>{`.docs-nav-link{font-size:13px;color:#706F6A;text-decoration:none;padding:5px 10px;border-radius:8px;transition:background .15s;display:block}.docs-nav-link:hover{background:rgba(28,28,26,.05)}`}</style>
+      <style>{`
+        .docs-nav-link{font-size:13px;color:#706F6A;text-decoration:none;padding:5px 10px;border-radius:8px;transition:background .15s;display:block}
+        .docs-nav-link:hover{background:rgba(28,28,26,.05)}
+        .docs-layout{display:grid;grid-template-columns:220px 1fr;gap:64px}
+        .docs-sidebar{position:sticky;top:80px;height:fit-content;padding-top:16px}
+        @media(max-width:768px){
+          .docs-layout{display:block}
+          .docs-sidebar{display:none}
+        }
+      `}</style>
       {/* Nav */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(248,247,244,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(28,28,26,.08)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -86,9 +95,9 @@ export default function DocsPage() {
         </div>
       </nav>
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 24px 80px", display: "grid", gridTemplateColumns: "220px 1fr", gap: 64 }}>
+      <div className="docs-layout" style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 24px 80px" }}>
         {/* Sidebar */}
-        <aside style={{ position: "sticky", top: 80, height: "fit-content", paddingTop: 16 }}>
+        <aside className="docs-sidebar">
           <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#706F6A", marginBottom: 12 }}>On this page</p>
           <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {NAV_ITEMS.map((item) => (
