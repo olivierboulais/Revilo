@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { findVerificationToken, deleteVerificationToken } from "@/lib/db/verification-tokens";
 import { markEmailVerified } from "@/lib/db/users";
+import { createSessionForUser } from "@/lib/auth/session";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -17,6 +18,7 @@ export async function GET(request: Request) {
 
   await markEmailVerified(record.user_id);
   await deleteVerificationToken(token);
+  await createSessionForUser(record.user_id);
 
   return NextResponse.redirect(new URL("/dashboard?verified=1", request.url));
 }
