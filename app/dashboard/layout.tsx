@@ -11,7 +11,6 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { TopBar } from "@/components/TopBar";
 import { VerificationBanner } from "@/components/VerificationBanner";
-import { MockDataBanner } from "@/components/MockDataBanner";
 import { DashboardShell } from "@/components/DashboardShell";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -55,7 +54,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="flex-1 min-w-0 flex flex-col gap-4">
         <TopBar workspaceName={session.workspaceName} scannedAt={report.scannedAt} />
         {!session.emailVerified && <VerificationBanner email={session.email} />}
-        <MockDataBanner figmaConnected={figmaConnected} githubConnected={githubConnected} />
         <div className="flex-1">{children}</div>
       </div>
     </DashboardShell>
