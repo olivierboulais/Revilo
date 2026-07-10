@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useDrawer } from "@/components/DrawerContext";
 
@@ -249,22 +249,42 @@ function GitHubCard({ github, onDisconnect, disconnecting }: {
   disconnecting: boolean;
 }) {
   const [repo, setRepo] = useState(github?.repo ?? "");
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(!github?.repo);
   const [repoInput, setRepoInput] = useState(github?.repo ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [repos, setRepos] = useState<{ full_name: string; private: boolean }[]>([]);
+  const [reposLoading, setReposLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!github) return;
+    setReposLoading(true);
+    fetch("/api/sources/github/repos")
+      .then(r => r.json())
+      .then(d => setRepos(d.repos ?? []))
+      .catch(() => {})
+      .finally(() => setReposLoading(false));
+  }, [github]);
+
+  const filteredRepos = repos
+    .filter(r => r.full_name.toLowerCase().includes(repoInput.toLowerCase()))
+    .slice(0, 8);
 
   async function saveRepo() {
+    const trimmed = repoInput.trim();
+    if (!trimmed) return;
     setSaving(true); setError(null); setSaved(false);
     try {
       const res = await fetch("/api/sources/github/repo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repo: repoInput.trim() }),
+        body: JSON.stringify({ repo: trimmed }),
       });
       if (!res.ok) throw new Error("Failed to save");
-      setRepo(repoInput.trim());
+      setRepo(trimmed);
       setEditing(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -289,38 +309,62 @@ function GitHubCard({ github, onDisconnect, disconnecting }: {
         <>
           <div className="mb-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[12px] text-gray">Repository (owner/repo)</span>
+              <span className="text-[12px] text-gray">Repository</span>
               {!editing && (
                 <button onClick={() => { setEditing(true); setRepoInput(repo); }} className="text-[12px] font-medium text-lilac-deep hover:underline">
-                  {repo ? "Edit" : "Add repo"}
+                  {repo ? "Change" : "Add repo"}
                 </button>
               )}
             </div>
 
             {!editing ? (
-              repo ? (
-                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface border border-line">
-                  <span className="font-mono text-[12.5px] flex-1">{repo}</span>
-                  {saved && <span className="text-[11px] text-good">Saved</span>}
-                </div>
-              ) : (
-                <p className="text-[12px] text-gray py-2">No repository set. Add one to start scanning.</p>
-              )
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface border border-line">
+                <span className="font-mono text-[12.5px] flex-1">{repo}</span>
+                {saved && <span className="text-[11px] text-good">Saved</span>}
+              </div>
             ) : (
               <div className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  value={repoInput}
-                  onChange={e => setRepoInput(e.target.value)}
-                  placeholder="owner/repo"
-                  className="w-full text-[12.5px] rounded-xl border border-line px-3 py-2 outline-none focus:border-lilac-deep bg-card font-mono"
-                  autoFocus
-                />
+                <div className="relative">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={repoInput}
+                    onChange={e => { setRepoInput(e.target.value); setShowDropdown(true); }}
+                    onFocus={() => setShowDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                    placeholder={reposLoading ? "Loading repositories…" : "Search or type owner/repo"}
+                    className="w-full text-[12.5px] rounded-xl border border-line px-3 py-2 outline-none focus:border-lilac-deep bg-card"
+                    autoFocus
+                  />
+                  {showDropdown && filteredRepos.length > 0 && (
+                    <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-line rounded-xl shadow-lg overflow-hidden">
+                      {filteredRepos.map(r => (
+                        <button
+                          key={r.full_name}
+                          type="button"
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => { setRepoInput(r.full_name); setShowDropdown(false); inputRef.current?.blur(); }}
+                          className="w-full text-left px-3 py-2.5 text-[13px] hover:bg-surface flex items-center gap-2 border-b border-line last:border-0"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-gray flex-shrink-0">
+                            {r.private
+                              ? <path d="M4 5V4a4 4 0 0 1 8 0v1h1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1zm2 0h4V4a2 2 0 0 0-4 0v1zm2 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+                              : <path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8V1.5Z"/>}
+                          </svg>
+                          <span className="truncate">{r.full_name}</span>
+                          {r.private && <span className="ml-auto text-[10px] text-gray border border-line rounded px-1">Private</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 {error && <p className="text-[11.5px] text-[#B3401F]">{error}</p>}
                 <div className="flex gap-2 justify-end">
-                  <button onClick={() => { setEditing(false); setError(null); }} className="text-[12px] text-gray hover:text-foreground px-3 py-1.5">
-                    Cancel
-                  </button>
+                  {repo && (
+                    <button onClick={() => { setEditing(false); setError(null); setRepoInput(repo); }} className="text-[12px] text-gray hover:text-foreground px-3 py-1.5">
+                      Cancel
+                    </button>
+                  )}
                   <button
                     onClick={saveRepo}
                     disabled={!repoInput.trim() || saving}
@@ -345,8 +389,12 @@ function GitHubCard({ github, onDisconnect, disconnecting }: {
           </div>
 
           <div className="text-[11.5px] text-gray pt-3 border-t border-line flex items-center justify-between">
-            <span>{repo ? "Repository saved — ready to scan." : "Set a repository to start scanning."}</span>
-            <button onClick={onDisconnect} disabled={disconnecting} className="text-[#B3401F] hover:underline disabled:opacity-50">
+            <span>
+              {repo
+                ? "Repository saved — ready to scan."
+                : "To connect a different GitHub account, remove and reconnect."}
+            </span>
+            <button onClick={onDisconnect} disabled={disconnecting} className="text-[#B3401F] hover:underline disabled:opacity-50 ml-4 flex-shrink-0">
               {disconnecting ? "Removing…" : "Remove source"}
             </button>
           </div>
