@@ -117,6 +117,24 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
   const [fileKeySaved, setFileKeySaved] = useState(() => parseFigmaFiles(figmaFileKey).length > 0 && parseFigmaFiles(figmaFileKey).every(f => f.key));
   const [repoSaved, setRepoSaved] = useState(Boolean(githubRepo));
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [repos, setRepos] = useState<{ full_name: string; private: boolean }[]>([]);
+  const [reposLoading, setReposLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const repoInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!githubConnected) return;
+    setReposLoading(true);
+    fetch("/api/sources/github/repos")
+      .then(r => r.json())
+      .then(d => setRepos(d.repos ?? []))
+      .catch(() => {})
+      .finally(() => setReposLoading(false));
+  }, [githubConnected]);
+
+  const filteredRepos = repos.filter(r =>
+    r.full_name.toLowerCase().includes(repoInput.toLowerCase())
+  ).slice(0, 8);
 
   const figmaReady = figmaConnected && fileKeySaved;
   const githubReady = githubConnected && repoSaved;
@@ -297,25 +315,53 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
           {githubConnected && (
             <div className="mt-4 pt-4 border-t border-line">
               <label className="text-[12.5px] text-gray block mb-1.5">
-                Repository (owner/repo)
+                Repository
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={repoInput}
-                  onChange={(e) => { setRepoInput(e.target.value); setRepoSaved(false); }}
-                  placeholder="acme/design-system"
-                  className="flex-1 text-[13px] rounded-xl border border-line px-3 py-2 outline-none focus:border-[#1C1C1A] bg-white"
-                />
-                <Button
-                  variant={repoSaved ? "outline" : "dark"}
-                  withArrow={false}
-                  onClick={saveRepo}
-                  disabled={savingRepo || !repoInput.trim()}
-                  className="text-[13px] flex-shrink-0"
-                >
-                  {savingRepo ? "Saving…" : repoSaved ? "Saved" : "Save"}
-                </Button>
+              <div className="relative">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      ref={repoInputRef}
+                      type="text"
+                      value={repoInput}
+                      onChange={(e) => { setRepoInput(e.target.value); setRepoSaved(false); setShowDropdown(true); }}
+                      onFocus={() => setShowDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                      placeholder={reposLoading ? "Loading repositories…" : "Search or type owner/repo"}
+                      className="w-full text-[13px] rounded-xl border border-line px-3 py-2 outline-none focus:border-[#1C1C1A] bg-white"
+                    />
+                    {showDropdown && filteredRepos.length > 0 && (
+                      <div className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-line rounded-xl shadow-lg overflow-hidden">
+                        {filteredRepos.map(r => (
+                          <button
+                            key={r.full_name}
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => { setRepoInput(r.full_name); setRepoSaved(false); setShowDropdown(false); repoInputRef.current?.blur(); }}
+                            className="w-full text-left px-3 py-2.5 text-[13px] hover:bg-surface flex items-center gap-2 border-b border-line last:border-0"
+                          >
+                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" className="text-gray flex-shrink-0">
+                              {r.private
+                                ? <path d="M4 5V4a4 4 0 0 1 8 0v1h1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1zm2 0h4V4a2 2 0 0 0-4 0v1zm2 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+                                : <path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8V1.5Z"/>}
+                            </svg>
+                            <span className="truncate">{r.full_name}</span>
+                            {r.private && <span className="ml-auto text-[10px] text-gray border border-line rounded px-1">Private</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    variant={repoSaved ? "outline" : "dark"}
+                    withArrow={false}
+                    onClick={saveRepo}
+                    disabled={savingRepo || !repoInput.trim()}
+                    className="text-[13px] flex-shrink-0"
+                  >
+                    {savingRepo ? "Saving…" : repoSaved ? "Saved" : "Save"}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
