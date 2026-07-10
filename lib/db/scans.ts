@@ -35,6 +35,23 @@ export async function getLatestScanForUser(userId: string): Promise<ScanReport |
   return JSON.parse(result.rows[0].report_json) as ScanReport;
 }
 
+export async function countScansToday(userId: string): Promise<number> {
+  const midnight = new Date();
+  midnight.setHours(0, 0, 0, 0);
+  const since = midnight.toISOString();
+
+  if (isSupabase()) {
+    const { count } = await (await sb())
+      .from("scans").select("id", { count: "exact", head: true })
+      .eq("user_id", userId).gte("scanned_at", since);
+    return count ?? 0;
+  }
+  const result = await (await db()).query<{ n: number }>(
+    "SELECT COUNT(*) as n FROM scans WHERE user_id = ? AND scanned_at >= ?", [userId, since]
+  );
+  return result.rows[0]?.n ?? 0;
+}
+
 export async function getScanHistoryForUser(userId: string, limit = 8): Promise<ScanReport[]> {
   if (isSupabase()) {
     const { data } = await (await sb())
