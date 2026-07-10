@@ -90,7 +90,15 @@ export function SignupForm({ tier }: { tier: string | null }) {
         </div>
         {error && <p className="text-[12.5px] text-[#B3401F] -mt-1">{error}</p>}
         <Button type="submit" variant="dark" className="justify-center mt-1 w-full" disabled={isSubmitting} withArrow={false}>
-          {isSubmitting ? "Creating account…" : "Continue"}
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <svg className="animate-spin" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeOpacity="0.3" strokeWidth="2"/>
+                <path d="M7 1.5a5.5 5.5 0 0 1 5.5 5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              Creating account…
+            </span>
+          ) : "Continue"}
         </Button>
       </form>
     </div>
