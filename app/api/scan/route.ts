@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   }
 
   const isPaid = session.tier !== "free";
-  const limit = isPaid ? 100 : 10;
+  const limit = isPaid ? 20 : 10;
   const rl = await checkRateLimitAsync(`scan:${session.email}`, limit, 24 * 60 * 60 * 1000);
   if (!rl.allowed) {
     const resetHours = Math.ceil((rl.resetAt - Date.now()) / (1000 * 60 * 60));
