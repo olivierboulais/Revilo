@@ -40,6 +40,24 @@ async function checkRateLimitKv(key: string, limit: number, windowMs: number): P
   return { allowed, remaining: Math.max(0, limit - count), resetAt: now + windowMs };
 }
 
+// ── peek: read count without incrementing ─────────────────────────────────────
+export async function peekRateLimitAsync(key: string, limit: number, windowMs: number): Promise<RateLimitResult> {
+  if (process.env.KV_REST_API_URL) {
+    try {
+      const { kv } = await import("@vercel/kv");
+      const count = (await kv.get<number>(`rl:${key}`)) ?? 0;
+      return { allowed: count < limit, remaining: Math.max(0, limit - count), resetAt: Date.now() + windowMs };
+    } catch {
+      // fall through to in-memory
+    }
+  }
+  maybePrune();
+  const now = Date.now();
+  const win = store.get(key);
+  const count = win && win.resetAt >= now ? win.count : 0;
+  return { allowed: count < limit, remaining: Math.max(0, limit - count), resetAt: win?.resetAt ?? now + windowMs };
+}
+
 // ── public API ────────────────────────────────────────────────────────────────
 export async function checkRateLimitAsync(key: string, limit: number, windowMs: number): Promise<RateLimitResult> {
   if (process.env.KV_REST_API_URL) {

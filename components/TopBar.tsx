@@ -13,7 +13,12 @@ function timeAgo(iso: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; scannedAt: string }) {
+export function TopBar({ workspaceName, scannedAt, scansRemaining, scansLimit }: {
+  workspaceName: string;
+  scannedAt: string;
+  scansRemaining: number;
+  scansLimit: number;
+}) {
   const { openScan } = useScan();
   const [lastScannedAt] = useState(scannedAt);
 
@@ -35,18 +40,23 @@ export function TopBar({ workspaceName, scannedAt }: { workspaceName: string; sc
           Last scan {timeAgo(lastScannedAt)}
         </span>
       </div>
-      <button
-        onClick={openScan}
-        className="gradient-lilac flex items-center gap-2 text-[13px] font-medium px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-colors"
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M3.5 8a4.5 4.5 0 0 1 7.6-3.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          <path d="M12.5 8a4.5 4.5 0 0 1-7.6 3.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          <path d="M11.5 2.5L11.1 5.2 8.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M4.5 13.5l.4-2.7 2.6.7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <span className="hidden sm:inline">Re-scan</span>
-      </button>
+      <div className="flex items-center gap-2 sm:gap-3">
+        <span className="hidden sm:block text-[11px] text-gray tabular-nums">
+          {scansRemaining}/{scansLimit} scans left
+        </span>
+        <button
+          onClick={openScan}
+          className="gradient-lilac flex items-center gap-2 text-[13px] font-medium px-4 sm:px-5 py-2 sm:py-2.5 rounded-full transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3.5 8a4.5 4.5 0 0 1 7.6-3.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M12.5 8a4.5 4.5 0 0 1-7.6 3.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M11.5 2.5L11.1 5.2 8.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4.5 13.5l.4-2.7 2.6.7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className="hidden sm:inline">Re-scan</span>
+        </button>
+      </div>
     </header>
   );
 }
