@@ -13,19 +13,20 @@ import { BiggestRisksPanel, TeamDriftPanel, RecommendedActionsPanel, CategoryMod
 import { groupByCategory, topRisks, topActions, teamDriftCounts } from "@/lib/overview-helpers";
 import { TrendChart } from "@/components/TrendChart";
 import { getScoreHistory } from "@/lib/score-history";
+import { VerifiedToast } from "@/components/VerifiedToast";
 
 const riskLevelLabel: Record<string, string> = { low: "Low risk", medium: "Medium risk", high: "High risk" };
 const riskLevelColor: Record<string, string> = { low: "#34D399", medium: "#FBBF24", high: "#EF4444" };
 
 interface Props {
-  searchParams: Promise<{ scan_error?: string; upgraded?: string; figma_error?: string; github_error?: string }>;
+  searchParams: Promise<{ scan_error?: string; upgraded?: string; figma_error?: string; github_error?: string; verified?: string }>;
 }
 
 export default async function OverviewPage({ searchParams }: Props) {
   const session = await getSession();
   if (!session) redirect("/signup");
 
-  const { scan_error, upgraded, figma_error, github_error } = await searchParams;
+  const { scan_error, upgraded, figma_error, github_error, verified } = await searchParams;
 
   // Check if user has real sources connected
   const user = await findUserByEmail(session.email).catch(() => null);
@@ -55,6 +56,7 @@ export default async function OverviewPage({ searchParams }: Props) {
 
   return (
     <div className="px-3 sm:px-6 py-6 sm:py-8">
+      {verified === "1" && <VerifiedToast />}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
         <h1 className="text-[20px] sm:text-[22px] font-semibold tracking-tight">Overview</h1>
         {hasRealData && (
