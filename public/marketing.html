@@ -689,10 +689,10 @@ footer{background:var(--ink);color:#fff;padding:60px 0 36px}
       </div>
       <div class="dc-out dc-out-highlight">
         <div class="dc-out-val" id="dc-revilo">0.09%</div>
-        <div class="dc-out-key">Revilo vs. the problem <span class="dc-tip" data-tip="$199 one-time cost of a Revilo scan as a percentage of your team's annual drift loss."><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="currentColor"/><rect x="6.2" y="6" width="1.6" height="4.5" rx=".8" fill="white"/><circle cx="7" cy="4" r=".9" fill="white"/></svg></span></div>
+        <div class="dc-out-key">Revilo vs. the problem <span class="dc-tip" data-tip="$99.99/mo cost of Revilo monitoring as a percentage of your team's annual drift loss."><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="7" fill="currentColor"/><rect x="6.2" y="6" width="1.6" height="4.5" rx=".8" fill="white"/><circle cx="7" cy="4" r=".9" fill="white"/></svg></span></div>
       </div>
     </div>
-    <div class="dc-punchline">You're losing <strong id="dc-p-cost">$234,000</strong>/yr to drift. Revilo costs <strong>$199</strong>.</div>
+    <div class="dc-punchline">You're losing <strong id="dc-p-cost">$234,000</strong>/yr to drift. Revilo costs <strong>$99.99/mo</strong>.</div>
   </div>
 </section>
 
@@ -925,13 +925,13 @@ footer{background:var(--ink);color:#fff;padding:60px 0 36px}
   <div class="about-inner">
     <div class="about-text rv">
       <h2>Built by someone who's done this by hand.</h2>
-      <p>Revilo comes from over 20 years of product and design work — including deep contract engagements building the component libraries, token architectures, and governance models that large product teams run on every day.</p>
+      <p>Revilo comes from years of product and design work — including deep contract engagements building the component libraries, token architectures, and governance models that large product teams run on every day.</p>
       <p>That work included design systems projects with teams at lululemon, Boyd, On Location, and Xenith. Revilo is what that experience looks like automated: the first pass of an audit, available in minutes instead of weeks.</p>
       <span class="about-mission">Mission: make design system alignment measurable.</span>
     </div>
     <div class="about-visual rv">
       <div class="about-stat-row">
-        <div class="about-stat-card"><div class="as-num">20+</div><div class="as-lbl">Years in design systems</div></div>
+        <div class="about-stat-card"><div class="as-num">20+</div><div class="as-lbl">Years in product & design</div></div>
         <div class="about-stat-card"><div class="as-num">4</div><div class="as-lbl">Major engagements</div></div>
       </div>
       <div class="about-experience-card">
@@ -1184,7 +1184,7 @@ document.querySelectorAll('.rv').forEach(el=>io.observe(el));
     var hrs = parseInt(rangeHrs.value, 10);
     var hrsPerYear = d * hrs * 52;
     var annualCost = Math.round(hrsPerYear * 125);
-    var pct = annualCost > 0 ? (199 / annualCost * 100).toFixed(2) : '—';
+    var pct = annualCost > 0 ? (99.99 * 12 / annualCost * 100).toFixed(2) : '—';
     var costStr = fmt(annualCost);
     elCount.textContent  = d;
     elHrsVal.textContent = hrs;
