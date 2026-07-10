@@ -54,7 +54,7 @@ export function LoginForm() {
         <div className="flex-1 h-px bg-line" />
       </div>
 
-      <form action={handleSubmit} className="flex flex-col gap-3">
+      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(new FormData(e.currentTarget)); }} className="flex flex-col gap-3">
         <div>
           <label htmlFor="email" className="block text-[12px] font-medium text-gray mb-1.5">
             Work email
