@@ -89,12 +89,17 @@ function SourceHeader({ icon, name, connected, onConnect, onReconnect }: {
   );
 }
 
-function FigmaCard({ figma, onDisconnect, disconnecting }: {
+function FigmaCard({ figma, onDisconnect, disconnecting, onPatConnected }: {
   figma: FigmaInfo | null;
   onDisconnect: () => void;
   disconnecting: boolean;
+  onPatConnected: (info: FigmaInfo) => void;
 }) {
   const [files, setFiles] = useState<FigmaFileEntry[]>(parseFigmaFiles(figma?.fileKey ?? null));
+  const [showPat, setShowPat] = useState(false);
+  const [pat, setPat] = useState("");
+  const [patSaving, setPatSaving] = useState(false);
+  const [patError, setPatError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newUrl, setNewUrl] = useState("");
   const [newRole, setNewRole] = useState<FigmaFileRole>("project");
@@ -236,8 +241,60 @@ function FigmaCard({ figma, onDisconnect, disconnecting }: {
             </button>
           </div>
         </>
+      ) : showPat ? (
+        <div className="flex flex-col gap-2">
+          <p className="text-[12px] text-gray">
+            Generate a token at <strong>figma.com → Account Settings → Personal access tokens</strong>, then paste it below.
+          </p>
+          <input
+            type="password"
+            value={pat}
+            onChange={e => { setPat(e.target.value); setPatError(null); }}
+            placeholder="figd_…"
+            className="w-full text-[12.5px] rounded-xl border border-line px-3 py-2 outline-none focus:border-lilac-deep bg-card font-mono"
+            autoFocus
+          />
+          {patError && <p className="text-[11.5px] text-[#B3401F]">{patError}</p>}
+          <div className="flex gap-2 justify-end mt-1">
+            <button onClick={() => { setShowPat(false); setPat(""); setPatError(null); }} className="text-[12px] text-gray hover:text-foreground px-3 py-1.5">
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                setPatSaving(true); setPatError(null);
+                try {
+                  const res = await fetch("/api/sources/figma/pat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: pat }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) { setPatError(data.error ?? "Failed to connect"); return; }
+                  onPatConnected({ externalName: data.handle ?? null, fileKey: null, connectedAt: new Date().toISOString() });
+                  setShowPat(false); setPat("");
+                } catch {
+                  setPatError("Could not connect. Please try again.");
+                } finally {
+                  setPatSaving(false);
+                }
+              }}
+              disabled={!pat.trim() || patSaving}
+              className="btn-dark text-[12px] font-medium px-3 py-1.5 rounded-full disabled:opacity-40"
+            >
+              {patSaving ? "Verifying…" : "Connect"}
+            </button>
+          </div>
+        </div>
       ) : (
-        <p className="text-[12.5px] text-gray">Connect your Figma account to scan components, variants, and tokens.</p>
+        <div className="flex flex-col gap-3">
+          <p className="text-[12.5px] text-gray">Connect your Figma account to scan components, variants, and tokens.</p>
+          <button
+            onClick={() => setShowPat(true)}
+            className="text-[12px] text-lilac-deep hover:underline text-left"
+          >
+            Use a Personal Access Token instead →
+          </button>
+        </div>
       )}
     </div>
   );
@@ -432,7 +489,12 @@ export function SourcesClient({ figma: initialFigma, github: initialGithub }: Pr
 
   return (
     <div className="flex flex-col gap-4 max-w-[640px]">
-      <FigmaCard figma={figma} onDisconnect={() => disconnect("figma")} disconnecting={disconnecting === "figma"} />
+      <FigmaCard
+        figma={figma}
+        onDisconnect={() => disconnect("figma")}
+        disconnecting={disconnecting === "figma"}
+        onPatConnected={(info) => { setFigma(info); router.refresh(); }}
+      />
       <GitHubCard github={github} onDisconnect={() => disconnect("github")} disconnecting={disconnecting === "github"} />
 
       {(!figma || !github) && (
