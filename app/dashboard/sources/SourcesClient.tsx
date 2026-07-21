@@ -144,8 +144,8 @@ function FigmaCard({ figma, onDisconnect, disconnecting, onPatConnected }: {
         icon={<FigmaIcon />}
         name="Figma"
         connected={Boolean(figma)}
-        onConnect={() => { window.location.href = "/api/auth/figma/start"; }}
-        onReconnect={() => { window.location.href = "/api/auth/figma/start"; }}
+        onConnect={() => setShowPat(true)}
+        onReconnect={() => setShowPat(true)}
       />
 
       {figma ? (
