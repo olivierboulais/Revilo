@@ -121,6 +121,11 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
   const [reposLoading, setReposLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const repoInputRef = useRef<HTMLInputElement>(null);
+  const [showFigmaPat, setShowFigmaPat] = useState(false);
+  const [figmaPat, setFigmaPat] = useState("");
+  const [figmaPatSaving, setFigmaPatSaving] = useState(false);
+  const [figmaPatError, setFigmaPatError] = useState<string | null>(null);
+  const [figmaConnectedState, setFigmaConnectedState] = useState(figmaConnected);
 
   useEffect(() => {
     if (!githubConnected) return;
@@ -136,7 +141,7 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
     r.full_name.toLowerCase().includes(repoInput.toLowerCase())
   ).slice(0, 8);
 
-  const figmaReady = figmaConnected && fileKeySaved;
+  const figmaReady = figmaConnectedState && fileKeySaved;
   const githubReady = githubConnected && repoSaved;
   const bothReady = figmaReady && githubReady;
 
@@ -230,9 +235,56 @@ export function ConnectFlow({ figmaConnected, figmaFileKey, githubConnected, git
           name="Figma"
           description="Components, variants, tokens, and styles"
           icon={<FigmaIcon />}
-          status={figmaConnected ? "connected" : "idle"}
-          onConnect={() => { window.location.href = "/api/auth/figma/start"; }}
+          status={figmaConnectedState ? "connected" : "idle"}
+          onConnect={() => setShowFigmaPat(true)}
         >
+          {!figmaConnectedState && showFigmaPat && (
+            <div className="mt-4 pt-4 border-t border-line flex flex-col gap-2">
+              <p className="text-[12px] text-gray">
+                Go to <strong>figma.com → Account Settings → Personal access tokens</strong>, create a token, and paste it here.
+              </p>
+              <input
+                type="password"
+                value={figmaPat}
+                onChange={e => { setFigmaPat(e.target.value); setFigmaPatError(null); }}
+                placeholder="figd_…"
+                className="w-full text-[12.5px] rounded-xl border border-line px-3 py-2 outline-none focus:border-[#1C1C1A] bg-white font-mono"
+                autoFocus
+              />
+              {figmaPatError && <p className="text-[11.5px] text-[#B3401F]">{figmaPatError}</p>}
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => { setShowFigmaPat(false); setFigmaPat(""); setFigmaPatError(null); }} className="text-[12px] text-gray hover:text-foreground px-3 py-1.5">
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    setFigmaPatSaving(true); setFigmaPatError(null);
+                    try {
+                      const res = await fetch("/api/sources/figma/pat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ token: figmaPat }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) { setFigmaPatError(data.error ?? "Failed to connect"); return; }
+                      setFigmaConnectedState(true);
+                      setShowFigmaPat(false);
+                      setFigmaPat("");
+                    } catch {
+                      setFigmaPatError("Could not connect. Please try again.");
+                    } finally {
+                      setFigmaPatSaving(false);
+                    }
+                  }}
+                  disabled={!figmaPat.trim() || figmaPatSaving}
+                  className="btn-dark text-[12px] font-medium px-3 py-1.5 rounded-full disabled:opacity-40"
+                >
+                  {figmaPatSaving ? "Verifying…" : "Connect"}
+                </button>
+              </div>
+            </div>
+          )}
+
           {figmaConnected && (
             <div className="mt-4 pt-4 border-t border-line">
               <div className="flex items-center justify-between mb-2">
