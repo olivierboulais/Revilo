@@ -2,8 +2,16 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { GITHUB_CLIENT_ID, GITHUB_SCOPES, GITHUB_AUTHORIZE_URL, isGithubOAuthConfigured, getGithubRedirectUri } from "@/lib/github/config";
 import { randomBytes } from "crypto";
+import { checkRateLimitAsync } from "@/lib/rate-limit";
+import { headers } from "next/headers";
 
 export async function GET(request: Request) {
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const rl = await checkRateLimitAsync(`oauth:github:${ip}`, 5, 60 * 60 * 1000);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const session = await getSession();
   if (!session) {
     return NextResponse.redirect(new URL("/signup", request.url));

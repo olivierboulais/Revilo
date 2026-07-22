@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { getSupabaseClient, isSupabase } from "@/lib/db/supabase";
 import { getDb } from "@/lib/db/client";
+import { encryptToken, safeDecryptToken } from "@/lib/token-crypto";
 
 export type FigmaFileRole = "seed" | "primitive" | "semantic" | "component" | "project";
 
@@ -49,10 +50,12 @@ export async function upsertSource(
   externalName: string | null = null,
   tokenExpiresAt: string | null = null
 ): Promise<void> {
+  const encAccess = encryptToken(accessToken);
+  const encRefresh = refreshToken ? encryptToken(refreshToken) : null;
   if (isSupabase()) {
     const { error } = await (await sb()).from("sources").upsert({
       id: randomUUID(), user_id: userId, provider, status: "connected",
-      access_token: accessToken, refresh_token: refreshToken,
+      access_token: encAccess, refresh_token: encRefresh,
       external_name: externalName, token_expires_at: tokenExpiresAt,
       connected_at: new Date().toISOString(),
     }, { onConflict: "user_id,provider" });
@@ -66,20 +69,28 @@ export async function upsertSource(
        status = 'connected', access_token = excluded.access_token,
        refresh_token = excluded.refresh_token, external_name = excluded.external_name,
        token_expires_at = excluded.token_expires_at`,
-    [randomUUID(), userId, provider, accessToken, refreshToken, externalName, tokenExpiresAt]
+    [randomUUID(), userId, provider, encAccess, encRefresh, externalName, tokenExpiresAt]
   );
 }
 
 export async function getSource(userId: string, provider: "figma" | "github"): Promise<SourceRecord | null> {
+  let row: SourceRecord | null = null;
   if (isSupabase()) {
     const { data } = await (await sb())
       .from("sources").select("*").eq("user_id", userId).eq("provider", provider).maybeSingle();
-    return data ?? null;
+    row = data ?? null;
+  } else {
+    const result = await (await db()).query<SourceRecord>(
+      "SELECT * FROM sources WHERE user_id = ? AND provider = ?", [userId, provider]
+    );
+    row = result.rows[0] ?? null;
   }
-  const result = await (await db()).query<SourceRecord>(
-    "SELECT * FROM sources WHERE user_id = ? AND provider = ?", [userId, provider]
-  );
-  return result.rows[0] ?? null;
+  if (!row) return null;
+  return {
+    ...row,
+    access_token: safeDecryptToken(row.access_token),
+    refresh_token: safeDecryptToken(row.refresh_token),
+  };
 }
 
 export async function updateSourceToken(
@@ -88,16 +99,17 @@ export async function updateSourceToken(
   accessToken: string,
   tokenExpiresAt: string | null = null
 ): Promise<void> {
+  const encAccess = encryptToken(accessToken);
   if (isSupabase()) {
     const { error } = await (await sb()).from("sources")
-      .update({ access_token: accessToken, token_expires_at: tokenExpiresAt })
+      .update({ access_token: encAccess, token_expires_at: tokenExpiresAt })
       .eq("user_id", userId).eq("provider", provider);
     if (error) throw new Error(`updateSourceToken (${provider}): ${error.message}`);
     return;
   }
   await (await db()).run(
     "UPDATE sources SET access_token = ?, token_expires_at = ? WHERE user_id = ? AND provider = ?",
-    [accessToken, tokenExpiresAt, userId, provider]
+    [encAccess, tokenExpiresAt, userId, provider]
   );
 }
 
