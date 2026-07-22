@@ -17,6 +17,7 @@ import { DashboardShell } from "@/components/DashboardShell";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!session) redirect("/signup");
+  if (!session.emailVerified) redirect("/verify-email");
 
   const [user, cachedReport] = await Promise.all([
     findUserByEmail(session.email),

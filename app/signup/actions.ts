@@ -25,6 +25,13 @@ export async function signupAction(formData: FormData): Promise<SignupResult> {
     return { error: "Too many signup attempts. Please try again later." };
   }
 
+  const honeypot = String(formData.get("website") ?? "");
+  if (honeypot) {
+    console.warn("[bot] honeypot filled on signup — blocked", { ip });
+    // Fake success — don't reveal to bots that they were caught
+    redirect("/dashboard?connect=1");
+  }
+
   const email = String(formData.get("email") ?? "").trim();
   const workspaceName = String(formData.get("workspaceName") ?? "").trim();
   const password = String(formData.get("password") ?? "");

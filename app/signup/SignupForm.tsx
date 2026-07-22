@@ -56,6 +56,7 @@ export function SignupForm({ tier }: { tier: string | null }) {
 
       <form onSubmit={(e) => { e.preventDefault(); handleSubmit(new FormData(e.currentTarget)); }} className="flex flex-col gap-3">
         {tier && <input type="hidden" name="tier" value={tier} />}
+        <input name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0, width: 0 }} />
         <div>
           <label htmlFor="workspaceName" className="block text-[12px] font-medium text-gray mb-1.5">
             Workspace name
